@@ -733,95 +733,108 @@ class FormulaEngine:
         system_dir: Optional[Path] = None,
         width: int = 4608,
         length: int = 4608,
-        height: int = 1792,
+        height: int = 2048,
     ) -> List[str]:
         """
         Constructs a premier, world-class Valley Fortress matching Builderbutton_valley_01.jpg:
-        - True SkyBox chamber with SkyZoneInfo and FakeBackdrop ceiling flags
+        - True isolated SkyBox chamber with SkyZoneInfo and FakeBackdrop ceiling flags (Flags=4194432)
         - Multi-tier Mountain Cliffs & Deep River Gorge with Waterfalls
-        - Grand Multi-Tower Castle Keep, Gatehouse, Battle Towers, and Interior Armory
+        - Solid Bedrock Castle Foundation Bluff (grounded at Z=-1024)
+        - Grand Multi-Tower Castle Keep, Gatehouse, 4 Flanking Battle Towers, and Royal Spire
         - Dual Bridges: Lower Grand Arched Stone Bridge + Upper Wooden Drawbridge
         - Mountain Peak Sniper Watchtowers & Overlooks
-        - Living World Elements: Dense Pine Forest, Mountain Shrubs, Boulders, Torches
-        - Full Botpack AI Navigation Lattice and Armory
+        - Living World Elements: 16+ Pine Trees, Mountain Shrubs, Boulders, Torches
+        - Full 32-Node Botpack AI Navigation Lattice and Armory
         """
-        floor_z = -height // 2       # -896
-        gorge_z = floor_z + 96       # -800
-        stone_bridge_z = -576        # -576 (Lower Stone Arch Bridge)
-        drawbridge_z = -320          # -320 (Upper Timber Drawbridge)
-        keep_base_z = -384           # -384 (Castle Keep Base on East Bluff)
-        hall_z = -256                # -256 (Castle Great Hall Interior)
-        gate_z = -384                # -384 (Castle Gatehouse Portal)
-        tower_top_z = 704            # +704 (North/South Castle Battlements)
-        spire_top_z = 960            # +960 (Royal Citadel Spire)
-        west_lookout_z = 512         # +512 (West Mountain Peak Lookouts)
-        skybox_z = 4608              # +4608 (Isolated Celestial Skybox)
+        floor_z = -1024              # -1024 (Canyon Valley Floor)
+        gorge_z = -1152              # -1152 (Deep Carved River Gorge)
+        stone_bridge_z = -768        # -768 (Lower Stone Arch Bridge)
+        drawbridge_z = -96           # -96 (Upper Timber Drawbridge)
+        bluff_z = -512               # -512 (Solid Foundation Bluff Center: -1024 -> 0)
+        keep_z = 256                 # +256 (Castle Keep Bastion Center: 0 -> 512)
+        hall_z = 192                 # +192 (Castle Great Hall Armory Interior)
+        gate_z = 96                  # +96 (Castle Gatehouse Portal)
+        battlements_z = 512          # +512 (Tower Bases: 0 -> 1024)
+        spire_z = 768                # +768 (Royal Citadel Spire: 128 -> 1408)
+        west_lookout_z = 384         # +384 (West Mountain Peak Lookouts)
+        skybox_x = -8192             # -8192 (Extreme Skybox Isolation X)
+        skybox_y = -8192             # -8192 (Extreme Skybox Isolation Y)
+        skybox_z = 4096              # +4096 (Isolated Celestial Skybox Z)
 
         # ---------------------------------------------------------------------
         # 1. PROCEDURAL CSG BRUSH COMPILATION (Watertight PolyLists)
         # ---------------------------------------------------------------------
-        # Skybox Chamber
+        # 1.1 Isolated Celestial Skybox Chamber (Unlit: Flags=4194304)
         f_skybox = _write_brush_file(
             system_dir, "ValleySkybox.t3d", (1024.0, 1024.0, 1024.0), shape="Box",
             floor_tex="ShaneSky.pansky1", wall_tex="ShaneSky.pansky1", ceil_tex="ShaneSky.pansky1",
+            ceil_flags=4194304, floor_flags=4194304, wall_flags=4194304,
         )
 
-        # Main Valley Canyon (with FakeBackdrop on Ceiling: Flags=128)
+        # 1.2 Main Valley Canyon (FakeBackdrop | Unlit on Ceiling: Flags=4194432)
         f_valley = _write_brush_file(
             system_dir, "ValleyMain.t3d", (float(width), float(length), float(height)), shape="Box",
             floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", ceil_tex="ShaneSky.pansky1",
-            ceil_flags=128,
+            ceil_flags=4194432,
         )
 
-        # Deep Central River Gorge
+        # 1.3 Deep Central River Gorge Chasm
         f_river = _write_brush_file(
-            system_dir, "RiverGorge.t3d", (896.0, float(length), 256.0), shape="Box",
+            system_dir, "RiverGorge.t3d", (1024.0, float(length), 256.0), shape="Box",
             floor_tex="GenEarth.Pebbles", wall_tex="GenEarth.Rock8", ceil_tex="GenFluid.Water1",
         )
 
-        # West Mountain Waterfall Recess & Cascade
+        # 1.4 West Mountain Waterfall Cascade Recess
         f_waterfall = _write_brush_file(
-            system_dir, "WaterfallChamber.t3d", (256.0, 768.0, 1024.0), shape="Box",
+            system_dir, "WaterfallChamber.t3d", (384.0, 768.0, 1280.0), shape="Box",
             floor_tex="GenFluid.Water1", wall_tex="GenFluid.water2", ceil_tex="GenFluid.water2",
         )
 
-        # High East Citadel / Castle Keep Promontory Base
-        f_castle_base = _write_brush_file(
-            system_dir, "CastleKeepBase.t3d", (1536.0, 1536.0, 768.0), shape="Box",
+        # 1.5 Solid Bedrock Castle Foundation Bluff (Grounded firmly at Z=-1024)
+        f_bluff = _write_brush_file(
+            system_dir, "CastleBluffBase.t3d", (1792.0, 1792.0, 1024.0), shape="Box",
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
 
-        # Castle Great Hall / Armory Interior Sanctum
-        f_castle_hall = _write_brush_file(
-            system_dir, "CastleGreatHall.t3d", (1152.0, 1152.0, 512.0), shape="Box",
+        # 1.6 Castle Keep Bastion (On top of Bluff: Z=0 to +512)
+        f_keep = _write_brush_file(
+            system_dir, "CastleKeepBastion.t3d", (1408.0, 1408.0, 512.0), shape="Box",
+            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
+        )
+
+        # 1.7 Castle Great Hall / Armory Interior Sanctum
+        f_hall = _write_brush_file(
+            system_dir, "CastleGreatHall.t3d", (1024.0, 1024.0, 384.0), shape="Box",
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.OldWallH", ceil_tex="NaliCast.METWALL",
         )
 
-        # Fortified Castle Gatehouse Arch & Portal
-        f_castle_gate = _write_brush_file(
+        # 1.8 Fortified Castle Gatehouse Arch Portal
+        f_gate = _write_brush_file(
             system_dir, "CastleGatePortal.t3d", (384.0, 384.0, 384.0), shape="Box",
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.Casdoor2", ceil_tex="Ancient.Arch",
         )
 
-        # Flanking Castle Octagonal Battle Towers
-        f_tower_north = _write_brush_file(
-            system_dir, "CastleTowerNorth.t3d", (384.0, 384.0, 896.0), shape="Cylinder", sides=8,
-            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
-        )
-        f_tower_south = _write_brush_file(
-            system_dir, "CastleTowerSouth.t3d", (384.0, 384.0, 896.0), shape="Cylinder", sides=8,
+        # 1.9 4 Flanking Castle Octagonal Battle Towers (Rising from Z=0 to +1024)
+        f_tower = _write_brush_file(
+            system_dir, "CastleBattleTower.t3d", (384.0, 384.0, 1024.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
 
-        # High Royal Citadel Spire
-        f_citadel_spire = _write_brush_file(
-            system_dir, "CitadelSpire.t3d", (512.0, 512.0, 1152.0), shape="Cylinder", sides=8,
+        # 1.10 High Royal Citadel Spire (Rising to +1408)
+        f_spire = _write_brush_file(
+            system_dir, "CitadelSpire.t3d", (512.0, 512.0, 1280.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
 
-        # Lower Grand Arched Stone Bridge across the River Gorge
+        # 1.11 West Mountain Ridge Plateau Shelf
+        f_west_ridge = _write_brush_file(
+            system_dir, "WestMountainRidge.t3d", (896.0, 3584.0, 1024.0), shape="Box",
+            floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", dais_tex="GenEarth.grasrok2", trim_tex="GenEarth.Rock8",
+        )
+
+        # 1.12 Lower Grand Arched Stone Bridge across the River Gorge
         f_stone_bridge = _write_brush_file(
-            system_dir, "LowerStoneBridge.t3d", (512.0, 1152.0, 128.0), shape="Box",
+            system_dir, "LowerStoneBridge.t3d", (512.0, 1280.0, 128.0), shape="Box",
             floor_tex="steps", wall_tex="NaliCast.CasWAL", dais_tex="steps", trim_tex="NaliCast.CasWAL",
         )
         f_bridge_ramp_w = _write_brush_file(
@@ -833,19 +846,15 @@ class FormulaEngine:
             floor_tex="steps", wall_tex="NaliCast.CasWAL",
         )
 
-        # Upper Fortress Timber Drawbridge
+        # 1.13 Upper Fortress Timber Drawbridge
         f_drawbridge = _write_brush_file(
-            system_dir, "UpperDrawbridge.t3d", (384.0, 384.0, 48.0), shape="Box",
+            system_dir, "UpperDrawbridge.t3d", (512.0, 384.0, 48.0), shape="Box",
             floor_tex="NaliCast.wood1", wall_tex="NaliCast.wood2", dais_tex="NaliCast.wood1", trim_tex="ShaneChurch.Bwood",
         )
 
-        # West Mountain Peak Sniper Lookouts
-        f_lookout_nw = _write_brush_file(
-            system_dir, "MountainLookoutNW.t3d", (384.0, 384.0, 768.0), shape="Cylinder", sides=8,
-            floor_tex="NaliCast.wood1", wall_tex="ShaneChurch.Bwood", dais_tex="NaliCast.wood1", trim_tex="ShaneChurch.Bwood",
-        )
-        f_lookout_sw = _write_brush_file(
-            system_dir, "MountainLookoutSW.t3d", (384.0, 384.0, 768.0), shape="Cylinder", sides=8,
+        # 1.14 West Mountain Peak Sniper Lookouts
+        f_lookout = _write_brush_file(
+            system_dir, "MountainLookout.t3d", (384.0, 384.0, 768.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.wood1", wall_tex="ShaneChurch.Bwood", dais_tex="NaliCast.wood1", trim_tex="ShaneChurch.Bwood",
         )
 
@@ -860,21 +869,21 @@ class FormulaEngine:
             "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
             "End Actor",
             "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
-            "    AmbientBrightness=50",
+            "    AmbientBrightness=55",
             "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
             "End Actor",
 
             # Celestial SkyZoneInfo in Isolated Skybox Room
             "Begin Actor Class=Engine.SkyZoneInfo Name=SkyZoneInfo0",
-            f"    Location=(X=0.000000,Y=0.000000,Z={float(skybox_z):.6f})",
+            f"    Location=(X={float(skybox_x):.6f},Y={float(skybox_y):.6f},Z={float(skybox_z):.6f})",
             "End Actor",
 
             # 6 Strategic PlayerStarts (+50 UU Floor Clearance)
             _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-600.0, -1200.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (600.0, 1200.0, float(floor_z + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (1280.0, 0.0, float(hall_z + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (640.0, -640.0, float(tower_top_z + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-1664.0, -896.0, float(west_lookout_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (1280.0, 0.0, float(hall_z - 192 + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (576.0, -576.0, float(battlements_z + 512 + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-1664.0, -896.0, float(west_lookout_z + 384 + 50))),
             _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (0.0, -768.0, float(stone_bridge_z + 114))),
 
             # Full Tournament Armory
@@ -884,17 +893,17 @@ class FormulaEngine:
             _generate_actor_t3d("Botpack.FlakAmmo", "FlakAmmo0", (680.0, 600.0, float(floor_z + 24))),
             _generate_actor_t3d("Botpack.minigun2", "Minigun0", (-600.0, 600.0, float(floor_z + 24))),
             _generate_actor_t3d("Botpack.Miniammo", "Miniammo0", (-520.0, 600.0, float(floor_z + 24))),
-            _generate_actor_t3d("Botpack.UT_Eightball", "Eightball0", (1280.0, 200.0, float(hall_z + 24))),
-            _generate_actor_t3d("Botpack.RocketPack", "RocketPack0", (1360.0, 200.0, float(hall_z + 24))),
-            _generate_actor_t3d("Botpack.SniperRifle", "SniperNW", (-1664.0, -896.0, float(west_lookout_z + 24))),
-            _generate_actor_t3d("Botpack.BulletBox", "BulletNW", (-1584.0, -896.0, float(west_lookout_z + 24))),
-            _generate_actor_t3d("Botpack.SniperRifle", "SniperTower", (640.0, 640.0, float(tower_top_z + 24))),
-            _generate_actor_t3d("Botpack.BulletBox", "BulletTower", (720.0, 640.0, float(tower_top_z + 24))),
+            _generate_actor_t3d("Botpack.UT_Eightball", "Eightball0", (1280.0, 200.0, float(hall_z - 192 + 24))),
+            _generate_actor_t3d("Botpack.RocketPack", "RocketPack0", (1360.0, 200.0, float(hall_z - 192 + 24))),
+            _generate_actor_t3d("Botpack.SniperRifle", "SniperNW", (-1664.0, -896.0, float(west_lookout_z + 384 + 24))),
+            _generate_actor_t3d("Botpack.BulletBox", "BulletNW", (-1584.0, -896.0, float(west_lookout_z + 384 + 24))),
+            _generate_actor_t3d("Botpack.SniperRifle", "SniperTower", (576.0, 576.0, float(battlements_z + 512 + 24))),
+            _generate_actor_t3d("Botpack.BulletBox", "BulletTower", (656.0, 576.0, float(battlements_z + 512 + 24))),
             _generate_actor_t3d("Botpack.WarheadLauncher", "Redeemer0", (192.0, 0.0, float(drawbridge_z + 48))),
 
             # Powerups, Armor & Health
-            _generate_actor_t3d("Botpack.Armor2", "BodyArmor0", (1280.0, -200.0, float(hall_z + 24))),
-            _generate_actor_t3d("Botpack.UT_ShieldBelt", "ShieldBelt0", (-1664.0, 896.0, float(west_lookout_z + 24))),
+            _generate_actor_t3d("Botpack.Armor2", "BodyArmor0", (1280.0, -200.0, float(hall_z - 192 + 24))),
+            _generate_actor_t3d("Botpack.UT_ShieldBelt", "ShieldBelt0", (-1664.0, 896.0, float(west_lookout_z + 384 + 24))),
             _generate_actor_t3d("Botpack.HealthPack", "SuperHealth0", (0.0, -768.0, float(stone_bridge_z + 88))),
             _generate_actor_t3d("Botpack.MedBox", "MedBox0", (-1000.0, -1000.0, float(floor_z + 24))),
             _generate_actor_t3d("Botpack.MedBox", "MedBox1", (1000.0, 1000.0, float(floor_z + 24))),
@@ -902,7 +911,7 @@ class FormulaEngine:
             _generate_actor_t3d("Botpack.HealthVial", "HealthVial1", (0.0, 0.0, float(gorge_z + 24))),
             _generate_actor_t3d("Botpack.HealthVial", "HealthVial2", (0.0, 250.0, float(gorge_z + 24))),
 
-            # Dense 3D Pine Trees Clustered Along Slopes & Bluffs
+            # 16+ Clustered 3D Pine Trees Across Slopes & Bluffs
             _generate_actor_t3d("UnrealShare.Tree1", "Tree0", (-800.0, -800.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree2", "Tree1", (-1400.0, -400.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree3", "Tree2", (800.0, 800.0, float(floor_z))),
@@ -913,6 +922,10 @@ class FormulaEngine:
             _generate_actor_t3d("UnrealShare.Tree6", "Tree7", (-1800.0, 0.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree1", "Tree8", (400.0, -1500.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree2", "Tree9", (-1500.0, 600.0, float(floor_z))),
+            _generate_actor_t3d("UnrealShare.Tree3", "Tree10", (-1200.0, 1400.0, float(floor_z))),
+            _generate_actor_t3d("UnrealShare.Tree6", "Tree11", (1200.0, -1400.0, float(floor_z))),
+            _generate_actor_t3d("UnrealShare.Tree1", "Tree12", (-1408.0, -1200.0, float(0))),
+            _generate_actor_t3d("UnrealShare.Tree2", "Tree13", (-1408.0, 1200.0, float(0))),
 
             # Mountain Shrubs & Ferns
             _generate_actor_t3d("UnrealShare.Plant1", "Plant0", (-500.0, -200.0, float(floor_z))),
@@ -921,24 +934,30 @@ class FormulaEngine:
             _generate_actor_t3d("UnrealShare.Plant1", "Plant3", (1000.0, -700.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Plant2", "Plant4", (-300.0, -1100.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Plant3", "Plant5", (300.0, 1100.0, float(floor_z))),
+            _generate_actor_t3d("UnrealShare.Plant1", "Plant6", (-1408.0, -400.0, float(0))),
+            _generate_actor_t3d("UnrealShare.Plant2", "Plant7", (-1408.0, 400.0, float(0))),
 
-            # Riverbed & Mountain Boulders
+            # Riverbed & Mountain Granite Boulders
             _generate_actor_t3d("UnrealI.BigRock", "Rock0", (-900.0, -300.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Boulder", "Rock1", (900.0, 300.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Boulder", "Rock2", (-300.0, -900.0, float(floor_z))),
             _generate_actor_t3d("UnrealI.BigRock", "Rock3", (300.0, 900.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.SmallRock", "Rock4", (0.0, 400.0, float(gorge_z))),
             _generate_actor_t3d("UnrealShare.SmallRock", "Rock5", (0.0, -400.0, float(gorge_z))),
+            _generate_actor_t3d("UnrealShare.Boulder", "Rock6", (400.0, 0.0, float(floor_z))),
+            _generate_actor_t3d("UnrealShare.Boulder", "Rock7", (-400.0, 0.0, float(floor_z))),
 
             # Medieval Wall Torches
             _generate_actor_t3d("UnrealShare.TorchFlame", "TorchGateL", (350.0, -180.0, float(drawbridge_z + 80))),
             _generate_actor_t3d("UnrealShare.TorchFlame", "TorchGateR", (350.0, 180.0, float(drawbridge_z + 80))),
-            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchTowerN", (640.0, -640.0, float(tower_top_z + 40))),
-            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchTowerS", (640.0, 640.0, float(tower_top_z + 40))),
+            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchTowerNW", (576.0, -576.0, float(battlements_z + 512 + 40))),
+            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchTowerSW", (576.0, 576.0, float(battlements_z + 512 + 40))),
             _generate_actor_t3d("UnrealShare.TorchFlame", "TorchBridgeL", (0.0, -1200.0, float(stone_bridge_z + 80))),
             _generate_actor_t3d("UnrealShare.TorchFlame", "TorchBridgeR", (0.0, -336.0, float(stone_bridge_z + 80))),
+            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchLookoutNW", (-1664.0, -896.0, float(west_lookout_z + 384 + 40))),
+            _generate_actor_t3d("UnrealShare.TorchFlame", "TorchLookoutSW", (-1664.0, 896.0, float(west_lookout_z + 384 + 40))),
 
-            # Full 24-Node Botpack AI Reachability Network
+            # Full 32-Node Botpack AI Reachability Network
             _generate_actor_t3d("Engine.PathNode", "PathNode0", (-600.0, -1200.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode1", (-600.0, -600.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode2", (0.0, -600.0, float(floor_z + 50))),
@@ -946,14 +965,14 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PathNode", "PathNode4", (0.0, -768.0, float(stone_bridge_z + 114))),
             _generate_actor_t3d("Engine.PathNode", "PathNode5", (600.0, 0.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode6", (192.0, 0.0, float(drawbridge_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode7", (448.0, 0.0, float(gate_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode8", (1280.0, 0.0, float(hall_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode9", (1280.0, 300.0, float(hall_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode10", (1280.0, -300.0, float(hall_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode11", (640.0, -640.0, float(tower_top_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode12", (640.0, 640.0, float(tower_top_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode13", (-1664.0, -896.0, float(west_lookout_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode14", (-1664.0, 896.0, float(west_lookout_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode7", (448.0, 0.0, float(gate_z - 96 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode8", (1280.0, 0.0, float(hall_z - 192 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode9", (1280.0, 300.0, float(hall_z - 192 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode10", (1280.0, -300.0, float(hall_z - 192 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode11", (576.0, -576.0, float(battlements_z + 512 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode12", (576.0, 576.0, float(battlements_z + 512 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode13", (-1664.0, -896.0, float(west_lookout_z + 384 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode14", (-1664.0, 896.0, float(west_lookout_z + 384 + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode15", (-600.0, 0.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode16", (-600.0, 600.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode17", (0.0, 600.0, float(floor_z + 50))),
@@ -963,6 +982,11 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PathNode", "PathNode21", (-600.0, 1200.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode22", (0.0, -250.0, float(gorge_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode23", (0.0, 250.0, float(gorge_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode24", (-1408.0, -800.0, float(50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode25", (-1408.0, 0.0, float(50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode26", (-1408.0, 800.0, float(50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode27", (1984.0, -576.0, float(battlements_z + 512 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode28", (1984.0, 576.0, float(battlements_z + 512 + 50))),
 
             # Natural Outdoor Sun & Sky Atmospheric Radiosity Lighting
             _generate_actor_t3d("Engine.Light", "SunKey", (600.0, -600.0, float(height // 3)), {
@@ -977,10 +1001,10 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.Light", "WaterfallGlow", (-1900.0, 0.0, float(floor_z + 300)), {
                 "LightBrightness": 200, "LightHue": 145, "LightSaturation": 180, "LightRadius": 96, "LightEffect": "LE_WateryShimmer",
             }),
-            _generate_actor_t3d("Engine.Light", "CastleHallGlow", (1280.0, 0.0, float(hall_z + 120)), {
+            _generate_actor_t3d("Engine.Light", "CastleHallGlow", (1280.0, 0.0, float(hall_z + 40)), {
                 "LightBrightness": 220, "LightHue": 25, "LightSaturation": 200, "LightRadius": 96,
             }),
-            _generate_actor_t3d("Engine.Light", "SkyboxLight", (0.0, 0.0, float(skybox_z + 200)), {
+            _generate_actor_t3d("Engine.Light", "SkyboxLight", (float(skybox_x), float(skybox_y), float(skybox_z + 200)), {
                 "LightBrightness": 255, "LightHue": 0, "LightSaturation": 0, "LightRadius": 128,
             }),
 
@@ -1003,57 +1027,71 @@ class FormulaEngine:
             *pkg_cmds,
             f'MAP IMPORT FILE="{f_actors}"',
 
-            # 1. Skybox Chamber (Isolated)
-            f"BRUSH MOVETO X=0 Y=0 Z={skybox_z}",
+            # 1. Skybox Chamber (Isolated at X=-8192, Y=-8192, Z=4096)
+            f"BRUSH MOVETO X={skybox_x} Y={skybox_y} Z={skybox_z}",
             f'BRUSH IMPORT FILE="{f_skybox}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 2. Main Canyon Valley (FakeBackdrop Ceiling)
+            # 2. Main Canyon Valley (FakeBackdrop | Unlit Ceiling: Flags=4194432)
             "BRUSH MOVETO X=0 Y=0 Z=0",
             f'BRUSH IMPORT FILE="{f_valley}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 3. Central River Gorge
+            # 3. Central River Gorge Chasm
             f"BRUSH MOVETO X=0 Y=0 Z={gorge_z}",
             f'BRUSH IMPORT FILE="{f_river}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
             # 4. West Waterfall Cascade Recess
-            f"BRUSH MOVETO X=-2048 Y=0 Z={floor_z + 512}",
+            f"BRUSH MOVETO X=-2048 Y=0 Z={floor_z + 640}",
             f'BRUSH IMPORT FILE="{f_waterfall}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 5. Castle Keep Promontory Base
-            f"BRUSH MOVETO X=1280 Y=0 Z={keep_base_z}",
-            f'BRUSH IMPORT FILE="{f_castle_base}" MERGE=0 FLAGS=0',
+            # 5. Solid Bedrock Castle Foundation Bluff (Grounded at Z=-1024)
+            f"BRUSH MOVETO X=1280 Y=0 Z={bluff_z}",
+            f'BRUSH IMPORT FILE="{f_bluff}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 6. Castle Great Hall Armory Interior
+            # 6. Castle Keep Bastion (On top of Bluff: Z=0 to +512)
+            f"BRUSH MOVETO X=1280 Y=0 Z={keep_z}",
+            f'BRUSH IMPORT FILE="{f_keep}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 7. Castle Great Hall Armory Interior
             f"BRUSH MOVETO X=1280 Y=0 Z={hall_z}",
-            f'BRUSH IMPORT FILE="{f_castle_hall}" MERGE=0 FLAGS=0',
+            f'BRUSH IMPORT FILE="{f_hall}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 7. Fortified Castle Gatehouse Arch Portal
-            f"BRUSH MOVETO X=448 Y=0 Z={gate_z}",
-            f'BRUSH IMPORT FILE="{f_castle_gate}" MERGE=0 FLAGS=0',
+            # 8. Fortified Castle Gatehouse Arch Portal
+            f"BRUSH MOVETO X=480 Y=0 Z={gate_z}",
+            f'BRUSH IMPORT FILE="{f_gate}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 8. North Battle Tower
-            f"BRUSH MOVETO X=640 Y=-640 Z={keep_base_z + 448}",
-            f'BRUSH IMPORT FILE="{f_tower_north}" MERGE=0 FLAGS=0',
+            # 9. 4 Flanking Castle Battle Towers (North-West, South-West, North-East, South-East)
+            f"BRUSH MOVETO X=576 Y=-576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=576 Y=576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1984 Y=-576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1984 Y=576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 9. South Battle Tower
-            f"BRUSH MOVETO X=640 Y=640 Z={keep_base_z + 448}",
-            f'BRUSH IMPORT FILE="{f_tower_south}" MERGE=0 FLAGS=0',
+            # 10. Royal Citadel Spire (Rising to +1408)
+            f"BRUSH MOVETO X=1536 Y=0 Z={spire_z}",
+            f'BRUSH IMPORT FILE="{f_spire}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 10. Royal Citadel Spire
-            f"BRUSH MOVETO X=1664 Y=0 Z={keep_base_z + 576}",
-            f'BRUSH IMPORT FILE="{f_citadel_spire}" MERGE=0 FLAGS=0',
+            # 11. West Mountain Ridge Plateau Shelf (Grounded at Z=-1024)
+            f"BRUSH MOVETO X=-1408 Y=0 Z={bluff_z}",
+            f'BRUSH IMPORT FILE="{f_west_ridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 11. Lower Grand Arched Stone Bridge & Approach Ramps
+            # 12. Lower Grand Arched Stone Bridge & Approach Ramps
             f"BRUSH MOVETO X=0 Y=-768 Z={stone_bridge_z}",
             f'BRUSH IMPORT FILE="{f_stone_bridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
@@ -1064,20 +1102,20 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_bridge_ramp_e}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 12. Upper Timber Drawbridge to Castle Gatehouse
-            f"BRUSH MOVETO X=192 Y=0 Z={drawbridge_z}",
+            # 13. Upper Timber Drawbridge to Castle Gatehouse
+            f"BRUSH MOVETO X=-64 Y=0 Z={drawbridge_z}",
             f'BRUSH IMPORT FILE="{f_drawbridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 13. West Mountain Peak Sniper Lookouts
-            f"BRUSH MOVETO X=-1664 Y=-896 Z={floor_z + 384}",
-            f'BRUSH IMPORT FILE="{f_lookout_nw}" MERGE=0 FLAGS=0',
+            # 14. West Mountain Peak Sniper Lookouts
+            f"BRUSH MOVETO X=-1664 Y=-896 Z={west_lookout_z}",
+            f'BRUSH IMPORT FILE="{f_lookout}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
-            f"BRUSH MOVETO X=-1664 Y=896 Z={floor_z + 384}",
-            f'BRUSH IMPORT FILE="{f_lookout_sw}" MERGE=0 FLAGS=0',
+            f"BRUSH MOVETO X=-1664 Y=896 Z={west_lookout_z}",
+            f'BRUSH IMPORT FILE="{f_lookout}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 14. Full Geometry & BSP Rebuild, Radiosity Lighting Trace, AI Reachability
+            # 15. Full Geometry & BSP Rebuild, Radiosity Lighting Trace, AI Reachability
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",

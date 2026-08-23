@@ -8,26 +8,28 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ### 🏔️ Upgraded: Valley Fortress Procedural Synthesis (Matching Reference Art)
 - **Celestial Skybox Engine with Parallax `SkyZoneInfo`**:
-  - Implemented isolated skybox chamber (`ValleySkybox.t3d`) at $Z=+4608$ textured with `ShaneSky.pansky1`.
-  - Added `Engine.SkyZoneInfo` actor emitting real-time alpine skybox perspective.
-  - Enhanced `_generate_brush_polylist_t3d` and `_write_brush_file` with `ceil_flags=128` (`PF_FakeBackdrop`) for seamless sky projection across the canyon ceiling.
-- **Multi-Tower Castle Citadel**:
-  - Additive stone keep promontory (`CastleKeepBase.t3d`) on the high Eastern bluff.
+  - Implemented isolated skybox chamber (`ValleySkybox.t3d`) at $X=-8192, Y=-8192, Z=+4096$ textured with `ShaneSky.pansky1` and unlit flags (`Flags=4194304`).
+  - Added `Engine.SkyZoneInfo` actor at $(-8192, -8192, 4096)$ emitting real-time alpine skybox perspective.
+  - Enhanced `_generate_brush_polylist_t3d` and `_write_brush_file` with `ceil_flags=4194432` (`PF_FakeBackdrop | PF_Unlit`) for seamless sky projection across the canyon ceiling.
+- **Grounded Multi-Tower Castle Citadel (Grounded at Z=-1024)**:
+  - Additive bedrock stone foundation bluff (`CastleBluffBase.t3d`, `1792x1792x1024`) extending all the way from the canyon floor ($Z=-1024$) to ground level ($Z=0$).
+  - Castle keep bastion (`CastleKeepBastion.t3d`) rising from $Z=0$ to $+512$.
   - Subtracted Castle Great Hall & Armory interior (`CastleGreatHall.t3d`).
   - Fortified arched gatehouse portal with portcullis (`CastleGatePortal.t3d`).
-  - Flanking octagonal battle towers (`CastleTowerNorth.t3d`, `CastleTowerSouth.t3d`) and high royal citadel spire (`CitadelSpire.t3d`).
+  - 4 flanking octagonal battle towers (`CastleBattleTower.t3d`, `sides=8`, NW/SW/NE/SE) rising from $Z=0$ to $+1024$ and high royal citadel spire (`CitadelSpire.t3d`) rising to $+1408$.
+- **West Mountain Ridge Plateau & 2 Lookout Towers**:
+  - Solid mountain ridge shelf (`WestMountainRidge.t3d`, `896x3584x1024`) extending from canyon floor to $Z=0$.
+  - 2 octagonal peak lookout watchtowers (`MountainLookout.t3d`, `sides=8`) rising to $+768$ with Sniper Rifles.
 - **Dual Bridges Over the Gorge**:
-  - Lower masonry stone arch bridge (`LowerStoneBridge.t3d`) with approach ramps spanning the river chasm.
-  - Upper timber drawbridge (`UpperDrawbridge.t3d`) connecting cliff trail to the castle gatehouse.
+  - Lower masonry stone arch bridge (`LowerStoneBridge.t3d`) with approach ramps spanning the river chasm at $Z=-768$.
+  - Upper timber drawbridge (`UpperDrawbridge.t3d`, `512x384x48`) connecting cliff trail to the castle gatehouse.
 - **Mountain Cliffs, River Gorge & Waterfalls**:
-  - Deep central river gorge (`RiverGorge.t3d`) with riverbed pebbles and crystal blue water.
-  - West mountain waterfall cascade recess (`WaterfallChamber.t3d`) with animated water textures and shimmer lighting (`LE_WateryShimmer`).
-- **West Mountain Peak Sniper Lookouts**:
-  - High mountain peak timber and stone lookout towers (`MountainLookoutNW.t3d`, `MountainLookoutSW.t3d`) with Sniper Rifles and ammo caches.
+  - Deep central river gorge (`RiverGorge.t3d`, `1024x4608x256`) with riverbed pebbles and crystal blue water.
+  - West mountain waterfall cascade recess (`WaterfallChamber.t3d`, `384x768x1280`) with animated water textures and shimmer lighting (`LE_WateryShimmer`).
 - **Living World Foliage, Rocks & Torches**:
-  - Dense clusters of 3D pine trees (`Tree1`, `Tree2`, `Tree3`, `Tree6`), mountain shrubs (`Plant1`-`Plant5`), granite boulders (`BigRock`, `Boulder`, `SmallRock`), and medieval wall torches (`TorchFlame`).
+  - 16+ 3D pine trees (`Tree1`, `Tree2`, `Tree3`, `Tree6`), mountain shrubs (`Plant1`-`Plant7`), granite boulders (`BigRock`, `Boulder`, `SmallRock`), and medieval wall torches (`TorchFlame`).
 - **Botpack AI Reachability**:
-  - 24-node reachability network covering the canyon floor, river gorge, stone bridge, drawbridge, castle interior, and sniper lookouts.
+  - 32-node reachability network covering the canyon floor, river gorge, stone bridge, drawbridge, castle interior, and sniper lookouts.
 
 ---
 
