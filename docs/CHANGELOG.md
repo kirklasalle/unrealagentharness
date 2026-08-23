@@ -4,6 +4,33 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ---
 
+## [v2.7.0] - 2026-08-23: World-Class Valley Fortress & Skybox Procedural Engine
+
+### 🏔️ Upgraded: Valley Fortress Procedural Synthesis (Matching Reference Art)
+- **Celestial Skybox Engine with Parallax `SkyZoneInfo`**:
+  - Implemented isolated skybox chamber (`ValleySkybox.t3d`) at $Z=+4608$ textured with `ShaneSky.pansky1`.
+  - Added `Engine.SkyZoneInfo` actor emitting real-time alpine skybox perspective.
+  - Enhanced `_generate_brush_polylist_t3d` and `_write_brush_file` with `ceil_flags=128` (`PF_FakeBackdrop`) for seamless sky projection across the canyon ceiling.
+- **Multi-Tower Castle Citadel**:
+  - Additive stone keep promontory (`CastleKeepBase.t3d`) on the high Eastern bluff.
+  - Subtracted Castle Great Hall & Armory interior (`CastleGreatHall.t3d`).
+  - Fortified arched gatehouse portal with portcullis (`CastleGatePortal.t3d`).
+  - Flanking octagonal battle towers (`CastleTowerNorth.t3d`, `CastleTowerSouth.t3d`) and high royal citadel spire (`CitadelSpire.t3d`).
+- **Dual Bridges Over the Gorge**:
+  - Lower masonry stone arch bridge (`LowerStoneBridge.t3d`) with approach ramps spanning the river chasm.
+  - Upper timber drawbridge (`UpperDrawbridge.t3d`) connecting cliff trail to the castle gatehouse.
+- **Mountain Cliffs, River Gorge & Waterfalls**:
+  - Deep central river gorge (`RiverGorge.t3d`) with riverbed pebbles and crystal blue water.
+  - West mountain waterfall cascade recess (`WaterfallChamber.t3d`) with animated water textures and shimmer lighting (`LE_WateryShimmer`).
+- **West Mountain Peak Sniper Lookouts**:
+  - High mountain peak timber and stone lookout towers (`MountainLookoutNW.t3d`, `MountainLookoutSW.t3d`) with Sniper Rifles and ammo caches.
+- **Living World Foliage, Rocks & Torches**:
+  - Dense clusters of 3D pine trees (`Tree1`, `Tree2`, `Tree3`, `Tree6`), mountain shrubs (`Plant1`-`Plant5`), granite boulders (`BigRock`, `Boulder`, `SmallRock`), and medieval wall torches (`TorchFlame`).
+- **Botpack AI Reachability**:
+  - 24-node reachability network covering the canyon floor, river gorge, stone bridge, drawbridge, castle interior, and sniper lookouts.
+
+---
+
 ## [v2.6.0] - 2026-08-23: Deep Unreal Research, Market Landscape & Level Design Knowledge Base
 
 ### 📚 Added: Comprehensive Knowledge Base & Technical Guides
