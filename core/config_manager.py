@@ -1,0 +1,123 @@
+"""
+Configuration Manager for Standalone Multi-Engine Agent Harness.
+Manages dynamic engine switching (UT99 UTron, UT99 GOTY, UT2003, UT2004),
+LLM provider profiles, and personalities with full disk persistence.
+"""
+
+import json
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from .logger import get_logger
+
+logger = get_logger("ConfigManager", "config_mgr.log")
+
+
+class ConfigManager:
+    """Manages multi-engine targets, LLM profiles, personalities, and system configuration."""
+
+    def __init__(self, config_dir: Optional[str] = None):
+        if config_dir:
+            self.config_dir = Path(config_dir)
+        else:
+            self.config_dir = Path(__file__).resolve().parent.parent / "config"
+
+        self.config_dir.mkdir(parents=True, exist_ok=True)
+        self.engine_file = self.config_dir / "engine_profiles.json"
+        self.llm_file = self.config_dir / "llm_profiles.json"
+        self.personality_file = self.config_dir / "personality_profiles.json"
+
+        self.engine_data: Dict[str, Any] = self._load_json(self.engine_file)
+        self.llm_data: Dict[str, Any] = self._load_json(self.llm_file)
+        self.personality_data: Dict[str, Any] = self._load_json(self.personality_file)
+
+        logger.info(f"ConfigManager loaded. Active Engine: '{self.get_active_engine_id()}'")
+
+    def _load_json(self, path: Path) -> Dict[str, Any]:
+        if path.exists():
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.error(f"Error loading {path}: {e}")
+        return {}
+
+    def _save_json(self, path: Path, data: Dict[str, Any]) -> bool:
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            return True
+        except Exception as e:
+            logger.error(f"Error saving {path}: {e}")
+            return False
+
+    # -------------------------------------------------------------------------
+    # ENGINE PROFILE ACCESSORS
+    # -------------------------------------------------------------------------
+    def get_active_engine_id(self) -> str:
+        return self.engine_data.get("active_engine", "ut99_utron")
+
+    def set_active_engine_id(self, engine_id: str) -> bool:
+        if engine_id in self.engine_data.get("profiles", {}):
+            self.engine_data["active_engine"] = engine_id
+            self._save_json(self.engine_file, self.engine_data)
+            logger.info(f"Active Engine Profile switched to: '{engine_id}'")
+            return True
+        logger.warning(f"Engine profile '{engine_id}' not found.")
+        return False
+
+    def get_active_engine_profile(self) -> Dict[str, Any]:
+        engine_id = self.get_active_engine_id()
+        return self.engine_data.get("profiles", {}).get(engine_id, {})
+
+    def get_all_engine_profiles(self) -> Dict[str, Any]:
+        return self.engine_data.get("profiles", {})
+
+    # -------------------------------------------------------------------------
+    # LLM PROFILE ACCESSORS
+    # -------------------------------------------------------------------------
+    def get_active_llm_profile_id(self) -> str:
+        return self.llm_data.get("active_profile", "google-gemini")
+
+    def set_active_llm_profile_id(self, profile_id: str) -> bool:
+        if profile_id in self.llm_data.get("profiles", {}):
+            self.llm_data["active_profile"] = profile_id
+            self._save_json(self.llm_file, self.llm_data)
+            logger.info(f"Active LLM Profile switched to: '{profile_id}'")
+            return True
+        return False
+
+    def get_active_llm_profile(self) -> Dict[str, Any]:
+        profile_id = self.get_active_llm_profile_id()
+        return self.llm_data.get("profiles", {}).get(profile_id, {})
+
+    def update_llm_profile(self, profile_id: str, updates: Dict[str, Any]) -> bool:
+        if profile_id in self.llm_data.get("profiles", {}):
+            self.llm_data["profiles"][profile_id].update(updates)
+            return self._save_json(self.llm_file, self.llm_data)
+        return False
+
+    def get_all_llm_profiles(self) -> Dict[str, Any]:
+        return self.llm_data.get("profiles", {})
+
+    # -------------------------------------------------------------------------
+    # PERSONALITY ACCESSORS
+    # -------------------------------------------------------------------------
+    def get_active_personality_id(self) -> str:
+        return self.personality_data.get("active_personality", "architect")
+
+    def set_active_personality_id(self, personality_id: str) -> bool:
+        if personality_id in self.personality_data.get("personalities", {}):
+            self.personality_data["active_personality"] = personality_id
+            self._save_json(self.personality_file, self.personality_data)
+            logger.info(f"Active Personality switched to: '{personality_id}'")
+            return True
+        return False
+
+    def get_active_personality(self) -> Dict[str, Any]:
+        pid = self.get_active_personality_id()
+        return self.personality_data.get("personalities", {}).get(pid, {})
+
+    def get_all_personalities(self) -> Dict[str, Any]:
+        return self.personality_data.get("personalities", {})

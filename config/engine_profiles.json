@@ -1,0 +1,261 @@
+{
+  "active_engine": "ut99_goty",
+  "profiles": {
+    "ut99_utron": {
+      "id": "ut99_utron",
+      "name": "Unreal Tournament 99 GOTY \u2014 UTron Mod (UE1 / 469e)",
+      "generation": "UE1",
+      "icon": "\u26a1",
+      "root_dir": "G:\\UnrealTournament",
+      "system_dir": "G:\\UnrealTournament\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "INI=UTronEditor.ini",
+      "game_exe": "UnrealTournament.exe",
+      "game_args": "UTronIntro.unr INI=UTronProject.ini USERINI=UTronUser.ini",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "utroneditor.exe",
+        "unrealtournament.exe",
+        "utronproject.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UTronProject.log",
+        "UnrealTournament.log"
+      ],
+      "render_drivers": [
+        "D3D11Drv.D3D11RenderDevice",
+        "D3D9Drv.D3D9RenderDevice",
+        "OpenGLDrv.OpenGLRenderDevice",
+        "XOpenGLDrv.XOpenGLRenderDevice"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "IdentityDisc": "UTron.IdentityDisc",
+        "DiscAmmo": "UTron.DiscAmmo",
+        "DiscBlockFX": "UTron.DiscBlockFX",
+        "LightCycleMorph": "UTron.cycleMorph",
+        "Diffuser": "UTron.diffuser",
+        "Wirenode": "UTron.wirenode",
+        "Recognizer": "UTron.RecoDrivable",
+        "TankGun": "UTron.TankGun",
+        "GameDiscArena": "UTron.DiscArena",
+        "GameTank": "UTron.TankGame",
+        "PlayerFlynn": "UTron.Flynn",
+        "PlayerTron": "UTron.Tron",
+        "PlayerSark": "UTron.Sark"
+      },
+      "texture_packages": [
+        "Tron2002",
+        "UTron_Floors-Walls",
+        "UTron_Grids-Lines",
+        "UTron_Deco",
+        "UTron_Sky-Terra-fx",
+        "UTron_SolidColors",
+        "UTronHUD"
+      ],
+      "sound_packages": [
+        "Tron",
+        "UTronVoice",
+        "UTronAIvoice",
+        "UTronMedia1",
+        "UTron_Intro"
+      ]
+    },
+    "ut99_goty": {
+      "id": "ut99_goty",
+      "name": "Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e)",
+      "generation": "UE1",
+      "icon": "\ud83c\udfc6",
+      "root_dir": "G:\\UnrealTournament",
+      "system_dir": "G:\\UnrealTournament\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UnrealTournament.exe",
+      "game_args": "INI=UnrealTournament.ini USERINI=User.ini",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "unrealtournament.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UnrealTournament.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "ShockRifle": "Botpack.ShockRifle",
+        "RocketLauncher": "Botpack.UT_Eightball",
+        "FlakCannon": "Botpack.UT_FlakCannon",
+        "Minigun": "Botpack.minigun2",
+        "SniperRifle": "Botpack.SniperRifle",
+        "BioRifle": "Botpack.UT_BioRifle",
+        "Enforcer": "Botpack.Enforcer",
+        "PulseGun": "Botpack.PulseGun",
+        "ShieldBelt": "Botpack.UT_ShieldBelt",
+        "Armor": "Botpack.Armor2",
+        "ThighPads": "Botpack.ThighPads",
+        "MedBox": "Botpack.MedBox",
+        "HealthVial": "Botpack.HealthVial",
+        "DamageAmplifier": "Botpack.UDamage",
+        "GameType": "Botpack.DeathMatchPlus",
+        "PlayerPawn": "Botpack.TMale2"
+      }
+    },
+    "ut2003": {
+      "id": "ut2003",
+      "name": "Unreal Tournament 2003 (UE2.0)",
+      "generation": "UE2.0",
+      "icon": "\ud83d\udd79\ufe0f",
+      "root_dir": "G:\\UT2003",
+      "system_dir": "G:\\UT2003\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UT2003.exe",
+      "game_args": "",
+      "window_classes": [
+        "UnrealEd",
+        "WWindow"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "ut2003.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UT2003.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "Sunlight": "Engine.Sunlight",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "ShockRifle": "XWeapons.ShockRifle",
+        "RocketLauncher": "XWeapons.RocketLauncher",
+        "FlakCannon": "XWeapons.FlakCannon",
+        "Minigun": "XWeapons.Minigun",
+        "SniperRifle": "XWeapons.SniperRifle",
+        "BioRifle": "XWeapons.BioRifle",
+        "LinkGun": "XWeapons.LinkGun",
+        "ShieldPack": "XPickups.ShieldPack",
+        "SuperShieldPack": "XPickups.SuperShieldPack",
+        "HealthPack": "XPickups.HealthPack",
+        "SuperHealthPack": "XPickups.SuperHealthPack",
+        "UDamage": "XPickups.UDamagePack",
+        "GameType": "XGame.xDeathMatch",
+        "PlayerPawn": "XGame.xPawn"
+      }
+    },
+    "ut2004": {
+      "id": "ut2004",
+      "name": "Unreal Tournament 2004 (UE2.5 / v3369+)",
+      "generation": "UE2.5",
+      "icon": "\u2694\ufe0f",
+      "root_dir": "G:\\UnrealTournament2004",
+      "system_dir": "G:\\UnrealTournament2004\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UT2004.exe",
+      "game_args": "",
+      "window_classes": [
+        "UnrealEd",
+        "WWindow"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "ut2004.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UT2004.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "Sunlight": "Engine.Sunlight",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "ShockRifle": "XWeapons.ShockRifle",
+        "RocketLauncher": "XWeapons.RocketLauncher",
+        "FlakCannon": "XWeapons.FlakCannon",
+        "Minigun": "XWeapons.Minigun",
+        "SniperRifle": "XWeapons.SniperRifle",
+        "ClassicSniper": "UTClassic.ClassicSniperRifle",
+        "BioRifle": "XWeapons.BioRifle",
+        "LinkGun": "XWeapons.LinkGun",
+        "ShieldPack": "XPickups.ShieldPack",
+        "SuperShieldPack": "XPickups.SuperShieldPack",
+        "HealthPack": "XPickups.HealthPack",
+        "SuperHealthPack": "XPickups.SuperHealthPack",
+        "UDamage": "XPickups.UDamagePack",
+        "Manta": "Onslaught.ONSHoverBike",
+        "Goliath": "Onslaught.ONSHoverTank",
+        "Raptor": "Onslaught.ONSAttackCraft",
+        "Scorpion": "Onslaught.ONSRV",
+        "Hellbender": "Onslaught.ONSPRV",
+        "GameType": "XGame.xDeathMatch",
+        "OnslaughtGame": "Onslaught.ONSOnslaughtGame",
+        "PlayerPawn": "XGame.xPawn"
+      }
+    },
+    "ue5": {
+      "id": "ue5",
+      "name": "Unreal Engine 5 (UE5.x / Nanite & Lumen)",
+      "generation": "UE5",
+      "icon": "\ud83c\udf0c",
+      "root_dir": "G:\\UnrealEngine5",
+      "system_dir": "G:\\UnrealEngine5\\Engine\\Binaries\\Win64",
+      "editor_exe": "UnrealEditor.exe",
+      "editor_args": "",
+      "game_exe": "UnrealEditor.exe",
+      "game_args": "-game",
+      "ipc_protocol": "RemoteExecutionPort30010",
+      "window_classes": [
+        "UnrealWindow",
+        "Slate"
+      ],
+      "process_names": [
+        "unrealeditor.exe"
+      ],
+      "log_files": [
+        "UnrealEditor.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "/Script/Engine.PlayerStart",
+        "DirectionalLight": "/Script/Engine.DirectionalLight",
+        "PointLight": "/Script/Engine.PointLight",
+        "SpotLight": "/Script/Engine.SpotLight",
+        "SkyLight": "/Script/Engine.SkyLight",
+        "PostProcessVolume": "/Script/Engine.PostProcessVolume",
+        "StaticMeshActor": "/Script/Engine.StaticMeshActor",
+        "NavMeshBoundsVolume": "/Script/NavigationSystem.NavMeshBoundsVolume",
+        "GameModeBase": "/Script/Engine.GameModeBase",
+        "Character": "/Script/Engine.Character"
+      }
+    }
+  }
+}

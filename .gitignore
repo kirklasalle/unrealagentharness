@@ -1,0 +1,19 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Logs and runtime artifacts
+logs/*.log
+*.t3d
+
+# IDE configuration
+.vscode/
+.idea/
+*.swp
