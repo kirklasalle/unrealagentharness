@@ -1,8 +1,8 @@
-# Universal Standalone AI Agent Harness for Unreal Engines (US-AAH)
+# Unreal Agent Harness
 ### Autonomous Level Designer, In-Editor Copilot & Multi-Engine Automation Suite
 
 <p align="center">
-  <img src="assets/hero_banner.jpg" alt="Universal Unreal Agent Harness Hero Banner" width="100%">
+  <img src="assets/hero_banner.jpg" alt="Unreal Agent Harness Hero Banner" width="100%">
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
 
 ## 🌟 Executive Summary
 
-The **Universal Standalone AI Agent Harness** (`AgentHarness`) is a portable, zero-dependency autonomous level design, CSG geometry compilation, bot pathing, and modding copilot runtime for the Unreal Engine ecosystem.
+The **Unreal Agent Harness** is a portable, zero-dependency autonomous level design, CSG geometry compilation, bot pathing, and modding copilot runtime for the Unreal Engine ecosystem.
 
 Designed from the ground up to operate seamlessly with both legacy binary editors (UnrealEd 1 / OldUnreal 469e, UnrealEd 2, UnrealEd 3) and modern runtimes (Unreal Engine 5.x via Python Remote Execution), the Harness acts as an intelligent AI level architect capable of constructing tournament arenas, fortress bases, and vast outdoor natural worlds directly inside the editor with a single command or click.
 

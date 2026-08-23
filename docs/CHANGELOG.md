@@ -14,8 +14,8 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ### 📊 Added: Market Landscape & Competitive Analysis
 - **`docs/MARKET_LANDSCAPE_AND_COMPETITIVE_ANALYSIS.md`**:
-  - Comparative benchmark of **US-AAH** vs. **Promethean AI**, **Ultimate Engine Copilot**, **Autonomix**, and **UnrealGPT**.
-  - Highlights US-AAH's unique industry positioning as the world's **first and only multi-generational (UE1 to UE5)** autonomous level architect providing full-stack CSG synthesis, lighting compilation, and bot reachability graphs with zero UI overhead.
+  - Comparative benchmark of **Unreal Agent Harness** vs. **Promethean AI**, **Ultimate Engine Copilot**, **Autonomix**, and **UnrealGPT**.
+  - Highlights Unreal Agent Harness's unique industry positioning as the world's **first and only multi-generational (UE1 to UE5)** autonomous level architect providing full-stack CSG synthesis, lighting compilation, and bot reachability graphs with zero UI overhead.
 
 ---
 
