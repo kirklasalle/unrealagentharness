@@ -115,6 +115,40 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("Botpack.ShockRifle", content)
             self.assertIn("Botpack.UT_FlakCannon", content)
 
+    def test_utron_mcp_core_generates_actors(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_mcp_core(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "MCPActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.Central_Scrutiniser", content)
+            self.assertIn("UTron.DeadlyDisc", content)
+            self.assertIn("UTron.diffuser", content)
+
+    def test_utron_tank_maze_grid_generates_actors(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_tank_maze_grid(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "TankMazeActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.TankGun", content)
+            self.assertIn("UTron.Recognizer", content)
+
+    def test_utron_sarks_carrier_generates_actors(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_sarks_carrier(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "SarksCarrierActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.RecoDrivable", content)
+            self.assertIn("UTron.DeadlyDisc", content)
+
     def test_ut99_verdant_mountain_valley_generates_world_elements(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
@@ -128,6 +162,11 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("UnrealI.BigRock", content)
             self.assertIn("Botpack.ShockRifle", content)
             self.assertIn("Engine.PathNode", content)
+            # Verify continuous corridor and ramps
+            corridor_file = Path(tmp) / "CastleCorridor.t3d"
+            self.assertTrue(corridor_file.exists())
+            ramp_file = Path(tmp) / "MountainRidgeRamp.t3d"
+            self.assertTrue(ramp_file.exists())
 
     def test_ut99_desert_canyon_ruins_generates_world_elements(self):
         import tempfile

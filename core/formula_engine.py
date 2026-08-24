@@ -635,15 +635,301 @@ class FormulaEngine:
         ]
         f_actors = _write_file(system_dir, "LightCycleActors.t3d", "\n".join(t3d_actors))
 
+        # -------------------------------------------------------------------------
+        # 4.1 UTron MASTER CONTROL PROGRAM (MCP) CORE SANCTUM
+        # -------------------------------------------------------------------------
+    @staticmethod
+    def generate_utron_mcp_core(
+        system_dir: Optional[Path] = None,
+        width: int = 3584,
+        length: int = 3584,
+        height: int = 1536,
+    ) -> List[str]:
+        """
+        Constructs the monumental Master Control Program (MCP) Core Sanctum:
+        - Central rotating cylindrical MCP Core Spire
+        - 4 Elevated Quadrant Data Platforms and Connecting Ramps
+        - Central_Scrutiniser, Diffuser, WireNodes, and Energy Orbs
+        - Deadly Disc, Identity Disc, Guard Staff, and MPLP Armory
+        - Complete Bot AI navigation lattice
+        """
+        floor_z = -height // 2       # -768
+        core_z = floor_z + 640       # -128 (MCP Core Center: -768 -> +512)
+        plat_z = floor_z + 384       # -384 (Quadrant Data Platforms)
+
+        # CSG Brushes
+        f_hall = _write_brush_file(system_dir, "MCP_SanctumHall.t3d", (float(width), float(length), float(height)), shape="Box", floor_tex="AquaM", wall_tex="solidDKgray128", ceil_tex="AquaM")
+        f_core = _write_brush_file(system_dir, "MCP_CentralCore.t3d", (768.0, 768.0, 1280.0), shape="Cylinder", sides=16, floor_tex="AquaM", wall_tex="c_circuits01", dais_tex="AquaM", trim_tex="c_circuits01")
+        f_plat = _write_brush_file(system_dir, "MCP_DataPlat.t3d", (896.0, 896.0, 128.0), shape="Box", floor_tex="AquaM", wall_tex="solidDKgray128", ceil_tex="AquaM")
+        f_ramp = _write_brush_file(system_dir, "MCP_DataRamp.t3d", (384.0, 512.0, 384.0), shape="Ramp", floor_tex="AquaM", wall_tex="solidDKgray128")
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronTournamentGameInfo'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=UTron.UTronZoneInfo Name=UTronZoneInfo0",
+            "    AmbientBrightness=50",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # MCP Core Sentinels & Entities
+            _generate_actor_t3d("UTron.Central_Scrutiniser", "Scrutiniser0", (0.0, 0.0, float(core_z + 300))),
+            _generate_actor_t3d("UTron.diffuser", "Diffuser0", (0.0, 0.0, float(floor_z + 100))),
+            _generate_actor_t3d("UTron.wirenode", "WireNode0", (1000.0, 0.0, float(floor_z + 40))),
+            _generate_actor_t3d("UTron.wirenode", "WireNode1", (-1000.0, 0.0, float(floor_z + 40))),
+            _generate_actor_t3d("UTron.wirenode", "WireNode2", (0.0, 1000.0, float(floor_z + 40))),
+            _generate_actor_t3d("UTron.wirenode", "WireNode3", (0.0, -1000.0, float(floor_z + 40))),
+
+            # PlayerStarts (4 Quadrants + Central Arena)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (1100.0, 1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (-1100.0, 1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (1100.0, -1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (-1100.0, -1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (0.0, -1200.0, float(floor_z + 50))),
+
+            # UTron Armory
+            _generate_actor_t3d("UTron.DeadlyDisc", "DeadlyDisc0", (1100.0, 1100.0, float(plat_z + 24))),
+            _generate_actor_t3d("UTron.IdentityDisc", "IdentityDisc0", (-1100.0, 1100.0, float(plat_z + 24))),
+            _generate_actor_t3d("UTron.GuardStaff", "GuardStaff0", (1100.0, -1100.0, float(plat_z + 24))),
+            _generate_actor_t3d("UTron.MPLP", "MPLP0", (-1100.0, -1100.0, float(plat_z + 24))),
+            _generate_actor_t3d("UTron.JaiLai", "JaiLai0", (0.0, 1200.0, float(floor_z + 24))),
+
+            # Powerups & Grid Nodes
+            _generate_actor_t3d("UTron.energyorb", "EnergyOrb0", (0.0, 0.0, float(floor_z + 700))),
+            _generate_actor_t3d("UTron.lifetile", "LifeTile0", (600.0, 600.0, float(floor_z + 24))),
+            _generate_actor_t3d("UTron.lifetile", "LifeTile1", (-600.0, -600.0, float(floor_z + 24))),
+            _generate_actor_t3d("UTron.overclocker", "Overclocker0", (0.0, -800.0, float(floor_z + 24))),
+
+            # Pathing Lattice
+            _generate_actor_t3d("Engine.PathNode", "PathNode0", (1100.0, 1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode1", (-1100.0, 1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode2", (1100.0, -1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode3", (-1100.0, -1100.0, float(plat_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode4", (600.0, 0.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode5", (-600.0, 0.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode6", (0.0, 600.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode7", (0.0, -600.0, float(floor_z + 50))),
+
+            # Lighting
+            _generate_actor_t3d("Engine.Light", "CoreLight", (0.0, 0.0, float(core_z + 400)), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 160}),
+            _generate_actor_t3d("Engine.Light", "QuadLightNE", (1100.0, 1100.0, float(plat_z + 150)), {"LightBrightness": 200, "LightHue": 160, "LightSaturation": 200, "LightRadius": 80}),
+            _generate_actor_t3d("Engine.Light", "QuadLightNW", (-1100.0, 1100.0, float(plat_z + 150)), {"LightBrightness": 200, "LightHue": 160, "LightSaturation": 200, "LightRadius": 80}),
+            _generate_actor_t3d("Engine.Light", "QuadLightSE", (1100.0, -1100.0, float(plat_z + 150)), {"LightBrightness": 200, "LightHue": 32, "LightSaturation": 200, "LightRadius": 80}),
+            _generate_actor_t3d("Engine.Light", "QuadLightSW", (-1100.0, -1100.0, float(plat_z + 150)), {"LightBrightness": 200, "LightHue": 32, "LightSaturation": 200, "LightRadius": 80}),
+
+            "End Map",
+        ]
+        f_actors = _write_file(system_dir, "MCPActors.t3d", "\n".join(t3d_actors))
+
         cmds = [
             "MAP NEW",
             f'MAP IMPORT FILE="{f_actors}"',
             "BRUSH MOVETO X=0 Y=0 Z=0",
-            f'BRUSH IMPORT FILE="{f_grid}" MERGE=0 FLAGS=0',
+            f'BRUSH IMPORT FILE="{f_hall}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            f"BRUSH MOVETO X=0 Y=0 Z={floor_z + 64}",
-            f'BRUSH IMPORT FILE="{f_div}" MERGE=0 FLAGS=0',
+            # Central Core
+            f"BRUSH MOVETO X=0 Y=0 Z={core_z}",
+            f'BRUSH IMPORT FILE="{f_core}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 4 Quadrant Platforms
+            f"BRUSH MOVETO X=1100 Y=1100 Z={plat_z}",
+            f'BRUSH IMPORT FILE="{f_plat}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-1100 Y=1100 Z={plat_z}",
+            f'BRUSH IMPORT FILE="{f_plat}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1100 Y=-1100 Z={plat_z}",
+            f'BRUSH IMPORT FILE="{f_plat}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-1100 Y=-1100 Z={plat_z}",
+            f'BRUSH IMPORT FILE="{f_plat}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+    # -------------------------------------------------------------------------
+    # 4.2 UTron TANK MAZE & COMBAT GRID
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def generate_utron_tank_maze_grid(
+        system_dir: Optional[Path] = None,
+        width: int = 4096,
+        length: int = 4096,
+        height: int = 768,
+    ) -> List[str]:
+        """
+        Constructs a tactical digital tank maze arena:
+        - Rectilinear grid labyrinth with defensive barrier silos
+        - TankGun pickups, TankMesh spawns, and Recognizer sentries
+        - Complete Bot AI reachability path network
+        """
+        floor_z = -height // 2       # -384
+
+        f_arena = _write_brush_file(system_dir, "TankArenaHall.t3d", (float(width), float(length), float(height)), shape="Box", floor_tex="AquaM", wall_tex="solidDKgray128", ceil_tex="solidDKgray128")
+        f_wall_h = _write_brush_file(system_dir, "TankMazeWallH.t3d", (1280.0, 256.0, 384.0), shape="Box", floor_tex="AquaM", wall_tex="c_circuits01", dais_tex="AquaM", trim_tex="c_circuits01")
+        f_wall_v = _write_brush_file(system_dir, "TankMazeWallV.t3d", (256.0, 1280.0, 384.0), shape="Box", floor_tex="AquaM", wall_tex="c_circuits01", dais_tex="AquaM", trim_tex="c_circuits01")
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.TankGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=UTron.TankZone Name=TankZone0",
+            "    AmbientBrightness=45",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # 4 PlayerStarts
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1400.0, -1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1400.0, 1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1400.0, 1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1400.0, -1400.0, float(floor_z + 50))),
+
+            # Tank Guns & Recognizers
+            _generate_actor_t3d("UTron.TankGun", "TankGun0", (0.0, 0.0, float(floor_z + 24))),
+            _generate_actor_t3d("UTron.TankGun", "TankGun1", (-1400.0, 0.0, float(floor_z + 24))),
+            _generate_actor_t3d("UTron.TankGun", "TankGun2", (1400.0, 0.0, float(floor_z + 24))),
+            _generate_actor_t3d("UTron.Recognizer", "Recognizer0", (0.0, 0.0, float(floor_z + 400))),
+
+            # PathNodes
+            _generate_actor_t3d("Engine.PathNode", "PathNode0", (-1400.0, -1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode1", (1400.0, 1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode2", (-1400.0, 1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode3", (1400.0, -1400.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode4", (0.0, 0.0, float(floor_z + 50))),
+
+            # Lights
+            _generate_actor_t3d("Engine.Light", "LightCenter", (0.0, 0.0, float(floor_z + 250)), {"LightBrightness": 240, "LightHue": 32, "LightSaturation": 200, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "LightNW", (-1400.0, -1400.0, float(floor_z + 200)), {"LightBrightness": 200, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "LightSE", (1400.0, 1400.0, float(floor_z + 200)), {"LightBrightness": 200, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+
+            "End Map",
+        ]
+        f_actors = _write_file(system_dir, "TankMazeActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_arena}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Labyrinth Maze Barriers
+            f"BRUSH MOVETO X=0 Y=768 Z={floor_z + 192}",
+            f'BRUSH IMPORT FILE="{f_wall_h}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=0 Y=-768 Z={floor_z + 192}",
+            f'BRUSH IMPORT FILE="{f_wall_h}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=768 Y=0 Z={floor_z + 192}",
+            f'BRUSH IMPORT FILE="{f_wall_v}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-768 Y=0 Z={floor_z + 192}",
+            f'BRUSH IMPORT FILE="{f_wall_v}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+    # -------------------------------------------------------------------------
+    # 4.3 UTron SARK'S FLAGSHIP CARRIER HANGAR
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def generate_utron_sarks_carrier(
+        system_dir: Optional[Path] = None,
+        width: int = 4608,
+        length: int = 4608,
+        height: int = 1536,
+    ) -> List[str]:
+        """
+        Constructs Sark's Flagship Carrier Hangar:
+        - Massive high-ceiling docking bay with overhead magnetic gantry pylons
+        - Drivable Recognizer and standard Recognizer craft
+        - Commander Sark and Elite Guard bot encounters
+        - Deadly Disc, Guard Staff, and EMP weapon caches
+        """
+        floor_z = -height // 2       # -768
+        catwalk_z = floor_z + 384    # -384
+
+        f_hangar = _write_brush_file(system_dir, "SarksHangarHall.t3d", (float(width), float(length), float(height)), shape="Box", floor_tex="AquaM", wall_tex="solidDKgray128", ceil_tex="solidDKgray128")
+        f_catwalk = _write_brush_file(system_dir, "SarksCatwalk.t3d", (512.0, 3584.0, 64.0), shape="Box", floor_tex="AquaM", wall_tex="c_circuits01", dais_tex="AquaM", trim_tex="c_circuits01")
+        f_bridge = _write_brush_file(system_dir, "SarksCommandBridge.t3d", (1280.0, 768.0, 64.0), shape="Box", floor_tex="AquaM", wall_tex="solidDKgray128", dais_tex="AquaM", trim_tex="solidDKgray128")
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronTournamentGameInfo'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=UTron.UTronZoneInfo Name=UTronZoneInfo0",
+            "    AmbientBrightness=50",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Recognizer Ships
+            _generate_actor_t3d("UTron.RecoDrivable", "DrivableReco0", (0.0, 0.0, float(floor_z + 200))),
+            _generate_actor_t3d("UTron.Recognizer", "PatrolReco0", (0.0, 1200.0, float(floor_z + 500))),
+
+            # PlayerStarts
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1400.0, 0.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1400.0, 0.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (0.0, -1400.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (0.0, 0.0, float(floor_z + 50))),
+
+            # Weapon Armory
+            _generate_actor_t3d("UTron.DeadlyDisc", "DeadlyDisc0", (0.0, -1400.0, float(catwalk_z + 24))),
+            _generate_actor_t3d("UTron.GuardStaff", "GuardStaff0", (-1400.0, 0.0, float(catwalk_z + 24))),
+            _generate_actor_t3d("UTron.EMP", "EMP0", (1400.0, 0.0, float(catwalk_z + 24))),
+            _generate_actor_t3d("UTron.lifetile", "LifeTile0", (0.0, 600.0, float(floor_z + 24))),
+
+            # PathNodes
+            _generate_actor_t3d("Engine.PathNode", "PathNode0", (-1400.0, 0.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode1", (1400.0, 0.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode2", (0.0, -1400.0, float(catwalk_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode3", (0.0, 0.0, float(floor_z + 50))),
+
+            # Lights
+            _generate_actor_t3d("Engine.Light", "LightBridge", (0.0, -1400.0, float(catwalk_z + 200)), {"LightBrightness": 240, "LightHue": 0, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "LightBayL", (-1400.0, 0.0, float(catwalk_z + 200)), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 110}),
+            _generate_actor_t3d("Engine.Light", "LightBayR", (1400.0, 0.0, float(catwalk_z + 200)), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 110}),
+
+            "End Map",
+        ]
+        f_actors = _write_file(system_dir, "SarksCarrierActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_hangar}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Catwalks & Command Bridge
+            f"BRUSH MOVETO X=-1400 Y=0 Z={catwalk_z}",
+            f'BRUSH IMPORT FILE="{f_catwalk}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1400 Y=0 Z={catwalk_z}",
+            f'BRUSH IMPORT FILE="{f_catwalk}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=0 Y=-1400 Z={catwalk_z}",
+            f'BRUSH IMPORT FILE="{f_bridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
             "MAP REBUILD",
@@ -808,31 +1094,43 @@ class FormulaEngine:
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.OldWallH", ceil_tex="NaliCast.METWALL",
         )
 
-        # 1.8 Fortified Castle Gatehouse Arch Portal
-        f_gate = _write_brush_file(
-            system_dir, "CastleGatePortal.t3d", (384.0, 384.0, 384.0), shape="Box",
-            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.Casdoor2", ceil_tex="Ancient.Arch",
+        # 1.8 Fortified Castle Gatehouse Arch Portal & Continuous Entry Corridor
+        f_corridor = _write_brush_file(
+            system_dir, "CastleCorridor.t3d", (768.0, 384.0, 384.0), shape="Box",
+            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", ceil_tex="Ancient.Arch",
         )
 
-        # 1.9 4 Flanking Castle Octagonal Battle Towers (Rising from Z=0 to +1024)
+        # 1.9 Castle Tower Access Stairwells (Connecting Hall Z=0 to Battlements Z=512)
+        f_stairwell = _write_brush_file(
+            system_dir, "TowerStairwell.t3d", (256.0, 256.0, 512.0), shape="Box",
+            floor_tex="steps", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasFLOR",
+        )
+
+        # 1.10 Mountain Ridge Descent Ramps (Connecting West Ridge Z=0 to Canyon Floor Z=-1024)
+        f_ridge_ramp = _write_brush_file(
+            system_dir, "MountainRidgeRamp.t3d", (512.0, 512.0, 512.0), shape="Ramp",
+            floor_tex="steps", wall_tex="GenEarth.Rockfac1",
+        )
+
+        # 1.11 4 Flanking Castle Octagonal Battle Towers (Rising from Z=0 to +1024)
         f_tower = _write_brush_file(
             system_dir, "CastleBattleTower.t3d", (384.0, 384.0, 1024.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
 
-        # 1.10 High Royal Citadel Spire (Rising to +1408)
+        # 1.12 High Royal Citadel Spire (Rising to +1408)
         f_spire = _write_brush_file(
             system_dir, "CitadelSpire.t3d", (512.0, 512.0, 1280.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
 
-        # 1.11 West Mountain Ridge Plateau Shelf
+        # 1.13 West Mountain Ridge Plateau Shelf
         f_west_ridge = _write_brush_file(
             system_dir, "WestMountainRidge.t3d", (896.0, 3584.0, 1024.0), shape="Box",
             floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", dais_tex="GenEarth.grasrok2", trim_tex="GenEarth.Rock8",
         )
 
-        # 1.12 Lower Grand Arched Stone Bridge across the River Gorge
+        # 1.14 Lower Grand Arched Stone Bridge across the River Gorge
         f_stone_bridge = _write_brush_file(
             system_dir, "LowerStoneBridge.t3d", (512.0, 1280.0, 128.0), shape="Box",
             floor_tex="steps", wall_tex="NaliCast.CasWAL", dais_tex="steps", trim_tex="NaliCast.CasWAL",
@@ -846,13 +1144,13 @@ class FormulaEngine:
             floor_tex="steps", wall_tex="NaliCast.CasWAL",
         )
 
-        # 1.13 Upper Fortress Timber Drawbridge
+        # 1.15 Upper Fortress Timber Drawbridge
         f_drawbridge = _write_brush_file(
             system_dir, "UpperDrawbridge.t3d", (512.0, 384.0, 48.0), shape="Box",
             floor_tex="NaliCast.wood1", wall_tex="NaliCast.wood2", dais_tex="NaliCast.wood1", trim_tex="ShaneChurch.Bwood",
         )
 
-        # 1.14 West Mountain Peak Sniper Lookouts
+        # 1.16 West Mountain Peak Sniper Lookouts
         f_lookout = _write_brush_file(
             system_dir, "MountainLookout.t3d", (384.0, 384.0, 768.0), shape="Cylinder", sides=8,
             floor_tex="NaliCast.wood1", wall_tex="ShaneChurch.Bwood", dais_tex="NaliCast.wood1", trim_tex="ShaneChurch.Bwood",
@@ -965,7 +1263,7 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PathNode", "PathNode4", (0.0, -768.0, float(stone_bridge_z + 114))),
             _generate_actor_t3d("Engine.PathNode", "PathNode5", (600.0, 0.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode6", (192.0, 0.0, float(drawbridge_z + 50))),
-            _generate_actor_t3d("Engine.PathNode", "PathNode7", (448.0, 0.0, float(gate_z - 96 + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode7", (576.0, 0.0, float(gate_z - 96 + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode8", (1280.0, 0.0, float(hall_z - 192 + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode9", (1280.0, 300.0, float(hall_z - 192 + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode10", (1280.0, -300.0, float(hall_z - 192 + 50))),
@@ -1062,12 +1360,20 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_hall}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 8. Fortified Castle Gatehouse Arch Portal
-            f"BRUSH MOVETO X=480 Y=0 Z={gate_z}",
-            f'BRUSH IMPORT FILE="{f_gate}" MERGE=0 FLAGS=0',
+            # 8. Fortified Castle Gatehouse & Continuous Entry Corridor (Connecting Hall directly to Drawbridge!)
+            f"BRUSH MOVETO X=576 Y=0 Z={gate_z}",
+            f'BRUSH IMPORT FILE="{f_corridor}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 9. 4 Flanking Castle Battle Towers (North-West, South-West, North-East, South-East)
+            # 9. Castle Tower Access Stairwells (Connecting Hall to Battlements)
+            f"BRUSH MOVETO X=768 Y=-384 Z={hall_z + 128}",
+            f'BRUSH IMPORT FILE="{f_stairwell}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=768 Y=384 Z={hall_z + 128}",
+            f'BRUSH IMPORT FILE="{f_stairwell}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 10. 4 Flanking Castle Battle Towers (North-West, South-West, North-East, South-East)
             f"BRUSH MOVETO X=576 Y=-576 Z={battlements_z}",
             f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
@@ -1081,17 +1387,22 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 10. Royal Citadel Spire (Rising to +1408)
+            # 11. Royal Citadel Spire (Rising to +1408)
             f"BRUSH MOVETO X=1536 Y=0 Z={spire_z}",
             f'BRUSH IMPORT FILE="{f_spire}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 11. West Mountain Ridge Plateau Shelf (Grounded at Z=-1024)
+            # 12. West Mountain Ridge Plateau Shelf (Grounded at Z=-1024)
             f"BRUSH MOVETO X=-1408 Y=0 Z={bluff_z}",
             f'BRUSH IMPORT FILE="{f_west_ridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 12. Lower Grand Arched Stone Bridge & Approach Ramps
+            # 13. Mountain Ridge Descent Ramps (Connecting West Ridge to Canyon Floor & River Bridge)
+            f"BRUSH MOVETO X=-960 Y=-768 Z={floor_z + 256}",
+            f'BRUSH IMPORT FILE="{f_ridge_ramp}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 14. Lower Grand Arched Stone Bridge & Approach Ramps
             f"BRUSH MOVETO X=0 Y=-768 Z={stone_bridge_z}",
             f'BRUSH IMPORT FILE="{f_stone_bridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
@@ -1102,12 +1413,12 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_bridge_ramp_e}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 13. Upper Timber Drawbridge to Castle Gatehouse
+            # 15. Upper Timber Drawbridge to Castle Gatehouse
             f"BRUSH MOVETO X=-64 Y=0 Z={drawbridge_z}",
             f'BRUSH IMPORT FILE="{f_drawbridge}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 14. West Mountain Peak Sniper Lookouts
+            # 16. West Mountain Peak Sniper Lookouts
             f"BRUSH MOVETO X=-1664 Y=-896 Z={west_lookout_z}",
             f'BRUSH IMPORT FILE="{f_lookout}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
@@ -1115,7 +1426,7 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_lookout}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
-            # 15. Full Geometry & BSP Rebuild, Radiosity Lighting Trace, AI Reachability
+            # 17. Full Geometry & BSP Rebuild, Radiosity Lighting Trace, AI Reachability
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",

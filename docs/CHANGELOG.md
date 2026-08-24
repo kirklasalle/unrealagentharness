@@ -4,9 +4,28 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ---
 
-## [v2.7.0] - 2026-08-23: World-Class Valley Fortress & Skybox Procedural Engine
+## [v2.8.0] - 2026-08-23: Valley Fortress Navigation Unification & Comprehensive UTron Profile Expansion
 
-### 🏔️ Upgraded: Valley Fortress Procedural Synthesis (Matching Reference Art)
+### 🏰 Fixed & Enhanced: Valley Fortress Navigation & Circulation
+- **Continuous Castle Entrance Corridor**: Added `CastleCorridor.t3d` ($768 \times 384 \times 384$) connecting the interior Great Hall ($X=768 \rightarrow 1280$) seamlessly through the gatehouse portal all the way to the upper drawbridge ($X=-64 \rightarrow 192$).
+- **Castle Tower Stairwells**: Subtracted twin access stairwells (`TowerStairwell.t3d`) inside the fortress keep, providing continuous walking access from the Great Hall ($Z=0$) up to the battlements ($Z=+512$) and parapets ($Z=+1024$).
+- **West Mountain Ridge Descent Ramps**: Integrated stepped mountain trail ramps (`MountainRidgeRamp.t3d`, $512 \times 512 \times 512$) connecting the elevated West cliff plateau ($Z=0$) down to the valley floor ($Z=-1024$) and lower stone bridge.
+- **Unobstructed AI Reachability**: All 6 PlayerStarts now have unobstructed paths connecting the canyon riverbed, castle interior, and mountain lookouts.
+
+### 🌐 Major Expansion: UTron Profile & Asset Palette
+- **Deep 123-Screenshot Reference Study & Master Guide**:
+  - Authored `docs/UTRON_ARCHITECTURE_AND_LEVEL_DESIGN_GUIDE.md` cataloging visual benchmarks, grid mechanics, and texture standards from `D:\Projects\GameDevelopment\UTron\UTron_Project_images`.
+- **4 Premier UTron World & Grid Blueprints**:
+  - ⚡ **Master Control Program (MCP) Core**: Monumental digital sanctum with central rotating MCP cylinder, 4 quadrant platforms, Central Scrutiniser, WireNodes, and full armory.
+  - 🏍️ **Light Cycle 90° Grid Arena**: $4096 \times 4096$ neon arena with starting grids, cycle morphs, boundary barriers, and cycle spawns.
+  - 💥 **Tank Maze & Combat Grid**: $4096 \times 4096$ tactical maze with digital silos, TankGuns, TankMesh spawns, and Recognizer sentries.
+  - 🛸 **Sark's Flagship Carrier Hangar**: $4608 \times 4608$ colossal docking bay with overhead gantry pylons, Drivable Recognizers, command bridge, and deadly disc armory.
+- **Full UTron Asset Palette Integration**:
+  - **Weapons**: Deadly Identity Disc, Standard Identity Disc, Guard Staff, Jai-Lai Launcher, MPLP Laser, EMP Grenade, Tank Gun, Disc Ammo.
+  - **Vehicles**: Light Cycle Blue/Red/Yellow, Power Cycle, Recognizer Patrol, Drivable Recognizer, Tank Mesh, Bonus Saucer, Flightator.
+  - **Characters & Bots**: Tron, Commander Sark, Kevin Flynn, System Guard, Bit, Gridbug.
+  - **Interactive Entities**: Life Tile, Energy Orb, Data Diffuser, Overclocker, Randomiser, WireNode, OmniBlock, Central Scrutiniser.
+- **Unit Test Suite**: 45/45 tests passing in 0.289s.
 - **Celestial Skybox Engine with Parallax `SkyZoneInfo`**:
   - Implemented isolated skybox chamber (`ValleySkybox.t3d`) at $X=-8192, Y=-8192, Z=+4096$ textured with `ShaneSky.pansky1` and unlit flags (`Flags=4194304`).
   - Added `Engine.SkyZoneInfo` actor at $(-8192, -8192, 4096)$ emitting real-time alpine skybox perspective.
