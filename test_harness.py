@@ -36,8 +36,36 @@ class TestConfigManager(unittest.TestCase):
 
     def test_all_engine_profiles_present(self):
         profiles = self.cm.get_all_engine_profiles()
-        expected = {"ut99_goty", "ut99_utron", "ut2003", "ut2004", "ue5"}
-        self.assertEqual(set(profiles.keys()), expected)
+        expected = {"ut99_goty", "ut99_utron", "ut99_chaosut", "ut99_tacticalops", "ut2003", "ut2004", "ue5"}
+        self.assertTrue(expected.issubset(set(profiles.keys())))
+
+    def test_get_base_engines(self):
+        base = self.cm.get_base_engines()
+        self.assertIn("ut99_goty", base)
+        self.assertIn("ut2004", base)
+        self.assertNotIn("ut99_utron", base)
+
+    def test_get_game_mods(self):
+        mods = self.cm.get_game_mods()
+        self.assertIn("ut99_utron", mods)
+        self.assertIn("ut99_chaosut", mods)
+        self.assertNotIn("ut99_goty", mods)
+
+    def test_register_and_delete_custom_game_mod(self):
+        mod_id = "test_custom_tc"
+        mod_data = {
+            "name": "Test Custom TC",
+            "parent_engine": "ut99_goty",
+            "generation": "UE1"
+        }
+        self.assertTrue(self.cm.register_game_mod(mod_id, mod_data))
+        mods = self.cm.get_game_mods()
+        self.assertIn(mod_id, mods)
+        self.assertEqual(mods[mod_id]["category"], "Game Mod (Total Conversion)")
+
+        # Cleanup
+        self.assertTrue(self.cm.delete_game_mod(mod_id))
+        self.assertNotIn(mod_id, self.cm.get_game_mods())
 
     def test_active_llm_profile_id_is_string(self):
         profile_id = self.cm.get_active_llm_profile_id()

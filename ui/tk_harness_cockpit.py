@@ -77,11 +77,11 @@ class StandaloneHarnessCockpit(tk.Tk):
         tk.Label(title_box, text="⚡ AGENT HARNESS", font=("Segoe UI", 12, "bold"), fg="#38bdf8", bg="#111726").pack(side=tk.LEFT)
 
         # Engine Target Selector
-        tk.Label(title_box, text=" | Engine:", font=("Segoe UI", 9), fg="#94a3b8", bg="#111726").pack(side=tk.LEFT, padx=(8, 4))
+        tk.Label(title_box, text=" | Target:", font=("Segoe UI", 9), fg="#94a3b8", bg="#111726").pack(side=tk.LEFT, padx=(8, 4))
         self.engine_var = tk.StringVar(value=self.config_mgr.get_active_engine_id())
         profiles = self.config_mgr.get_all_engine_profiles()
         engine_choices = list(profiles.keys())
-        self.engine_combo = ttk.Combobox(title_box, textvariable=self.engine_var, values=engine_choices, state="readonly", width=14)
+        self.engine_combo = ttk.Combobox(title_box, textvariable=self.engine_var, values=engine_choices, state="readonly", width=18)
         self.engine_combo.pack(side=tk.LEFT, padx=2)
         self.engine_combo.bind("<<ComboboxSelected>>", self._on_engine_selected)
 
@@ -132,17 +132,17 @@ class StandaloneHarnessCockpit(tk.Tk):
 
         # Tab 1: UT99 GOTY Classic
         tab_goty = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_goty, text="🏆 UT99 GOTY")
+        nb.add(tab_goty, text="🏆 UT99 Base")
         self._populate_palette_tab(tab_goty, get_ut99_goty_palette(self._send_prompt, system_dir=sys_dir))
 
-        # Tab 2: UTron Total Conversion
+        # Tab 2: UTron Total Conversion Mod
         tab_utron = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_utron, text="⚡ UTron")
+        nb.add(tab_utron, text="⚡ Mod: UTron (TC)")
         self._populate_palette_tab(tab_utron, get_ut99_utron_palette(self._send_prompt, system_dir=sys_dir))
 
         # Tab 3: UT2004 Blueprints
         tab_ut2004 = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_ut2004, text="⚔️ UT2004")
+        nb.add(tab_ut2004, text="⚔️ UT2004 Base")
         self._populate_palette_tab(tab_ut2004, get_ut2004_palette(self._send_prompt, system_dir=sys_dir))
 
     def _populate_palette_tab(self, parent: tk.Frame, palette_data: List[Dict[str, Any]]):

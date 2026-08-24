@@ -74,6 +74,51 @@ class ConfigManager:
     def get_all_engine_profiles(self) -> Dict[str, Any]:
         return self.engine_data.get("profiles", {})
 
+    def get_base_engines(self) -> Dict[str, Any]:
+        """Returns only Base Game Engine profiles (UT99 GOTY, UT2003, UT2004, UE5)."""
+        profiles = self.get_all_engine_profiles()
+        return {
+            k: v for k, v in profiles.items()
+            if v.get("category") == "Base Game Engine" or "category" not in v
+        }
+
+    def get_game_mods(self) -> Dict[str, Any]:
+        """Returns all Game Mods & Total Conversion profiles (e.g. UTron, ChaosUT, Tactical Ops)."""
+        profiles = self.get_all_engine_profiles()
+        return {
+            k: v for k, v in profiles.items()
+            if "Mod" in v.get("category", "") or v.get("mod_type") is not None
+        }
+
+    def register_game_mod(self, mod_id: str, mod_info: Dict[str, Any]) -> bool:
+        """Registers a new Game Mod / Total Conversion profile into the engine registry."""
+        if "profiles" not in self.engine_data:
+            self.engine_data["profiles"] = {}
+
+        mod_info["id"] = mod_id
+        if "category" not in mod_info:
+            mod_info["category"] = "Game Mod (Total Conversion)"
+        if "mod_type" not in mod_info:
+            mod_info["mod_type"] = "Total Conversion"
+
+        self.engine_data["profiles"][mod_id] = mod_info
+        success = self._save_json(self.engine_file, self.engine_data)
+        if success:
+            logger.info(f"Registered new Game Mod: '{mod_id}' ({mod_info.get('name')})")
+        return success
+
+    def delete_game_mod(self, mod_id: str) -> bool:
+        """Deletes a custom Game Mod profile (Base Game engines cannot be deleted)."""
+        profiles = self.engine_data.get("profiles", {})
+        if mod_id in profiles and profiles[mod_id].get("category") != "Base Game Engine":
+            del self.engine_data["profiles"][mod_id]
+            if self.get_active_engine_id() == mod_id:
+                self.set_active_engine_id("ut99_goty")
+            self._save_json(self.engine_file, self.engine_data)
+            logger.info(f"Deleted Game Mod profile: '{mod_id}'")
+            return True
+        return False
+
     # -------------------------------------------------------------------------
     # LLM PROFILE ACCESSORS
     # -------------------------------------------------------------------------

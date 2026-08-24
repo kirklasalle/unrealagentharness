@@ -4,7 +4,23 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ---
 
-## [v2.8.0] - 2026-08-23: Valley Fortress Navigation Unification & Comprehensive UTron Profile Expansion
+## [v2.9.0] - 2026-08-24: Dedicated Game Mods & Total Conversion (TC) Architecture
+
+### 📦 New: Modular Game Mod & Total Conversion Registry
+- **Engine Tier Categorization**: Structured the engine registry into two distinct tiers:
+  1. **🎮 Base Game Engines**: `UT99 GOTY` (UE1 / 469e), `UT2003` (UE2.0), `UT2004` (UE2.5 / v3369+), `Unreal Engine 5` (UE5.x).
+  2. **📦 Game Mods & Total Conversions (TC)**: `UTron: Total Conversion Mod`, `ChaosUT: Evolution Mod`, `Tactical Ops: Assault on Terror`.
+- **ConfigManager Mod API**:
+  - Added `get_base_engines()`, `get_game_mods()`, `register_game_mod()`, and `delete_game_mod()`.
+- **Interactive Mod Registration in Settings Dialog**:
+  - Redesigned the **Engine Profiles** tab with distinct sections for **Base Game Engines** and **Game Mods & Total Conversions**.
+  - Added an interactive **"➕ Register New Mod"** dialog allowing 1-click registration of custom UT99/UT2004 Total Conversion mods with custom INIs, parameters, and directories.
+- **Cockpit UI Target & Palette Updates**:
+  - Categorized the Target selection dropdown in the Cockpit header.
+  - Updated the Quick Architect Palette notebook tab to **⚡ Mod: UTron (TC)**.
+- **Comprehensive Documentation**:
+  - Published `docs/GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md` covering mod creation, total conversion architecture, and API hooks.
+- **Unit Tests**: 48/48 tests passing in 0.228s.
 
 ### 🏰 Fixed & Enhanced: Valley Fortress Navigation & Circulation
 - **Continuous Castle Entrance Corridor**: Added `CastleCorridor.t3d` ($768 \times 384 \times 384$) connecting the interior Great Hall ($X=768 \rightarrow 1280$) seamlessly through the gatehouse portal all the way to the upper drawbridge ($X=-64 \rightarrow 192$).

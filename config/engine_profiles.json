@@ -1,80 +1,10 @@
 {
   "active_engine": "ut99_utron",
   "profiles": {
-    "ut99_utron": {
-      "id": "ut99_utron",
-      "name": "Unreal Tournament 99 GOTY \u2014 UTron Mod (UE1 / 469e)",
-      "generation": "UE1",
-      "icon": "\u26a1",
-      "root_dir": "G:\\UnrealTournament",
-      "system_dir": "G:\\UnrealTournament\\System",
-      "editor_exe": "UnrealEd.exe",
-      "editor_args": "INI=UTronEditor.ini",
-      "game_exe": "UnrealTournament.exe",
-      "game_args": "UTronIntro.unr INI=UTronProject.ini USERINI=UTronUser.ini",
-      "window_classes": [
-        "WUnrealEd",
-        "WWindow",
-        "UnrealEd"
-      ],
-      "process_names": [
-        "unrealed.exe",
-        "utroneditor.exe",
-        "unrealtournament.exe",
-        "utronproject.exe"
-      ],
-      "log_files": [
-        "Editor.log",
-        "UnrealEd.log",
-        "UTronProject.log",
-        "UnrealTournament.log"
-      ],
-      "render_drivers": [
-        "D3D11Drv.D3D11RenderDevice",
-        "D3D9Drv.D3D9RenderDevice",
-        "OpenGLDrv.OpenGLRenderDevice",
-        "XOpenGLDrv.XOpenGLRenderDevice"
-      ],
-      "signature_classes": {
-        "PlayerStart": "Engine.PlayerStart",
-        "Light": "Engine.Light",
-        "ZoneInfo": "Engine.ZoneInfo",
-        "SkyZoneInfo": "Engine.SkyZoneInfo",
-        "PathNode": "Engine.PathNode",
-        "IdentityDisc": "UTron.IdentityDisc",
-        "DiscAmmo": "UTron.DiscAmmo",
-        "DiscBlockFX": "UTron.DiscBlockFX",
-        "LightCycleMorph": "UTron.cycleMorph",
-        "Diffuser": "UTron.diffuser",
-        "Wirenode": "UTron.wirenode",
-        "Recognizer": "UTron.RecoDrivable",
-        "TankGun": "UTron.TankGun",
-        "GameDiscArena": "UTron.DiscArena",
-        "GameTank": "UTron.TankGame",
-        "PlayerFlynn": "UTron.Flynn",
-        "PlayerTron": "UTron.Tron",
-        "PlayerSark": "UTron.Sark"
-      },
-      "texture_packages": [
-        "Tron2002",
-        "UTron_Floors-Walls",
-        "UTron_Grids-Lines",
-        "UTron_Deco",
-        "UTron_Sky-Terra-fx",
-        "UTron_SolidColors",
-        "UTronHUD"
-      ],
-      "sound_packages": [
-        "Tron",
-        "UTronVoice",
-        "UTronAIvoice",
-        "UTronMedia1",
-        "UTron_Intro"
-      ]
-    },
     "ut99_goty": {
       "id": "ut99_goty",
       "name": "Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e)",
+      "category": "Base Game Engine",
       "generation": "UE1",
       "icon": "\ud83c\udfc6",
       "root_dir": "G:\\UnrealTournament",
@@ -121,9 +51,188 @@
         "PlayerPawn": "Botpack.TMale2"
       }
     },
+    "ut99_utron": {
+      "id": "ut99_utron",
+      "name": "UTron: Total Conversion Mod (UE1 / 469e)",
+      "category": "Game Mod (Total Conversion)",
+      "mod_type": "Total Conversion",
+      "parent_engine": "ut99_goty",
+      "generation": "UE1",
+      "icon": "\u26a1",
+      "description": "Cyberspace Total Conversion mod featuring Light Cycles, Discs of Tron, MCP Core, Tank Grid, and arcade combat mechanics.",
+      "root_dir": "G:\\UnrealTournament",
+      "system_dir": "G:\\UnrealTournament\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "INI=UTronEditor.ini",
+      "game_exe": "UnrealTournament.exe",
+      "game_args": "UTronIntro.unr INI=UTronProject.ini USERINI=UTronUser.ini",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "utroneditor.exe",
+        "unrealtournament.exe",
+        "utronproject.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UTronProject.log",
+        "UnrealTournament.log"
+      ],
+      "render_drivers": [
+        "D3D11Drv.D3D11RenderDevice",
+        "D3D9Drv.D3D9RenderDevice",
+        "OpenGLDrv.OpenGLRenderDevice",
+        "XOpenGLDrv.XOpenGLRenderDevice"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "DeadlyDisc": "UTron.DeadlyDisc",
+        "IdentityDisc": "UTron.IdentityDisc",
+        "DiscAmmo": "UTron.DiscAmmo",
+        "GuardStaff": "UTron.GuardStaff",
+        "JaiLai": "UTron.JaiLai",
+        "MPLP": "UTron.MPLP",
+        "EMP": "UTron.EMP",
+        "TankGun": "UTron.TankGun",
+        "LightCycleB": "UTron.LightCycleB",
+        "LightCycleR": "UTron.LightCycleR",
+        "LightCycleY": "UTron.LightCycleY",
+        "PowerCycle": "UTron.PowerCycle",
+        "Recognizer": "UTron.Recognizer",
+        "RecoDrivable": "UTron.RecoDrivable",
+        "TankMesh": "UTron.TankMesh",
+        "BonusSaucer": "UTron.BonusSaucer",
+        "Flightator": "UTron.Flightator",
+        "LightCycleMorph": "UTron.cycleMorph",
+        "Diffuser": "UTron.diffuser",
+        "Wirenode": "UTron.wirenode",
+        "LifeTile": "UTron.lifetile",
+        "EnergyOrb": "UTron.energyorb",
+        "Overclocker": "UTron.overclocker",
+        "Randomiser": "UTron.randomiser",
+        "OmniBlock": "UTron.OmniBlock",
+        "CentralScrutiniser": "UTron.Central_Scrutiniser",
+        "Tron": "UTron.Tron",
+        "Sark": "UTron.Sark",
+        "Flynn": "UTron.Flynn",
+        "Guard": "UTron.Guard",
+        "Bit": "UTron.Bit",
+        "Gridbug": "UTron.Gridbug"
+      },
+      "texture_packages": [
+        "Tron2002",
+        "UTron_Floors-Walls",
+        "UTron_Grids-Lines",
+        "UTron_Deco",
+        "UTron_Sky-Terra-fx",
+        "UTron_SolidColors",
+        "UTronHUD",
+        "TronSkins",
+        "SarkSkins",
+        "FlynnSkins",
+        "GuardSkins"
+      ],
+      "sound_packages": [
+        "Tron",
+        "UTronVoice",
+        "UTronAIvoice",
+        "UTronMedia1",
+        "UTron_Intro"
+      ]
+    },
+    "ut99_chaosut": {
+      "id": "ut99_chaosut",
+      "name": "ChaosUT: Evolution Mod (UE1 / 469e)",
+      "category": "Game Mod (Total Conversion)",
+      "mod_type": "Total Conversion",
+      "parent_engine": "ut99_goty",
+      "generation": "UE1",
+      "icon": "\u2694\ufe0f",
+      "description": "Classic UT99 weapon and physics total conversion featuring Grappling Hooks, Crossbows, Vortex mines, and Swords.",
+      "root_dir": "G:\\UnrealTournament",
+      "system_dir": "G:\\UnrealTournament\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UnrealTournament.exe",
+      "game_args": "INI=UnrealTournament.ini USERINI=User.ini",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "unrealtournament.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UnrealTournament.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "Crossbow": "ChaosUT.Crossbow",
+        "Vortex": "ChaosUT.Vortex",
+        "GrappleHook": "ChaosUT.Grapple"
+      }
+    },
+    "ut99_tacticalops": {
+      "id": "ut99_tacticalops",
+      "name": "Tactical Ops: Assault on Terror (UE1)",
+      "category": "Game Mod (Total Conversion)",
+      "mod_type": "Total Conversion",
+      "parent_engine": "ut99_goty",
+      "generation": "UE1",
+      "icon": "\ud83c\udfaf",
+      "description": "Counter-terrorist tactical CQB total conversion mod for Unreal Engine 1.",
+      "root_dir": "G:\\UnrealTournament",
+      "system_dir": "G:\\UnrealTournament\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UnrealTournament.exe",
+      "game_args": "INI=TacticalOps.ini USERINI=TOUser.ini",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "tacticalops.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "TacticalOps.log"
+      ],
+      "signature_classes": {
+        "PlayerStart": "Engine.PlayerStart",
+        "Light": "Engine.Light",
+        "ZoneInfo": "Engine.ZoneInfo",
+        "SkyZoneInfo": "Engine.SkyZoneInfo",
+        "PathNode": "Engine.PathNode",
+        "M4A1": "TOModels.TO_M4A1",
+        "AK47": "TOModels.TO_AK47",
+        "MP5": "TOModels.TO_MP5"
+      }
+    },
     "ut2003": {
       "id": "ut2003",
       "name": "Unreal Tournament 2003 (UE2.0)",
+      "category": "Base Game Engine",
       "generation": "UE2.0",
       "icon": "\ud83d\udd79\ufe0f",
       "root_dir": "G:\\UT2003",
@@ -171,6 +280,7 @@
     "ut2004": {
       "id": "ut2004",
       "name": "Unreal Tournament 2004 (UE2.5 / v3369+)",
+      "category": "Base Game Engine",
       "generation": "UE2.5",
       "icon": "\u2694\ufe0f",
       "root_dir": "G:\\UnrealTournament2004",
@@ -225,6 +335,7 @@
     "ue5": {
       "id": "ue5",
       "name": "Unreal Engine 5 (UE5.x / Nanite & Lumen)",
+      "category": "Base Game Engine",
       "generation": "UE5",
       "icon": "\ud83c\udf0c",
       "root_dir": "G:\\UnrealEngine5",

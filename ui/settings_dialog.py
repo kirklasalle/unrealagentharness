@@ -78,14 +78,30 @@ class SettingsDialog(tk.Toplevel):
         tk.Button(btn_bar, text="Cancel", font=("Segoe UI", 9), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=12, pady=6, command=self.destroy).pack(side=tk.RIGHT)
 
     def _build_engine_tab(self, parent: tk.Frame):
-        tk.Label(parent, text="Active Unreal Engine Target:", font=("Segoe UI", 10, "bold"), fg="#f8fafc", bg="#12151c").pack(anchor=tk.W, pady=(0, 4))
+        # Create a scrollable frame for engine profiles and mods
+        canvas = tk.Canvas(parent, bg="#12151c", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="#12151c")
 
-        profiles = self.config_mgr.get_all_engine_profiles()
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=620)
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         self.engine_var = tk.StringVar(value=self.config_mgr.get_active_engine_id())
 
-        for eid, p in profiles.items():
-            rb_frame = tk.Frame(parent, bg="#1e293b", padx=10, pady=8, highlightbackground="#334155", highlightthickness=1)
-            rb_frame.pack(fill=tk.X, pady=4)
+        # Section 1: Base Game Engines
+        tk.Label(scrollable_frame, text="🎮 BASE GAME ENGINES", font=("Segoe UI", 10, "bold"), fg="#38bdf8", bg="#12151c").pack(anchor=tk.W, pady=(0, 4))
+        base_engines = self.config_mgr.get_base_engines()
+
+        for eid, p in base_engines.items():
+            rb_frame = tk.Frame(scrollable_frame, bg="#1e293b", padx=10, pady=8, highlightbackground="#334155", highlightthickness=1)
+            rb_frame.pack(fill=tk.X, pady=3)
 
             rb = tk.Radiobutton(
                 rb_frame,
@@ -93,7 +109,7 @@ class SettingsDialog(tk.Toplevel):
                 variable=self.engine_var,
                 value=eid,
                 font=("Segoe UI", 10, "bold"),
-                fg="#38bdf8",
+                fg="#f8fafc",
                 bg="#1e293b",
                 selectcolor="#0f172a",
                 activebackground="#1e293b",
@@ -103,6 +119,142 @@ class SettingsDialog(tk.Toplevel):
 
             details_str = f"Root: {p.get('root_dir')} | Executable: {p.get('editor_exe')} {p.get('editor_args', '')} | Gen: {p.get('generation')}"
             tk.Label(rb_frame, text=details_str, font=("Consolas", 8), fg="#94a3b8", bg="#1e293b").pack(anchor=tk.W, padx=24)
+
+        # Section 2: Game Mods & Total Conversions (TC)
+        mod_hdr_frame = tk.Frame(scrollable_frame, bg="#12151c", pady=(12, 4))
+        mod_hdr_frame.pack(fill=tk.X)
+        tk.Label(mod_hdr_frame, text="📦 GAME MODS & TOTAL CONVERSIONS (TC)", font=("Segoe UI", 10, "bold"), fg="#f59e0b", bg="#12151c").pack(side=tk.LEFT)
+        tk.Button(mod_hdr_frame, text="➕ Register New Mod", font=("Segoe UI", 8, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=8, pady=2, command=self._show_add_mod_dialog).pack(side=tk.RIGHT)
+
+        game_mods = self.config_mgr.get_game_mods()
+
+        for mid, p in game_mods.items():
+            rb_frame = tk.Frame(scrollable_frame, bg="#1e293b", padx=10, pady=8, highlightbackground="#d97706", highlightthickness=1)
+            rb_frame.pack(fill=tk.X, pady=3)
+
+            top_row = tk.Frame(rb_frame, bg="#1e293b")
+            top_row.pack(fill=tk.X)
+
+            rb = tk.Radiobutton(
+                top_row,
+                text=f"{p.get('icon', '⚡')} {p.get('name', mid)}",
+                variable=self.engine_var,
+                value=mid,
+                font=("Segoe UI", 10, "bold"),
+                fg="#fcd34d",
+                bg="#1e293b",
+                selectcolor="#0f172a",
+                activebackground="#1e293b",
+                activeforeground="#fcd34d",
+            )
+            rb.pack(side=tk.LEFT)
+
+            if p.get("category") != "Base Game Engine" and mid not in ["ut99_utron"]:
+                tk.Button(
+                    top_row,
+                    text="🗑️ Delete",
+                    font=("Segoe UI", 7),
+                    bg="#dc2626",
+                    fg="#ffffff",
+                    relief=tk.FLAT,
+                    padx=6,
+                    pady=1,
+                    command=lambda m=mid: self._delete_mod(m),
+                ).pack(side=tk.RIGHT)
+
+            desc = p.get("description", "")
+            if desc:
+                tk.Label(rb_frame, text=desc, font=("Segoe UI", 8, "italic"), fg="#cbd5e1", bg="#1e293b").pack(anchor=tk.W, padx=24, pady=(2, 0))
+
+            details_str = f"Mod Type: {p.get('mod_type', 'Total Conversion')} | Base: {p.get('parent_engine', 'ut99_goty')} | INI: {p.get('editor_args', 'Default')}"
+            tk.Label(rb_frame, text=details_str, font=("Consolas", 8), fg="#94a3b8", bg="#1e293b").pack(anchor=tk.W, padx=24)
+
+    def _delete_mod(self, mod_id: str):
+        if messagebox.askyesno("Delete Mod Profile", f"Are you sure you want to remove the mod profile '{mod_id}'?"):
+            if self.config_mgr.delete_game_mod(mod_id):
+                messagebox.showinfo("Mod Removed", f"Mod '{mod_id}' successfully removed.")
+                self.engine_var.set(self.config_mgr.get_active_engine_id())
+
+    def _show_add_mod_dialog(self):
+        """Displays popup modal to register a new Game Mod / Total Conversion."""
+        dlg = tk.Toplevel(self)
+        dlg.title("➕ Register Game Mod / Total Conversion")
+        dlg.geometry("520x460")
+        dlg.configure(bg="#12151c")
+        dlg.transient(self)
+        dlg.grab_set()
+
+        tk.Label(dlg, text="➕ Register New Game Mod / TC Profile", font=("Segoe UI", 11, "bold"), fg="#f59e0b", bg="#12151c").pack(anchor=tk.W, padx=16, pady=(12, 4))
+        tk.Label(dlg, text="Define custom Total Conversions (e.g. UTron, ChaosUT, Tactical Ops) with custom INI & packages.", font=("Segoe UI", 8), fg="#94a3b8", bg="#12151c").pack(anchor=tk.W, padx=16, pady=(0, 10))
+
+        form = tk.Frame(dlg, bg="#1e293b", padx=14, pady=12)
+        form.pack(fill=tk.BOTH, expand=True, padx=16, pady=4)
+
+        # Mod ID
+        tk.Label(form, text="Mod ID (Unique identifier, e.g. ut99_chaosut):", font=("Segoe UI", 8, "bold"), fg="#f8fafc", bg="#1e293b").pack(anchor=tk.W)
+        id_ent = tk.Entry(form, font=("Consolas", 9), bg="#0f172a", fg="#38bdf8", insertbackground="white")
+        id_ent.pack(fill=tk.X, pady=(2, 6))
+
+        # Mod Title
+        tk.Label(form, text="Mod Name (e.g. ChaosUT: Evolution Mod):", font=("Segoe UI", 8, "bold"), fg="#f8fafc", bg="#1e293b").pack(anchor=tk.W)
+        name_ent = tk.Entry(form, font=("Segoe UI", 9), bg="#0f172a", fg="#f8fafc", insertbackground="white")
+        name_ent.pack(fill=tk.X, pady=(2, 6))
+
+        # Base Engine Parent
+        tk.Label(form, text="Parent Base Game Engine:", font=("Segoe UI", 8, "bold"), fg="#f8fafc", bg="#1e293b").pack(anchor=tk.W)
+        base_combo = ttk.Combobox(form, values=list(self.config_mgr.get_base_engines().keys()), state="readonly")
+        base_combo.set("ut99_goty")
+        base_combo.pack(fill=tk.X, pady=(2, 6))
+
+        # Editor INI Args
+        tk.Label(form, text="Editor Launch Arguments (e.g. INI=UTronEditor.ini):", font=("Segoe UI", 8, "bold"), fg="#f8fafc", bg="#1e293b").pack(anchor=tk.W)
+        args_ent = tk.Entry(form, font=("Consolas", 9), bg="#0f172a", fg="#f8fafc", insertbackground="white")
+        args_ent.pack(fill=tk.X, pady=(2, 6))
+
+        # Description
+        tk.Label(form, text="Description & Features:", font=("Segoe UI", 8, "bold"), fg="#f8fafc", bg="#1e293b").pack(anchor=tk.W)
+        desc_ent = tk.Entry(form, font=("Segoe UI", 9), bg="#0f172a", fg="#f8fafc", insertbackground="white")
+        desc_ent.pack(fill=tk.X, pady=(2, 6))
+
+        def _do_register():
+            m_id = id_ent.get().strip().lower().replace(" ", "_")
+            m_name = name_ent.get().strip()
+            if not m_id or not m_name:
+                messagebox.showwarning("Incomplete", "Please provide both Mod ID and Mod Name.", parent=dlg)
+                return
+
+            parent_id = base_combo.get()
+            parent_profile = self.config_mgr.get_all_engine_profiles().get(parent_id, {})
+
+            mod_info = {
+                "id": m_id,
+                "name": m_name,
+                "category": "Game Mod (Total Conversion)",
+                "mod_type": "Total Conversion",
+                "parent_engine": parent_id,
+                "generation": parent_profile.get("generation", "UE1"),
+                "icon": "📦",
+                "description": desc_ent.get().strip(),
+                "root_dir": parent_profile.get("root_dir", "G:\\UnrealTournament"),
+                "system_dir": parent_profile.get("system_dir", "G:\\UnrealTournament\\System"),
+                "editor_exe": parent_profile.get("editor_exe", "UnrealEd.exe"),
+                "editor_args": args_ent.get().strip(),
+                "game_exe": parent_profile.get("game_exe", "UnrealTournament.exe"),
+                "game_args": "",
+                "window_classes": parent_profile.get("window_classes", ["WUnrealEd", "WWindow", "UnrealEd"]),
+                "process_names": parent_profile.get("process_names", ["unrealed.exe"]),
+                "log_files": ["Editor.log", "UnrealEd.log"],
+            }
+
+            if self.config_mgr.register_game_mod(m_id, mod_info):
+                messagebox.showinfo("Success", f"Game Mod '{m_name}' registered successfully!", parent=dlg)
+                dlg.destroy()
+                self.engine_var.set(m_id)
+
+        btn_bar = tk.Frame(dlg, bg="#12151c", pady=8, padx=16)
+        btn_bar.pack(fill=tk.X)
+        tk.Button(btn_bar, text="Save Mod", font=("Segoe UI", 9, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=14, pady=4, command=_do_register).pack(side=tk.RIGHT, padx=4)
+        tk.Button(btn_bar, text="Cancel", font=("Segoe UI", 9), bg="#334155", fg="#ffffff", relief=tk.FLAT, padx=10, pady=4, command=dlg.destroy).pack(side=tk.RIGHT)
 
     def _build_llm_tab(self, parent: tk.Frame):
         profiles = self.config_mgr.get_all_llm_profiles()
