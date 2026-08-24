@@ -2636,12 +2636,12 @@ class FormulaEngine:
         canyon_poly = _generate_brush_polylist_t3d((8192, 8192, 2048), floor_tex=f_tex, wall_tex=w_tex, ceil_tex=c_tex)
         f_canyon = _write_file(system_dir, "UT2k4_ONS_Canyon.t3d", canyon_poly)
 
-        # Central Ridge / Node Plateau (diameter 2048, radius 1024, height 256)
-        plateau_poly = _generate_brush_polylist_t3d((2048, 2048, 256), shape="Cylinder", sides=16, floor_tex=t["dais"], wall_tex=w_tex, ceil_tex=t["dais"])
+        # Central Ridge / Node Plateau (diameter 1536, radius 768, height 128)
+        plateau_poly = _generate_brush_polylist_t3d((1536, 1536, 128), shape="Cylinder", sides=16, floor_tex=t["dais"], wall_tex=w_tex, ceil_tex=t["dais"])
         f_plateau = _write_file(system_dir, "UT2k4_ONS_Plateau.t3d", plateau_poly)
 
         z_floor = -1024
-        z_plateau_top = z_floor + 256  # -768
+        z_plateau_top = z_floor + 128  # -896
         actors = [
             _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
                 "TimeDilation": "1.000000", "DefaultGameType": "Class'Onslaught.ONSOnslaughtGame'", "Title": '"Onslaught Canyon Outpost"',
@@ -2650,81 +2650,84 @@ class FormulaEngine:
 
             # Red Base PowerCore & Vehicle Factories
             _generate_actor_t3d("Onslaught.ONSPowerCore", "Red_PowerCore", (-3072, 0, z_floor + 60), {"DefenderTeamIndex": "0"}),
-            _generate_actor_t3d("Onslaught.ONSHoverCraftFactory", "Red_Manta_1", (-2800, -400, z_floor + 40)),
-            _generate_actor_t3d("Onslaught.ONSRVFactory", "Red_Scorpion_1", (-2800, 400, z_floor + 40)),
+            _generate_actor_t3d("Onslaught.ONSHoverCraftFactory", "Red_Manta_1", (-2800, -400, z_floor + 45)),
+            _generate_actor_t3d("Onslaught.ONSRVFactory", "Red_Scorpion_1", (-2800, 400, z_floor + 45)),
             _generate_actor_t3d("Onslaught.ONSAttackCraftFactory", "Red_Raptor_1", (-3200, 0, z_floor + 80)),
-            _generate_actor_t3d("Engine.PlayerStart", "Red_Spawn_1", (-3072, -300, z_floor + 40), {"TeamNumber": "0"}),
-            _generate_actor_t3d("Engine.PlayerStart", "Red_Spawn_2", (-3072, 300, z_floor + 40), {"TeamNumber": "0"}),
+            _generate_actor_t3d("Engine.PlayerStart", "Red_Spawn_1", (-3072, -300, z_floor + 45), {"TeamNumber": "0"}),
+            _generate_actor_t3d("Engine.PlayerStart", "Red_Spawn_2", (-3072, 300, z_floor + 45), {"TeamNumber": "0"}),
 
             # Blue Base PowerCore & Vehicle Factories
             _generate_actor_t3d("Onslaught.ONSPowerCore", "Blue_PowerCore", (3072, 0, z_floor + 60), {"DefenderTeamIndex": "1"}),
-            _generate_actor_t3d("Onslaught.ONSHoverCraftFactory", "Blue_Manta_1", (2800, -400, z_floor + 40)),
-            _generate_actor_t3d("Onslaught.ONSRVFactory", "Blue_Scorpion_1", (2800, 400, z_floor + 40)),
+            _generate_actor_t3d("Onslaught.ONSHoverCraftFactory", "Blue_Manta_1", (2800, -400, z_floor + 45)),
+            _generate_actor_t3d("Onslaught.ONSRVFactory", "Blue_Scorpion_1", (2800, 400, z_floor + 45)),
             _generate_actor_t3d("Onslaught.ONSAttackCraftFactory", "Blue_Raptor_1", (3200, 0, z_floor + 80)),
-            _generate_actor_t3d("Engine.PlayerStart", "Blue_Spawn_1", (3072, -300, z_floor + 40), {"TeamNumber": "1"}),
-            _generate_actor_t3d("Engine.PlayerStart", "Blue_Spawn_2", (3072, 300, z_floor + 40), {"TeamNumber": "1"}),
+            _generate_actor_t3d("Engine.PlayerStart", "Blue_Spawn_1", (3072, -300, z_floor + 45), {"TeamNumber": "1"}),
+            _generate_actor_t3d("Engine.PlayerStart", "Blue_Spawn_2", (3072, 300, z_floor + 45), {"TeamNumber": "1"}),
 
             # Midfield Neutral PowerNodes & Heavy Goliath Tank Factory
-            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "Mid_PowerNode", (0, 0, z_plateau_top + 40)),
-            _generate_actor_t3d("Onslaught.ONSTankFactory", "Mid_Goliath", (0, -1800, z_floor + 40)),
-            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "North_PowerNode", (0, 2400, z_floor + 40)),
-            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "South_PowerNode", (0, -2400, z_floor + 40)),
+            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "Mid_PowerNode", (0, 0, z_plateau_top + 45)),
+            _generate_actor_t3d("Onslaught.ONSTankFactory", "Mid_Goliath", (0, -1800, z_floor + 45)),
+            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "North_PowerNode", (0, 2400, z_floor + 45)),
+            _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "South_PowerNode", (0, -2400, z_floor + 45)),
 
-            # Anti-Vehicle Weapons & Powerups (Correct elevation on Plateau vs Floor)
+            # Anti-Vehicle Weapons & Powerups (Elevated cleanly on Plateau vs Floor)
             _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "AVRiL_Red", (-2400, 0, z_floor + 36)),
             _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "AVRiL_Blue", (2400, 0, z_floor + 36)),
-            _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock_Mid", (0, 400, z_plateau_top + 36)),
-            _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_Mid", (0, -400, z_plateau_top + 36)),
-            _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket_Mid", (400, 0, z_plateau_top + 36)),
-            _generate_actor_t3d("XWeapons.SniperRiflePickup", "Sniper_High", (-400, 0, z_plateau_top + 36)),
-            _generate_actor_t3d("XPickups.SuperHealthPack", "SuperHealth_Mid", (250, 250, z_plateau_top + 36)),
-            _generate_actor_t3d("XPickups.SuperShieldPack", "SuperShield_Mid", (-250, -250, z_plateau_top + 36)),
+            _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock_Mid", (0, 300, z_plateau_top + 36)),
+            _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_Mid", (0, -300, z_plateau_top + 36)),
+            _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket_Mid", (300, 0, z_plateau_top + 36)),
+            _generate_actor_t3d("XWeapons.SniperRiflePickup", "Sniper_High", (-300, 0, z_plateau_top + 36)),
+            _generate_actor_t3d("XPickups.SuperHealthPack", "SuperHealth_Mid", (200, 200, z_plateau_top + 36)),
+            _generate_actor_t3d("XPickups.SuperShieldPack", "SuperShield_Mid", (-200, -200, z_plateau_top + 36)),
 
-            # Infantry PathNodes Network (Continuous corridor spacing <= 550 UU)
-            _generate_actor_t3d("Engine.PathNode", "Path_RedBase_In", (-3072, 150, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedBase_Out", (-2700, 250, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedMid1", (-2150, 200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedMid2", (-1600, 300, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedApproach", (-1100, 200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedPlateau_Ramp", (-600, 0, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_CenterPlateau", (0, 200, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_PlateauNorth", (0, 600, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_PlateauSouth", (0, -600, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_PlateauEast", (600, 0, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_PlateauWest", (-600, 0, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_NorthMid1", (0, 1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_NorthNode", (150, 2400, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_SouthMid1", (0, -1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_SouthNode", (150, -2400, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BluePlateau_Ramp", (600, 0, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueApproach", (1100, -200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid2", (1600, -300, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid1", (2150, -200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_Out", (2700, -250, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_In", (3072, 150, z_floor + 40)),
+            # Infantry PathNodes Network (Clean floor/plateau separation, spacing <= 550 UU)
+            _generate_actor_t3d("Engine.PathNode", "Path_RedBase_In", (-3072, 150, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedBase_Out", (-2700, 250, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedMid1", (-2150, 200, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedMid2", (-1600, 300, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedApproach", (-1100, 200, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedPlateau_Ramp", (-950, 0, z_floor + 45)),
 
-            # RoadPathNodes (Vehicle Network - spaced <= 600 UU to avoid intermediate path solver hangs)
+            _generate_actor_t3d("Engine.PathNode", "Path_CenterPlateau", (0, 0, z_plateau_top + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_PlateauNorth", (0, 450, z_plateau_top + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_PlateauSouth", (0, -450, z_plateau_top + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_PlateauEast", (450, 0, z_plateau_top + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_PlateauWest", (-450, 0, z_plateau_top + 45)),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_NorthMid1", (0, 1100, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_NorthNode", (150, 2400, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_SouthMid1", (0, -1100, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_SouthNode", (150, -2400, z_floor + 45)),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_BluePlateau_Ramp", (950, 0, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueApproach", (1100, -200, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid2", (1600, -300, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid1", (2150, -200, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_Out", (2700, -250, z_floor + 45)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_In", (3072, 150, z_floor + 45)),
+
+            # RoadPathNodes (Vehicle Network - separated from plateau cylinder)
             _generate_actor_t3d("Engine.RoadPathNode", "Road_RedBase", (-3072, -150, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_Red1", (-2300, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_RedMid", (-1536, 0, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_RedApp", (-800, 0, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth1", (0, 800, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth", (0, 1600, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_RedApp", (-1100, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth1", (0, 1000, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth", (0, 1700, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth3", (-150, 2400, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth1", (0, -800, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth", (0, -1500, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth1", (0, -1000, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth", (0, -1700, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth3", (-150, -2400, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueApp", (800, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueApp", (1100, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueMid", (1536, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_Blue1", (2300, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueBase", (3072, -150, z_floor + 50)),
 
             # FlyingPathNodes (Aerial Raptor / Cicada Network near landing pads)
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Red", (-3200, -200, z_floor + 250)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_RedMid", (-1536, 0, z_floor + 300)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Center", (0, 0, z_floor + 500)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_BlueMid", (1536, 0, z_floor + 300)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Blue", (3200, -200, z_floor + 250)),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Red", (-3200, -200, z_floor + 250), {"bFlyingPreferred": "True"}),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_RedMid", (-1536, 0, z_floor + 300), {"bFlyingPreferred": "True"}),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Center", (0, 0, z_floor + 500), {"bFlyingPreferred": "True"}),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_BlueMid", (1536, 0, z_floor + 300), {"bFlyingPreferred": "True"}),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Blue", (3200, -200, z_floor + 250), {"bFlyingPreferred": "True"}),
 
             # Sunlight & Ambient Sky Lighting
             _generate_actor_t3d("Engine.Sunlight", "Canyon_Sun", (0, 0, 500), {
@@ -2742,7 +2745,7 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_canyon}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_plateau}"',
-            f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 128}",
+            f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
