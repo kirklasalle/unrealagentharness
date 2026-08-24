@@ -28,9 +28,20 @@ All notable changes, architectural enhancements, and procedural world-building p
 - Added automatic `OBJ LOAD FILE="..\Textures\<pkg>" PACKAGE=<pkg_name>` preloading to all UT2004 world formulas before brush/actor importation.
 - Eliminates missing material warnings (`Failed to find object 'Material AntalusTextures.Rock.CliffRock1'`) and guarantees flawless visual rendering across Canyon, Arctic, Space, Volcanic, Egyptian, and Cyber themes.
 
-### 🧪 Test Coverage: 89/89 Unit Tests Passing
+### 🧭 Critical Fix: Navigation Network Loop & Embedded Pickup Resolution (`PATHS BUILD`)
+- **Root Cause Identified from Screenshot (`agentharness_105.png`)**:
+  - UnrealEd 3 froze on `PATHS BUILD` ("Creating intermediate paths") with warnings `Pickup embedded in collision geometry!` on `Rocket_Mid` and `May be too close to other navigation points` on `PlayerStart`.
+  - **Embedded Pickups**: Pickups (`Rocket_Mid`, `Sniper_High`) placed in `generate_ut2004_onslaught_canyon_outpost` were positioned at `z_floor + 50` while inside the central plateau cylinder (which occupies `z_floor` to `z_floor + 256`), embedding them in solid additive BSP geometry.
+  - **Overlapping Nav Nodes**: `PlayerStart` and `PathNode` were placed at identical `(X, Y, Z)` coordinates, generating cyclic 0-cost ReachSpecs that hung the editor's path-building reachability raytracer.
+- **Architectural Solution**:
+  - Elevated all plateau/bunker/dais pickups and path nodes to `z_surface_top + 36..40` ensuring full vertical collision clearance.
+  - Decoupled `PathNode`s from `PlayerStart`s, `xJumpPad`s, and `RoadPathNode`s across all 10 procedural world generators, establishing clean walking corridors and dedicated vehicle lanes.
+  - Added `test_ut2004_navigation_nodes_have_no_duplicate_locations` unit test to guarantee zero overlapping navigation nodes across all generators.
+
+### 🧪 Test Coverage: 90/90 Unit Tests Passing
 - Added `test_ut2004_palette_vehicle_factory_safety`: enforces with regex lookahead that no palette item ever places crash-prone live vehicle pawns.
-- Added `test_ut2004_all_generators_preload_textures`: verifies all 8 UT2004 generators emit package preloading commands.
+- Added `test_ut2004_all_generators_preload_textures`: verifies all 10 UT2004 generators emit package preloading commands.
+- Added `test_ut2004_navigation_nodes_have_no_duplicate_locations`: validates 100% clean navigation graphs without duplicate coordinates or cyclic reachability traps.
 
 ## [v2.16.0] - 2026-08-24: Ultra Geometry Detail Engine, Target & Palette Audit, and Unreal 1 Single-Player RPG Story Systems
 

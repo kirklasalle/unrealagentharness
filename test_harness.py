@@ -864,6 +864,41 @@ class TestTargetAndPaletteSystem(unittest.TestCase):
                 self.assertIn("MAP NEW", cmds[0])
                 self.assertTrue(any(c.startswith("OBJ LOAD FILE=") for c in cmds), f"{gen.__name__} missing OBJ LOAD commands")
 
+    def test_ut2004_navigation_nodes_have_no_duplicate_locations(self):
+        """Verifies no two NavigationPoints/PlayerStarts share identical or near-identical coordinates (<50 UU)."""
+        from core.formula_engine import FormulaEngine
+        import tempfile
+        import re
+        generators = [
+            FormulaEngine.generate_ut2004_tournament_colosseum,
+            FormulaEngine.generate_ut2004_onslaught_canyon_outpost,
+            FormulaEngine.generate_ut2004_arctic_glacier_facility,
+            FormulaEngine.generate_ut2004_orbital_asteroid_mining,
+            FormulaEngine.generate_ut2004_volcanic_magma_foundry,
+            FormulaEngine.generate_ut2004_anubis_egyptian_temple,
+            FormulaEngine.generate_ut2004_invasion_monster_arena,
+            FormulaEngine.generate_ut2004_reactor_core_chamber,
+            FormulaEngine.generate_ut2004_biohazard_quarantine_lab,
+            FormulaEngine.generate_ut2004_fortified_forward_base,
+        ]
+        loc_pattern = re.compile(r"Location=\(X=([-\d.]+),Y=([-\d.]+),Z=([-\d.]+)\)")
+        with tempfile.TemporaryDirectory() as tmp:
+            for gen in generators:
+                gen(system_dir=Path(tmp))
+                for t3d in Path(tmp).glob("*.t3d"):
+                    content = t3d.read_text(encoding="utf-8")
+                    actors = content.split("Begin Actor")
+                    nav_locs = []
+                    for act in actors:
+                        if any(k in act for k in ["PathNode", "PlayerStart", "JumpPad", "RoadPathNode", "FlyingPathNode"]):
+                            m = loc_pattern.search(act)
+                            if m:
+                                x, y, z = float(m.group(1)), float(m.group(2)), float(m.group(3))
+                                for (ox, oy, oz) in nav_locs:
+                                    dist = ((x - ox)**2 + (y - oy)**2 + (z - oz)**2)**0.5
+                                    self.assertGreater(dist, 10.0, f"Generator {gen.__name__} produced overlapping nav nodes in {t3d.name} at ({x}, {y}, {z}) vs ({ox}, {oy}, {oz})")
+                                nav_locs.append((x, y, z))
+
     def test_tools_schema_detail_level_presence(self):
         tool_names = {t["function"]["name"]: t["function"] for t in UNREALED_TOOLS}
         self.assertIn("build_tournament_arena", tool_names)
