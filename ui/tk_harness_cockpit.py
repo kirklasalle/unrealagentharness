@@ -63,6 +63,7 @@ class StandaloneHarnessCockpit(tk.Tk):
 
         self._build_ui()
         self._start_status_poll_thread()
+        self._start_update_check_thread()
 
         logger.info("StandaloneHarnessCockpit UI initialized.")
 
@@ -97,6 +98,8 @@ class StandaloneHarnessCockpit(tk.Tk):
         tk.Button(act_box, text="🎮 LAUNCH EDITOR", font=("Segoe UI", 8, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._launch_editor).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="🔄 REBUILD", font=("Segoe UI", 8, "bold"), bg="#38bdf8", fg="#0f172a", relief=tk.FLAT, padx=8, pady=3, command=self._quick_rebuild).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="📌 DOCK", font=("Segoe UI", 8), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=8, pady=3, command=self._toggle_dock).pack(side=tk.LEFT, padx=3)
+        self.upd_btn = tk.Button(act_box, text="🚀 UPDATES", font=("Segoe UI", 8, "bold"), bg="#475569", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_updater)
+        self.upd_btn.pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="⚙️ SETTINGS", font=("Segoe UI", 8), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=8, pady=3, command=self._open_settings).pack(side=tk.LEFT, padx=3)
 
         # 2. Main Paned Layout
@@ -364,6 +367,18 @@ class StandaloneHarnessCockpit(tk.Tk):
     def _open_settings(self):
         SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
 
+    def _open_updater(self):
+        """Opens Settings directly on the Updates tab and triggers update check."""
+        dlg = SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
+        # Select tab 4 (Updates)
+        for child in dlg.winfo_children():
+            if isinstance(child, ttk.Notebook):
+                try:
+                    child.select(4)
+                except Exception:
+                    pass
+        dlg._check_updates_action()
+
     def _open_engine_scanner(self):
         """Opens Settings with the auto-scanner modal automatically triggered."""
         dlg = SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
@@ -372,6 +387,31 @@ class StandaloneHarnessCockpit(tk.Tk):
     def _on_settings_saved(self):
         self.engine_var.set(self.config_mgr.get_active_engine_id())
         self.controller._refresh_paths()
+
+    def _start_update_check_thread(self):
+        """Silently checks for updates in the background on startup."""
+        def _check():
+            try:
+                from AgentHarness.core.update_engine import UpdateEngine
+                res = UpdateEngine.check_for_updates()
+                if res.get("update_available"):
+                    latest_ver = res.get("latest_version")
+                    def _notify():
+                        self.upd_btn.configure(
+                            text=f"🚀 UPDATE (v{latest_ver})",
+                            bg="#ea580c",
+                            fg="#ffffff",
+                            font=("Segoe UI", 8, "bold"),
+                        )
+                        self._append_chat(
+                            "System",
+                            f"🚀 **New Update Available (v{latest_ver})!** Click **🚀 UPDATE** in the top bar to download and install.",
+                        )
+                    self.after(0, _notify)
+            except Exception as e:
+                logger.debug(f"Background update check skipped: {e}")
+
+        threading.Thread(target=_check, daemon=True).start()
 
     def _start_status_poll_thread(self):
         def _poll():

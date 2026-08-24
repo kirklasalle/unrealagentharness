@@ -468,6 +468,38 @@ class TestEngineScanner(unittest.TestCase):
         self.assertTrue(len(res) > 0)
 
 
+class TestUpdateEngine(unittest.TestCase):
+    """Tests for the UpdateEngine auto-updater and version management module."""
+
+    def test_current_version_string(self):
+        from AgentHarness.core.update_engine import UpdateEngine
+        ver = UpdateEngine.get_current_version()
+        self.assertIsInstance(ver, str)
+        self.assertTrue(len(ver) > 0)
+
+    def test_parse_semver(self):
+        from AgentHarness.core.update_engine import UpdateEngine
+        self.assertEqual(UpdateEngine.parse_semver("v2.10.0"), (2, 10, 0))
+        self.assertEqual(UpdateEngine.parse_semver("2.9.1"), (2, 9, 1))
+        self.assertEqual(UpdateEngine.parse_semver("3.0.0-beta"), (3, 0, 0))
+        self.assertTrue(UpdateEngine.parse_semver("2.11.0") > UpdateEngine.parse_semver("2.10.0"))
+
+    def test_is_git_repository(self):
+        from AgentHarness.core.update_engine import UpdateEngine
+        is_git = UpdateEngine.is_git_repository()
+        self.assertIsInstance(is_git, bool)
+        # When running in git repo, this should be True
+        self.assertTrue(is_git)
+
+    def test_check_for_updates_returns_dict(self):
+        from AgentHarness.core.update_engine import UpdateEngine
+        res = UpdateEngine.check_for_updates(timeout=3.0)
+        self.assertIsInstance(res, dict)
+        self.assertIn("update_available", res)
+        self.assertIn("current_version", res)
+        self.assertIn("latest_version", res)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

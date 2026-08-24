@@ -4,7 +4,20 @@ All notable changes, architectural enhancements, and procedural world-building p
 
 ---
 
-## [v2.10.0] - 2026-08-24: Universal Unreal Engine & Game Mod Auto-Discovery Engine
+## [v2.11.0] - 2026-08-24: Intelligent Auto-Updater & Version Management Engine
+
+### 🚀 New: World-Class Auto-Updater & Version Checker
+- **`UpdateEngine` Core Architecture**:
+  - Automatically queries the remote GitHub repository (`https://github.com/kirklasalle/unrealagentharness`) for latest releases, tags, and commits.
+  - Dual-mode update delivery:
+    1. **Git Pull & Sync**: Intelligent repository synchronization with branch tracking and commit analysis.
+    2. **HTTP ZIP Release Fallback**: Direct chunked archive downloading and selective extraction when running outside a git clone.
+  - **Configuration Protection**: Automatically creates a backup snapshot of `config/*.json` and user settings before updating, ensuring custom engine paths and API keys are never overwritten.
+- **Interactive UI Updates**:
+  - **Cockpit Action Bar**: Added **`🚀 UPDATES`** button that checks for releases and changes to a glowing orange badge (`🚀 UPDATE (vX.X)`) when a new version is detected.
+  - **Settings Dialog**: Added a dedicated **`🚀 Updates`** tab with version badges, remote changelog viewer, interactive progress bar, and 1-click **"⬇️ Download & Install Update"** button.
+  - **Background Check**: Silently checks for updates in the background on harness startup.
+- **Unit Test Suite**: Added `TestUpdateEngine` bringing the total test suite to **56/56 passing tests in 10.09s**.
 
 ### 🔍 New: Portable Engine Auto-Discovery & Path Resolution
 - **Standalone Clone & Portability Support**:

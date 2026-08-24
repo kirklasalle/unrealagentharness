@@ -16,6 +16,8 @@ from AgentHarness.core.config_manager import ConfigManager
 from AgentHarness.core.engine_controller import EngineController
 from AgentHarness.core.logger import get_logger
 from AgentHarness.core.nexus_bridge import NexusBridge
+from AgentHarness.core.update_engine import UpdateEngine
+from AgentHarness.version import __version__, __repo__
 
 logger = get_logger("SettingsDialog", "settings_dialog.log")
 
@@ -69,6 +71,11 @@ class SettingsDialog(tk.Toplevel):
         tab_diag = tk.Frame(nb, bg="#12151c", padx=12, pady=12)
         nb.add(tab_diag, text="🩺 Diagnostics")
         self._build_diag_tab(tab_diag)
+
+        # Tab 5: Updates & Version
+        tab_updates = tk.Frame(nb, bg="#12151c", padx=12, pady=12)
+        nb.add(tab_updates, text="🚀 Updates")
+        self._build_updates_tab(tab_updates)
 
         # Bottom Action Bar
         btn_bar = tk.Frame(self, bg="#1a1f2c", pady=10, padx=16)
@@ -459,7 +466,97 @@ class SettingsDialog(tk.Toplevel):
         key_len = len(llm_prof.get("api_key", ""))
         self.diag_txt.insert(tk.END, f"[PASS] Step 4: Active LLM Profile '{llm_prof.get('name')}' (Key Length: {key_len} chars)\n")
 
-        self.diag_txt.insert(tk.END, "\n=== DIAGNOSTICS COMPLETE ===")
+    def _build_updates_tab(self, parent: tk.Frame):
+        # Version Banner
+        banner = tk.Frame(parent, bg="#0f172a", padx=14, pady=12, highlightbackground="#0284c7", highlightthickness=1)
+        banner.pack(fill=tk.X, pady=(0, 10))
+
+        b_top = tk.Frame(banner, bg="#0f172a")
+        b_top.pack(fill=tk.X)
+        tk.Label(b_top, text="🚀 UNREAL AGENT HARNESS UPDATER", font=("Segoe UI", 11, "bold"), fg="#38bdf8", bg="#0f172a").pack(side=tk.LEFT)
+        ver_pill = tk.Label(b_top, text=f"Installed: v{__version__}", font=("Segoe UI", 9, "bold"), fg="#22c55e", bg="#14532d", padx=8, pady=2)
+        ver_pill.pack(side=tk.RIGHT)
+
+        method_str = "Git Repository (Automatic Pull & Rebase)" if UpdateEngine.is_git_repository() else "ZIP Package Release (Direct HTTP Download)"
+        tk.Label(banner, text=f"Remote Repository: {__repo__}\nUpdate Method: {method_str}", font=("Consolas", 8), fg="#94a3b8", bg="#0f172a", justify=tk.LEFT).pack(anchor=tk.W, pady=(6, 0))
+
+        # Action Buttons Box
+        act_box = tk.Frame(parent, bg="#12151c", pady=6)
+        act_box.pack(fill=tk.X)
+
+        self.upd_status_lbl = tk.Label(act_box, text="Ready to check for latest releases.", font=("Segoe UI", 9), fg="#f8fafc", bg="#12151c")
+        self.upd_status_lbl.pack(side=tk.LEFT)
+
+        check_btn = tk.Button(act_box, text="🔄 Check for Updates Now", font=("Segoe UI", 9, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=12, pady=4, command=self._check_updates_action)
+        check_btn.pack(side=tk.RIGHT, padx=4)
+
+        self.apply_upd_btn = tk.Button(act_box, text="⬇️ Download & Install Update", font=("Segoe UI", 9, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=12, pady=4, state=tk.DISABLED, command=self._apply_update_action)
+        self.apply_upd_btn.pack(side=tk.RIGHT, padx=4)
+
+        # Progress bar
+        self.upd_pbar = ttk.Progressbar(parent, orient="horizontal", mode="determinate")
+        self.upd_pbar.pack(fill=tk.X, pady=(4, 8))
+
+        # Notes / Changelog Output Box
+        tk.Label(parent, text="Update Status & Release Notes:", font=("Segoe UI", 9, "bold"), fg="#f8fafc", bg="#12151c").pack(anchor=tk.W, pady=(4, 2))
+        self.upd_notes_txt = tk.Text(parent, bg="#0f172a", fg="#e2e8f0", font=("Consolas", 9), height=10)
+        self.upd_notes_txt.pack(fill=tk.BOTH, expand=True, pady=(0, 4))
+        self.upd_notes_txt.insert(tk.END, f"Current Version: v{__version__}\nClick 'Check for Updates Now' to query the remote GitHub repository.\n")
+
+    def _check_updates_action(self):
+        self.upd_status_lbl.configure(text="Checking remote GitHub repository...", fg="#38bdf8")
+        self.upd_pbar.configure(value=30)
+        self.upd_notes_txt.delete("1.0", tk.END)
+        self.upd_notes_txt.insert(tk.END, "Querying remote repository for latest releases and commits...\n")
+
+        def _worker():
+            res = UpdateEngine.check_for_updates()
+            def _update_ui():
+                self.upd_pbar.configure(value=100)
+                if res.get("update_available"):
+                    self.upd_status_lbl.configure(text=f"🚀 New update available: v{res.get('latest_version')}!", fg="#f59e0b")
+                    self.apply_upd_btn.configure(state=tk.NORMAL)
+                    self.upd_notes_txt.insert(tk.END, f"=== NEW VERSION AVAILABLE: v{res.get('latest_version')} ===\n\n")
+                    self.upd_notes_txt.insert(tk.END, f"{res.get('release_notes')}\n\n")
+                    self.upd_notes_txt.insert(tk.END, "Click 'Download & Install Update' to update automatically.")
+                else:
+                    self.upd_status_lbl.configure(text=f"✅ Up to date (v{__version__})", fg="#22c55e")
+                    self.upd_notes_txt.insert(tk.END, f"=== YOU ARE RUNNING THE LATEST VERSION (v{__version__}) ===\n")
+                    self.upd_notes_txt.insert(tk.END, "No updates needed at this time.")
+                    # Allow force re-install if git
+                    if UpdateEngine.is_git_repository():
+                        self.apply_upd_btn.configure(state=tk.NORMAL, text="🔄 Sync / Re-pull Main")
+            self.after(0, _update_ui)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _apply_update_action(self):
+        if not messagebox.askyesno("Confirm Update", "Download and install the latest update now?\nLocal configurations will be preserved."):
+            return
+
+        self.upd_status_lbl.configure(text="Downloading and installing update...", fg="#38bdf8")
+        self.apply_upd_btn.configure(state=tk.DISABLED)
+
+        def _progress(msg, pct):
+            self.after(0, lambda m=msg, p=pct: (
+                self.upd_status_lbl.configure(text=m),
+                self.upd_pbar.configure(value=p),
+                self.upd_notes_txt.insert(tk.END, f"[{p}%] {m}\n"),
+                self.upd_notes_txt.see(tk.END)
+            ))
+
+        def _worker():
+            res = UpdateEngine.apply_update(progress_cb=_progress)
+            def _finish():
+                if res.get("success"):
+                    messagebox.showinfo("Update Complete", res.get("message"))
+                    self.destroy()
+                else:
+                    messagebox.showerror("Update Error", f"Failed to apply update: {res.get('message')}")
+                    self.apply_upd_btn.configure(state=tk.NORMAL)
+            self.after(0, _finish)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _save_and_close(self):
         # Save Engine
