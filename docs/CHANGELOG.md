@@ -5,9 +5,9 @@ All notable changes, architectural enhancements, and procedural world-building p
 ## [v2.16.1] - 2026-08-24: UT2004 USkeletalMeshInstance Viewport Crash Resolution, Safe Vehicle Factory System, and Auto-Package Preloader
 
 ### 🛡️ Critical Bugfix: UT2004 `USkeletalMeshInstance::Render` General Protection Fault Resolution
-- **Root Cause Identified from Crash Dump & Screenshot (`agentharness_103.png`)**:
-  - In Unreal Tournament 2004 (UE2.5), placing live vehicle actor Pawns (`Onslaught.ONSHoverTank`, `ONSHoverBike`, `ONSRV`, `ONSPRV`, `ONSAttackCraft`) directly in an editor map causes UnrealEd's real-time 3D perspective viewport (`FDynamicActor::Render -> USkeletalMeshInstance::Render`) to crash with a General Protection Fault (0xC0000005) because karma physics and skeletal bone hierarchies are uninitialized in the editor viewport.
-- **Architectural Solution — Safe `ONSVehicleFactory` Hierarchy**:
+- **Root Cause Identified from Crash Dumps & Screenshots (`agentharness_103.png`, `agentharness_104.png`)**:
+  - In Unreal Tournament 2004 (UE2.5), placing live vehicle actor Pawns (`Onslaught.ONSHoverTank`, `ONSHoverBike`, `ONSRV`, `ONSPRV`, `ONSAttackCraft`) or raw 1st-person Weapon actors (`Onslaught.ONSAVRiL`) directly into an editor map causes UnrealEd's real-time 3D perspective viewport (`FDynamicActor::Render -> USkeletalMeshInstance::Render`) to crash with a General Protection Fault (0xC0000005) because skeletal bone hierarchies and karma physics instances require an active gameplay player pawn attachment.
+- **Architectural Solution — Safe `ONSVehicleFactory` & `ONSAVRiLPickup` Hierarchy**:
   - Replaced all raw vehicle pawn placements in `core/formula_engine.py` and `ui/palette_ut2004.py` with standard, rock-solid **`ONSVehicleFactory`** subclasses:
     - 🚜 `Onslaught.ONSTankFactory` (Goliath heavy tank factory)
     - 🏍️ `Onslaught.ONSHoverCraftFactory` (Manta agile hovercraft factory)
@@ -17,7 +17,8 @@ All notable changes, architectural enhancements, and procedural world-building p
     - 🛸 `OnslaughtFull.ONSBomberFactory` (Cicada dual-pilot VTOL gunship factory)
     - 🛞 `OnslaughtBP.ONSShockTankFactory` (Paladin mobile plasma shield vehicle factory)
     - 🤖 `OnslaughtFull.ONSMASFactory` (Leviathan colossal 5-man mobile super fortress factory)
-  - Factories display safe static mesh spawn pads in UnrealEd and reliably instantiate vehicles at match runtime.
+  - Replaced all raw `Onslaught.ONSAVRiL` weapon actor placements with the static-mesh world pickup **`Onslaught.ONSAVRiLPickup`** across `formula_engine.py`, `palette_ut2004.py`, `llm_engine.py`, and `test_harness.py`.
+  - Factories and pickups display safe static meshes in UnrealEd without triggering skeletal mesh render crashes.
 
 ### ⚡ Fix: Abstract `ONSPowerNode` Class Instantiation Replaced with `ONSPowerNodeNeutral`
 - Resolved UnrealEd map import warning `Warning: SpawnActor failed because class ONSPowerNode is abstract`.

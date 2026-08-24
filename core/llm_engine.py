@@ -79,7 +79,7 @@ class LLMEngine:
         elif engine_id in ["ut2004", "ut2003"]:
             engine_directives = [
                 "Target: Unreal Tournament 2004 / 2003 (UE2.5 / v3369+).",
-                "Weapons: XWeapons.ShockRiflePickup, XWeapons.FlakCannonPickup, XWeapons.RocketLauncherPickup, XWeapons.SniperRiflePickup, XWeapons.MinigunPickup, XWeapons.LinkGunPickup, XWeapons.BioRiflePickup, XWeapons.AssaultRiflePickup, Onslaught.ONSAVRiL.",
+                "Weapons: XWeapons.ShockRiflePickup, XWeapons.FlakCannonPickup, XWeapons.RocketLauncherPickup, XWeapons.SniperRiflePickup, XWeapons.MinigunPickup, XWeapons.LinkGunPickup, XWeapons.BioRiflePickup, XWeapons.AssaultRiflePickup, Onslaught.ONSAVRiLPickup.",
                 "Pickups: XPickups.ShieldPickup, XPickups.SuperShieldPack, XPickups.UDamagePack, XPickups.HealthPack, XPickups.MiniHealthPack.",
                 "Vehicles & Onslaught: Onslaught.ONSPowerCore, Onslaught.ONSPowerNodeNeutral, Onslaught.ONSHoverCraftFactory (Manta), Onslaught.ONSAttackCraftFactory (Raptor), Onslaught.ONSTankFactory (Goliath), Onslaught.ONSRVFactory (Scorpion), Onslaught.ONSPRVFactory (Hellbender).",
                 "Navigation: Engine.PlayerStart, Engine.PathNode, XGame.xJumpPad, XGame.xDoor.",

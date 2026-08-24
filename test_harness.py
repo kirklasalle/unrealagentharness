@@ -307,7 +307,7 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("Onslaught.ONSRVFactory", content)
             self.assertIn("Onslaught.ONSAttackCraftFactory", content)
             self.assertIn("Onslaught.ONSTankFactory", content)
-            self.assertIn("Onslaught.ONSAVRiL", content)
+            self.assertIn("Onslaught.ONSAVRiLPickup", content)
             self.assertIn("Engine.RoadPathNode", content)
             self.assertIn("Engine.FlyingPathNode", content)
 
@@ -835,7 +835,7 @@ class TestTargetAndPaletteSystem(unittest.TestCase):
         import re
         from ui.palette_ut2004 import get_ut2004_palette
         palette = get_ut2004_palette()
-        dangerous_pattern = re.compile(r"CLASS=(?:Onslaught|OnslaughtFull)\.(?:ONSHoverTank|ONSHoverBike|ONSRV|ONSPRV|ONSAttackCraft|ONSBomber|ONSPowerNode)\b(?!Factory)")
+        dangerous_pattern = re.compile(r"CLASS=(?:Onslaught|OnslaughtFull)\.(?:ONSHoverTank|ONSHoverBike|ONSRV|ONSPRV|ONSAttackCraft|ONSBomber|ONSPowerNode|ONSAVRiL)\b(?!(?:Factory|Pickup))")
         for cat in palette:
             for itm in cat.get("items", []):
                 for cmd in itm.get("commands", []):

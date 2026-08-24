@@ -2665,8 +2665,8 @@ class FormulaEngine:
             _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "South_PowerNode", (0, -2400, z_floor + 150)),
 
             # Anti-Vehicle Weapons & Powerups
-            _generate_actor_t3d("Onslaught.ONSAVRiL", "AVRiL_Red", (-2400, 0, z_floor + 50)),
-            _generate_actor_t3d("Onslaught.ONSAVRiL", "AVRiL_Blue", (2400, 0, z_floor + 50)),
+            _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "AVRiL_Red", (-2400, 0, z_floor + 50)),
+            _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "AVRiL_Blue", (2400, 0, z_floor + 50)),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock_Mid", (0, 400, z_floor + 300)),
             _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_Mid", (0, -400, z_floor + 300)),
             _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket_Mid", (600, 0, z_floor + 50)),
@@ -3210,7 +3210,7 @@ class FormulaEngine:
         actors = [
             # Vehicle Factory (Use safe ONSVehicleFactory to avoid editor skeletal mesh crash)
             _generate_actor_t3d("Onslaught.ONSRVFactory", "FOB_Scorpion", (0, -800, z_floor + 50)),
-            _generate_actor_t3d("Onslaught.ONSAVRiL", "FOB_AVRiL", (0, 0, z_floor + 300)),
+            _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "FOB_AVRiL", (0, 0, z_floor + 300)),
             _generate_actor_t3d("XWeapons.SniperRiflePickup", "FOB_Sniper", (0, 400, z_floor + 300)),
             _generate_actor_t3d("XWeapons.RocketLauncherPickup", "FOB_Rocket", (-400, 0, z_floor + 300)),
             _generate_actor_t3d("XPickups.SuperShieldPack", "FOB_SuperShield", (400, 0, z_floor + 300)),

@@ -74,7 +74,7 @@ def get_ut2004_palette(
                     "commands": [
                         "ACTOR ADD CLASS=Onslaught.ONSTankFactory",
                         "ACTOR ADD CLASS=Onslaught.ONSHoverCraftFactory",
-                        "ACTOR ADD CLASS=Onslaught.ONSAVRiL",
+                        "ACTOR ADD CLASS=Onslaught.ONSAVRiLPickup",
                         "FLUSH",
                     ],
                     "prompt": "Construct a heavy vehicle staging area with Goliath Battle Tank Factory, Manta Factory, and AVRiL weapon station.",
@@ -259,10 +259,10 @@ def get_ut2004_palette(
                     "prompt": "Place an XWeapons.BioRiflePickup at the current location.",
                 },
                 {
-                    "title": "🎯 ONSAVRiL (Anti-Vehicle Rocket)",
-                    "desc": "Spawns Onslaught.ONSAVRiL laser-guided anti-vehicle rocket launcher.",
-                    "commands": ["ACTOR ADD CLASS=Onslaught.ONSAVRiL", "FLUSH"],
-                    "prompt": "Place an Onslaught.ONSAVRiL Anti-Vehicle Rocket Launcher at the current location.",
+                    "title": "🎯 ONSAVRiLPickup (Anti-Vehicle Rocket)",
+                    "desc": "Spawns Onslaught.ONSAVRiLPickup laser-guided anti-vehicle rocket launcher.",
+                    "commands": ["ACTOR ADD CLASS=Onslaught.ONSAVRiLPickup", "FLUSH"],
+                    "prompt": "Place an Onslaught.ONSAVRiLPickup Anti-Vehicle Rocket Launcher at the current location.",
                 },
                 {
                     "title": "☢️ Redeemer Pickup",
