@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/kirklasalle/unrealagentharness/main/schemas/uah_engine_profile.schema.json",
+  "title": "UAHEngineProfile",
+  "description": "UAH Standard Specification for Unreal Engine Target Profiles across UE1 through UE5.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "generation",
+    "category",
+    "root_dir",
+    "system_dir",
+    "editor_exe"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the engine profile (e.g. ut99_goty, ut2004, ue5)."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name for the engine or mod."
+    },
+    "generation": {
+      "type": "string",
+      "enum": ["UE1", "UE2", "UE2.5", "UE3", "UE4", "UE5"],
+      "description": "Unreal Engine technological generation."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["Base Engine", "Game Mod (Total Conversion)", "Custom Environment"],
+      "description": "Classification of the engine installation."
+    },
+    "root_dir": {
+      "type": "string",
+      "description": "Absolute filesystem root path of the installation."
+    },
+    "system_dir": {
+      "type": "string",
+      "description": "Absolute filesystem path to the binaries/System folder containing UnrealEd."
+    },
+    "editor_exe": {
+      "type": "string",
+      "description": "Executable filename for the Unreal Editor (e.g. UnrealEd.exe, UnrealEditor.exe)."
+    },
+    "game_exe": {
+      "type": "string",
+      "description": "Executable filename for the game runtime (e.g. UT.exe, UT2004.exe)."
+    },
+    "signature_classes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Mapping of functional categories to verified UnrealScript/C++ package class paths."
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "initialized": { "type": "boolean" },
+        "verified": { "type": "boolean" },
+        "last_checked": { "type": "string" },
+        "summary": { "type": "string" }
+      },
+      "description": "Persistent verification state and diagnostic health."
+    }
+  }
+}

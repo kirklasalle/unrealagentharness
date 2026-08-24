@@ -10,12 +10,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 
-from ..version import __version__, __version_info__, __repo__, __github_api_repo__
+from version import __version__, __version_info__, __repo__, __github_api_repo__
 from .logger import get_logger
 
 logger = get_logger("UpdateEngine", "updater.log")
@@ -140,6 +141,12 @@ class UpdateEngine:
                             result["update_available"] = True
                             result["release_notes"] = f"New version v{remote_ver} available! (Current: v{cls.CURRENT_VERSION})"
                         break
+        except urllib.error.HTTPError as http_err:
+            # HTTPError is itself an open HTTP response — must be explicitly
+            # closed to prevent ResourceWarning from unclosed socket (v2.15.0 fix)
+            http_err.close()
+            logger.warning(f"HTTP version check error: {http_err}")
+            result["error"] = str(http_err)
         except Exception as e:
             logger.warning(f"HTTP version check error: {e}")
             result["error"] = str(e)
@@ -207,7 +214,26 @@ class UpdateEngine:
             try:
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     tmp_zip = Path(tmp_dir) / "latest.zip"
-                    urllib.request.urlretrieve(zip_url, str(tmp_zip))
+
+                    # Stream download with proper context manager to avoid
+                    # ResourceWarning from unclosed HTTP connections (v2.15.0 fix)
+                    req = urllib.request.Request(
+                        zip_url,
+                        headers={"User-Agent": "UnrealAgentHarness-Updater"},
+                    )
+                    with urllib.request.urlopen(req, timeout=30.0) as response:
+                        chunk_size = 65536  # 64 KB chunks
+                        bytes_downloaded = 0
+                        with open(tmp_zip, "wb") as out_file:
+                            while True:
+                                chunk = response.read(chunk_size)
+                                if not chunk:
+                                    break
+                                out_file.write(chunk)
+                                bytes_downloaded += len(chunk)
+                        logger.info(
+                            f"Downloaded {bytes_downloaded:,} bytes to {tmp_zip.name}"
+                        )
 
                     if progress_cb:
                         progress_cb("Extracting and applying updated files...", 70)

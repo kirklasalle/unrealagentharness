@@ -117,14 +117,59 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "build_tournament_arena",
-            "description": "Procedurally builds a classic tournament deathmatch arena with multi-tier mezzanines, weapon layouts, and path nodes.",
+            "description": "Procedurally builds a tournament deathmatch arena with multi-tier mezzanines, semi-solid fluted columns, crown moldings, weapon layouts, and path nodes.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "width": {"type": "number", "description": "Width X in Unreal Units."},
-                    "length": {"type": "number", "description": "Length Y in Unreal Units."},
-                    "height": {"type": "number", "description": "Height Z in Unreal Units."},
+                    "width": {"type": "number", "description": "Width X in Unreal Units (default 3072)."},
+                    "length": {"type": "number", "description": "Length Y in Unreal Units (default 3072)."},
+                    "height": {"type": "number", "description": "Height Z in Unreal Units (default 1024)."},
+                    "detail_level": {
+                        "type": "string",
+                        "enum": ["standard", "high", "ultra"],
+                        "description": "Architectural detail level. 'ultra' adds semi-solid fluted columns, perimeter moldings, crown cornices, recessed lighting alcoves, and 44 path nodes.",
+                    },
                 },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "build_unreal1_sanctuary",
+            "description": "Procedurally builds an authentic Unreal 1 Single-Player narrative RPG dungeon sanctuary with vaulted nave, arched ceilings, semi-solid fluted columns, TranslatorEvent lore tablets, Nali monks, Brutes, Skaarj, and sacred crypts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "detail_level": {
+                        "type": "string",
+                        "enum": ["standard", "high", "ultra"],
+                        "description": "Architectural detail level ('ultra' enables 24-sided fluted columns, alcove moldings, and sacred pool crypts).",
+                    },
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "build_outdoor_world",
+            "description": "Procedurally builds a premier outdoor world: mountain valley fortress, arid desert canyon ruins, or orbital asteroid outpost.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "world_type": {
+                        "type": "string",
+                        "enum": ["mountain_valley", "desert_canyon", "asteroid_outpost"],
+                        "description": "World environment archetype to construct.",
+                    },
+                    "detail_level": {
+                        "type": "string",
+                        "enum": ["standard", "high", "ultra"],
+                        "description": "Architectural detail level ('ultra' enables 24-sided towers/lookouts, semi-solid flying buttresses, stepped cliff shelves, bridge arch ribs, and TranslatorEvent lore).",
+                    },
+                },
+                "required": ["world_type"],
             },
         },
     },

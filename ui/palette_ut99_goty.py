@@ -5,7 +5,7 @@ Provides instant 1-click procedural blueprints, weapon armory spawns, powerups, 
 
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
-from AgentHarness.core.formula_engine import FormulaEngine
+from core.formula_engine import FormulaEngine
 
 
 def get_ut99_goty_palette(
@@ -19,10 +19,10 @@ def get_ut99_goty_palette(
             "category": "🏆 UT99 ARENA BLUEPRINTS",
             "items": [
                 {
-                    "title": "🏟️ Classic Tournament Arena",
-                    "desc": "2560x2560 subtractive arena with Shock Rifle, Flak Cannon, Armor, Pillar, Mezzanine, and Pathing.",
-                    "commands_factory": lambda: FormulaEngine.generate_ut99_tournament_arena(system_dir=system_dir),
-                    "prompt": "Build a classic UT99 Tournament deathmatch arena with Shock Rifle, Flak Cannon, Body Armor, and full Botpack pathing.",
+                    "title": "🏟️ Classic Tournament Arena (Ultra)",
+                    "desc": "3072x3072 multi-tier arena with semi-solid fluted pillars, perimeter trim, crown moldings, arched portals, alcove lighting, and 44 path nodes.",
+                    "commands_factory": lambda: FormulaEngine.generate_ut99_tournament_arena(system_dir=system_dir, detail_level="ultra"),
+                    "prompt": "Build a world-class ultra-detail UT99 Tournament deathmatch arena with semi-solid fluted columns, perimeter trim moldings, crown cornices, recessed lighting alcoves, Shock Rifle, Flak Cannon, Body Armor, and full Botpack pathing.",
                 },
                 {
                     "title": "🚩 Dual-Base CTF Outpost (Red)",
@@ -39,13 +39,66 @@ def get_ut99_goty_palette(
             ],
         },
         {
+            "category": "🏰 UNREAL 1 RPG / NARRATIVE TEMPLE & DUNGEON",
+            "items": [
+                {
+                    "title": "⛪ Sacred Nali Sanctuary & Crypts",
+                    "desc": "Grand vaulted nave with arched ceilings, Nali monks, Brute guards, Skaarj scouts, TranslatorEvent lore tablets, Dispersion Pistol, and crypts.",
+                    "commands_factory": lambda: FormulaEngine.generate_unreal1_sp_sanctuary(system_dir=system_dir, detail_level="ultra"),
+                    "prompt": "Construct an authentic Unreal 1 Single-Player narrative RPG dungeon sanctuary with vaulted nave, arched ceilings, semi-solid fluted columns, TranslatorEvent lore messages, Nali monks, Brute guards, Skaarj assassins, Dispersion Pistol, and sacred crypts.",
+                },
+                {
+                    "title": "📜 TranslatorEvent (Story Lore)",
+                    "desc": "Spawns an UnrealShare.TranslatorEvent computer terminal / scroll with readable story message.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.TranslatorEvent", "FLUSH"],
+                    "prompt": "Place an UnrealShare.TranslatorEvent story lore log message at the current location.",
+                },
+                {
+                    "title": "🧘 Nali Monk (Indigenous NPC)",
+                    "desc": "Spawns a peaceful 4-armed UnrealShare.Nali monk who gestures toward hidden secrets.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.Nali", "FLUSH"],
+                    "prompt": "Place a peaceful UnrealShare.Nali monk NPC here.",
+                },
+                {
+                    "title": "👹 Temple Brute (Mercenary Guard)",
+                    "desc": "Spawns an UnrealShare.Brute heavy mercenary guard armed with dual rocket cannons.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.Brute", "FLUSH"],
+                    "prompt": "Place an UnrealShare.Brute heavy mercenary guard here.",
+                },
+                {
+                    "title": "👽 Skaarj Warrior (Alien Assassin)",
+                    "desc": "Spawns an UnrealI.SkaarjWarrior acrobatic assassin with wrist blades.",
+                    "commands": ["ACTOR ADD CLASS=UnrealI.SkaarjWarrior", "FLUSH"],
+                    "prompt": "Place an UnrealI.SkaarjWarrior assassin enemy here.",
+                },
+                {
+                    "title": "🔫 Dispersion Pistol (Energy Weapon)",
+                    "desc": "Spawns the classic rechargeable UnrealShare.DispersionPistol starter weapon.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.DispersionPistol", "FLUSH"],
+                    "prompt": "Place an UnrealShare.DispersionPistol weapon pickup here.",
+                },
+                {
+                    "title": "🌱 Healing Nali Fruit (+15 HP)",
+                    "desc": "Spawns an indigenous UnrealShare.NaliFruit healing plant.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.NaliFruit", "FLUSH"],
+                    "prompt": "Place an UnrealShare.NaliFruit healing plant here.",
+                },
+                {
+                    "title": "🔥 Flickering Wall Torch",
+                    "desc": "Spawns an UnrealShare.TorchFlame with dynamic light flicker.",
+                    "commands": ["ACTOR ADD CLASS=UnrealShare.TorchFlame", "FLUSH"],
+                    "prompt": "Place an UnrealShare.TorchFlame wall torch here.",
+                },
+            ],
+        },
+        {
             "category": "🌲 PREMIER OUTDOOR WORLDS",
             "items": [
                 {
-                    "title": "🏔️ Verdant Mountain Valley",
-                    "desc": "4096x4096 mountain valley with river gorge, stone bridge, fortress bunker, watchtower, pine trees, and boulders.",
-                    "commands_factory": lambda: FormulaEngine.generate_ut99_verdant_mountain_valley(system_dir=system_dir),
-                    "prompt": "Construct a verdant mountain valley outdoor world with stone fortress, river gorge, stone bridge, watchtower, pine trees, boulders, weapons, and Botpack pathing.",
+                    "title": "🏔️ Verdant Mountain Valley (Ultra)",
+                    "desc": "4608x4608 fortress valley with 24-sided battle towers, flying buttresses, stone bridge arch understructure, Nali lore, and 52 path nodes.",
+                    "commands_factory": lambda: FormulaEngine.generate_ut99_verdant_mountain_valley(system_dir=system_dir, detail_level="ultra"),
+                    "prompt": "Construct a verdant mountain valley outdoor world with stone fortress, 24-sided battle towers, flying buttresses, river gorge, bridge arch understructure, watchtower, pine trees, boulders, weapons, TranslatorEvent lore, and Botpack pathing.",
                 },
                 {
                     "title": "🏜️ Arid Desert Canyon & Ruins",

@@ -10,14 +10,17 @@ from tkinter import messagebox, ttk
 from typing import Any, Dict, List, Optional
 from urllib.request import Request, urlopen
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-from AgentHarness.core.config_manager import ConfigManager
-from AgentHarness.core.engine_controller import EngineController
-from AgentHarness.core.logger import get_logger
-from AgentHarness.core.nexus_bridge import NexusBridge
-from AgentHarness.core.update_engine import UpdateEngine
-from AgentHarness.version import __version__, __repo__
+import core.bootstrap
+from core.config_manager import ConfigManager
+from core.engine_controller import EngineController
+from core.logger import get_logger
+from core.nexus_bridge import NexusBridge
+from core.update_engine import UpdateEngine
+from version import __version__, __repo__
 
 logger = get_logger("SettingsDialog", "settings_dialog.log")
 

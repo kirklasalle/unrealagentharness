@@ -7,14 +7,21 @@ import sys
 import unittest
 from pathlib import Path
 
-# Add AgentHarness parent directory for package imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from AgentHarness.core.config_manager import ConfigManager
-from AgentHarness.core.engine_controller import EngineController
-from AgentHarness.core.formula_engine import FormulaEngine
-from AgentHarness.core.nexus_bridge import NexusBridge
-from AgentHarness.core.tools_schema import UNREALED_TOOLS
+# Add AgentHarness parent directory and bootstrap for package imports
+import core.bootstrap
+from core.config_manager import ConfigManager
+from core.engine_controller import EngineController
+from core.formula_engine import FormulaEngine
+from core.nexus_bridge import NexusBridge
+from core.tools_schema import UNREALED_TOOLS
+from core.logger import (
+    get_logger,
+    TRACE_LEVEL_NUM,
+    set_global_log_level,
+    flush_all_logs,
+    write_crash_report,
+    LOGS_DIR,
+)
 
 
 class TestConfigManager(unittest.TestCase):
@@ -86,6 +93,54 @@ class TestConfigManager(unittest.TestCase):
 
     def test_engine_profile_switch_invalid(self):
         self.assertFalse(self.cm.set_active_engine_id("nonexistent_engine"))
+
+    def test_verify_and_initialize_engine(self):
+        status = self.cm.verify_and_initialize_engine("ut99_goty", force_recheck=True)
+        self.assertIsInstance(status, dict)
+        self.assertTrue(status.get("initialized"))
+        self.assertIn("verified", status)
+        self.assertIn("summary", status)
+        self.assertTrue(self.cm.is_engine_initialized("ut99_goty"))
+
+    def test_active_engine_persists_across_instances(self):
+        original = self.cm.get_active_engine_id()
+        self.cm.set_active_engine_id("ut2004")
+
+        # Create a fresh ConfigManager instance reading from disk
+        new_cm = ConfigManager()
+        self.assertEqual(new_cm.get_active_engine_id(), "ut2004")
+
+        # Restore original
+        self.cm.set_active_engine_id(original)
+
+    def test_llm_engine_prompt_adapts_dynamically(self):
+        from core.llm_engine import LLMEngine
+        llm = LLMEngine(self.cm)
+
+        # Test UT99 GOTY prompt
+        self.cm.set_active_engine_id("ut99_goty")
+        llm._refresh_context()
+        prompt_goty = llm._build_system_prompt()
+        self.assertIn("Botpack.ShockRifle", prompt_goty)
+        self.assertNotIn("UTron.diffuser", prompt_goty)
+
+        # Test UTron prompt
+        self.cm.set_active_engine_id("ut99_utron")
+        llm._refresh_context()
+        prompt_utron = llm._build_system_prompt()
+        self.assertIn("UTron.IdentityDisc", prompt_utron)
+        self.assertIn("UTron.diffuser", prompt_utron)
+
+        # Test UT2004 prompt
+        self.cm.set_active_engine_id("ut2004")
+        llm._refresh_context()
+        prompt_ut2004 = llm._build_system_prompt()
+        self.assertIn("XWeapons.ShockRiflePickup", prompt_ut2004)
+        self.assertNotIn("UTron.diffuser", prompt_ut2004)
+
+        # Restore
+        self.cm.set_active_engine_id("ut99_goty")
+        llm._refresh_context()
 
 
 class TestFormulaEngine(unittest.TestCase):
@@ -220,6 +275,116 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("UnrealI.BigRock", content)
             self.assertIn("Botpack.WarheadLauncher", content)
 
+    # -------------------------------------------------------------------------
+    # UT2004 Procedural World & Component Tests
+    # -------------------------------------------------------------------------
+    def test_ut2004_tournament_colosseum_generates_valid_build(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_tournament_colosseum(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            self.assertTrue(any("BRUSH SUBTRACT" in c for c in cmds))
+            self.assertTrue(any("PATHS BUILD" in c for c in cmds))
+            t3d_file = Path(tmp) / "UT2k4_Colosseum_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("XPickups.UDamagePack", content)
+            self.assertIn("XWeapons.ShockRiflePickup", content)
+            self.assertIn("XGame.xJumpPad", content)
+
+    def test_ut2004_onslaught_canyon_outpost_generates_powercores_and_vehicles(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_onslaught_canyon_outpost(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            self.assertTrue(any("OBJ LOAD" in c and "AntalusTextures" in c for c in cmds))
+            t3d_file = Path(tmp) / "UT2k4_ONS_Canyon_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Onslaught.ONSPowerCore", content)
+            self.assertIn("Onslaught.ONSPowerNodeNeutral", content)
+            self.assertIn("Onslaught.ONSHoverCraftFactory", content)
+            self.assertIn("Onslaught.ONSRVFactory", content)
+            self.assertIn("Onslaught.ONSAttackCraftFactory", content)
+            self.assertIn("Onslaught.ONSTankFactory", content)
+            self.assertIn("Onslaught.ONSAVRiL", content)
+            self.assertIn("Engine.RoadPathNode", content)
+            self.assertIn("Engine.FlyingPathNode", content)
+
+    def test_ut2004_arctic_glacier_facility_generates_world_elements(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_arctic_glacier_facility(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            self.assertTrue(any("OBJ LOAD" in c and "ArboreaArchitecture" in c for c in cmds))
+            t3d_file = Path(tmp) / "UT2k4_Glacier_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Onslaught.ONSPRVFactory", content)
+            self.assertIn("Onslaught.ONSHoverCraftFactory", content)
+            self.assertIn("Onslaught.ONSPowerNodeNeutral", content)
+
+    def test_ut2004_orbital_asteroid_mining_generates_world_elements(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_orbital_asteroid_mining(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "UT2k4_Space_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("XWeapons.RedeemerPickup", content)
+            self.assertIn("Space_Zone", content)
+
+    def test_ut2004_volcanic_magma_foundry_generates_world_elements(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_volcanic_magma_foundry(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "UT2k4_Magma_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UDamage_Foundry", content)
+
+    def test_ut2004_anubis_egyptian_temple_generates_world_elements(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_anubis_egyptian_temple(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "UT2k4_Anubis_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Anubis_UDamage", content)
+
+    def test_ut2004_invasion_monster_arena_generates_skaarjpack_creatures(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_ut2004_invasion_monster_arena(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            t3d_file = Path(tmp) / "UT2k4_Invasion_Actors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("SkaarjPack.Skaarj", content)
+            self.assertIn("SkaarjPack.Krall", content)
+            self.assertIn("SkaarjPack.Titan", content)
+            self.assertIn("SkaarjPack.Brute", content)
+            self.assertIn("SkaarjPack.Pupae", content)
+
+    def test_ut2004_palette_exhaustive_categories(self):
+        from ui.palette_ut2004 import get_ut2004_palette
+        palette = get_ut2004_palette()
+        self.assertIsInstance(palette, list)
+        self.assertGreaterEqual(len(palette), 8, "UT2004 palette should contain at least 8 rich categories")
+
+        # Verify items in every category
+        total_items = sum(len(cat.get("items", [])) for cat in palette)
+        self.assertGreaterEqual(total_items, 30, "UT2004 palette should contain 30+ items")
+
+        categories = [cat.get("category", "") for cat in palette]
+        self.assertTrue(any("WORLD" in c.upper() for c in categories))
+        self.assertTrue(any("VEHICLE" in c.upper() for c in categories))
+        self.assertTrue(any("WEAPON" in c.upper() for c in categories))
+        self.assertTrue(any("CREATURE" in c.upper() or "PEOPLE" in c.upper() for c in categories))
+
 
 class TestToolsSchema(unittest.TestCase):
     """Tests for the LLM tool-calling schema definitions."""
@@ -286,8 +451,8 @@ class TestEngineController(unittest.TestCase):
 # PHASE 2: Bot Pathing & Multimodal Vision Tests
 # ═══════════════════════════════════════════════════════════════════════
 
-from AgentHarness.core.pathing_engine import PathingEngine
-from AgentHarness.core.vision_inspector import VisionInspector
+from core.pathing_engine import PathingEngine
+from core.vision_inspector import VisionInspector
 
 
 class TestPathingEngine(unittest.TestCase):
@@ -409,7 +574,7 @@ class TestVisionInspector(unittest.TestCase):
         self.assertTrue(vi.screenshots_dir.exists())
 
     def test_viewport_quadrants_defined(self):
-        from AgentHarness.core.vision_inspector import VIEWPORT_QUADRANTS
+        from core.vision_inspector import VIEWPORT_QUADRANTS
         self.assertIn("perspective", VIEWPORT_QUADRANTS)
         self.assertIn("top", VIEWPORT_QUADRANTS)
         self.assertIn("front", VIEWPORT_QUADRANTS)
@@ -428,14 +593,14 @@ class TestEngineScanner(unittest.TestCase):
     """Tests for the Universal Unreal Engine and Game Mod Auto-Discovery Engine."""
 
     def test_get_available_drives(self):
-        from AgentHarness.core.engine_scanner import EngineScanner
+        from core.engine_scanner import EngineScanner
         drives = EngineScanner.get_available_drives()
         self.assertIsInstance(drives, list)
         self.assertTrue(len(drives) > 0)
 
     def test_inspect_directory_with_valid_ut99(self):
         import tempfile
-        from AgentHarness.core.engine_scanner import EngineScanner
+        from core.engine_scanner import EngineScanner
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             sys_dir = tmp_path / "System"
@@ -450,7 +615,7 @@ class TestEngineScanner(unittest.TestCase):
 
     def test_inspect_mods_with_valid_utron(self):
         import tempfile
-        from AgentHarness.core.engine_scanner import EngineScanner
+        from core.engine_scanner import EngineScanner
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             sys_dir = tmp_path / "System"
@@ -461,7 +626,7 @@ class TestEngineScanner(unittest.TestCase):
             self.assertTrue(any(m["id"] == "ut99_utron" for m in mods))
 
     def test_scan_all_finds_targets(self):
-        from AgentHarness.core.engine_scanner import EngineScanner
+        from core.engine_scanner import EngineScanner
         res = EngineScanner.scan_all()
         self.assertIsInstance(res, dict)
         # Should detect local UT99 or UT2004 installation
@@ -472,27 +637,29 @@ class TestUpdateEngine(unittest.TestCase):
     """Tests for the UpdateEngine auto-updater and version management module."""
 
     def test_current_version_string(self):
-        from AgentHarness.core.update_engine import UpdateEngine
+        from core.update_engine import UpdateEngine
         ver = UpdateEngine.get_current_version()
         self.assertIsInstance(ver, str)
         self.assertTrue(len(ver) > 0)
 
     def test_parse_semver(self):
-        from AgentHarness.core.update_engine import UpdateEngine
+        from core.update_engine import UpdateEngine
         self.assertEqual(UpdateEngine.parse_semver("v2.10.0"), (2, 10, 0))
         self.assertEqual(UpdateEngine.parse_semver("2.9.1"), (2, 9, 1))
         self.assertEqual(UpdateEngine.parse_semver("3.0.0-beta"), (3, 0, 0))
         self.assertTrue(UpdateEngine.parse_semver("2.11.0") > UpdateEngine.parse_semver("2.10.0"))
 
     def test_is_git_repository(self):
-        from AgentHarness.core.update_engine import UpdateEngine
+        from core.update_engine import UpdateEngine
         is_git = UpdateEngine.is_git_repository()
         self.assertIsInstance(is_git, bool)
-        # When running in git repo, this should be True
-        self.assertTrue(is_git)
+        if (Path(__file__).parent / ".git").exists():
+            self.assertTrue(is_git)
+        else:
+            self.assertFalse(is_git)
 
     def test_check_for_updates_returns_dict(self):
-        from AgentHarness.core.update_engine import UpdateEngine
+        from core.update_engine import UpdateEngine
         res = UpdateEngine.check_for_updates(timeout=3.0)
         self.assertIsInstance(res, dict)
         self.assertIn("update_available", res)
@@ -500,6 +667,267 @@ class TestUpdateEngine(unittest.TestCase):
         self.assertIn("latest_version", res)
 
 
+class TestLoggerAndDiagnostics(unittest.TestCase):
+    """Tests for the world-class TRACE logging and crash capture system."""
+
+    def test_trace_level_and_method(self):
+        import logging
+        self.assertEqual(logging.TRACE, 5)
+        self.assertEqual(TRACE_LEVEL_NUM, 5)
+        logger = get_logger("TestTraceLogger", "test_trace.log")
+        self.assertTrue(hasattr(logger, "trace"))
+
+    def test_log_file_written(self):
+        logger = get_logger("TestFileLogger", "agent_harness.log")
+        test_msg = "World-class trace logging test message"
+        logger.info(test_msg)
+        flush_all_logs()
+
+        master_log = LOGS_DIR / "agent_harness.log"
+        self.assertTrue(master_log.exists())
+        with open(master_log, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+        self.assertIn(test_msg, content)
+
+    def test_crash_report_generation(self):
+        try:
+            raise ValueError("Simulated crash exception for diagnostic test")
+        except ValueError as err:
+            crash_file = write_crash_report(
+                type(err), err, err.__traceback__, context="Unit Test Crash Test"
+            )
+            self.assertTrue(crash_file.exists())
+            with open(crash_file, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            self.assertIn("Simulated crash exception for diagnostic test", content)
+            self.assertIn("Unit Test Crash Test", content)
+            self.assertIn("ENVIRONMENT DUMP", content)
+
+
+class TestBootstrapDPI(unittest.TestCase):
+    """Tests for the Win32 DPI awareness bootstrap (v2.15.0)."""
+
+    def test_dpi_awareness_level_string(self):
+        from core.bootstrap import get_dpi_awareness_level
+        level = get_dpi_awareness_level()
+        self.assertIsInstance(level, str)
+        self.assertIn(
+            level,
+            {"per_monitor_v2", "per_monitor", "system_aware", "unavailable"},
+        )
+
+    def test_dpi_scale_factor_returns_float(self):
+        from core.bootstrap import get_dpi_scale_factor
+        scale = get_dpi_scale_factor(0)
+        self.assertIsInstance(scale, float)
+        # Scale should be at least 1.0 (96 DPI baseline)
+        self.assertGreaterEqual(scale, 1.0)
+
+    def test_dpi_scale_factor_with_invalid_hwnd(self):
+        from core.bootstrap import get_dpi_scale_factor
+        # An invalid hwnd should gracefully fall back to system DPI or 1.0
+        scale = get_dpi_scale_factor(0xDEAD)
+        self.assertIsInstance(scale, float)
+        self.assertGreaterEqual(scale, 1.0)
+
+
+class TestUpdateEngineResourceSafety(unittest.TestCase):
+    """Tests for the UpdateEngine ResourceWarning fix (v2.15.0)."""
+
+    def test_check_for_updates_no_resource_warning(self):
+        import warnings
+        from core.update_engine import UpdateEngine
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            UpdateEngine.check_for_updates(timeout=3.0)
+            resource_warnings = [x for x in w if issubclass(x.category, ResourceWarning)]
+            self.assertEqual(
+                len(resource_warnings), 0,
+                f"ResourceWarning raised during check_for_updates: {resource_warnings}",
+            )
+
+    def test_apply_update_source_uses_context_manager(self):
+        """Verify apply_update's ZIP download path uses urllib.request.urlopen
+        via a with-block rather than the deprecated urlretrieve."""
+        import inspect
+        from core.update_engine import UpdateEngine
+        source = inspect.getsource(UpdateEngine.apply_update)
+        # The old pattern was `urlretrieve(zip_url, ...)` — ensure it's gone
+        self.assertNotIn(
+            "urlretrieve",
+            source,
+            "apply_update still uses urlretrieve — expected urlopen with context manager",
+        )
+        # The new pattern should use `urlopen(req, ...)` inside a with-block
+        self.assertIn("urlopen", source)
+
+
+class TestTargetAndPaletteSystem(unittest.TestCase):
+    """Audits the Target Engine profiles, tab mappings, and quick action Palettes."""
+
+    def setUp(self):
+        self.cm = ConfigManager()
+
+    def test_engine_profiles_validity(self):
+        profiles = self.cm.get_all_engine_profiles()
+        self.assertGreaterEqual(len(profiles), 6)
+        for p_id, p_data in profiles.items():
+            self.assertIn("id", p_data)
+            self.assertIn("name", p_data)
+            self.assertIn("system_dir", p_data)
+
+    def test_tab_map_coverage(self):
+        tab_map = {
+            "ut99_goty": 0,
+            "ut99_chaosut": 0,
+            "ut99_tacticalops": 0,
+            "ut99_utron": 1,
+            "ut2004": 2,
+            "ut2003": 2,
+        }
+        for p_id in self.cm.get_all_engine_profiles():
+            if p_id != "ue5":
+                self.assertIn(p_id, tab_map, f"Engine {p_id} missing in palette tab map")
+
+    def test_ut99_goty_palette_evaluation(self):
+        from ui.palette_ut99_goty import get_ut99_goty_palette
+        palette = get_ut99_goty_palette()
+        self.assertIsInstance(palette, list)
+        self.assertGreaterEqual(len(palette), 4)
+        for cat in palette:
+            self.assertIn("category", cat)
+            for itm in cat.get("items", []):
+                self.assertTrue(itm.get("title") or itm.get("name"))
+                cf = itm.get("commands_factory")
+                if cf:
+                    cmds = cf()
+                    self.assertIsInstance(cmds, list)
+                    self.assertGreater(len(cmds), 0)
+
+    def test_ut99_utron_palette_evaluation(self):
+        from ui.palette_ut99_utron import get_ut99_utron_palette
+        palette = get_ut99_utron_palette()
+        self.assertIsInstance(palette, list)
+        self.assertGreaterEqual(len(palette), 3)
+        for cat in palette:
+            for itm in cat.get("items", []):
+                cf = itm.get("commands_factory")
+                if cf:
+                    cmds = cf()
+                    self.assertIsInstance(cmds, list)
+                    self.assertGreater(len(cmds), 0)
+
+    def test_ut2004_palette_evaluation(self):
+        from ui.palette_ut2004 import get_ut2004_palette
+        palette = get_ut2004_palette()
+        self.assertIsInstance(palette, list)
+        self.assertGreaterEqual(len(palette), 8)
+        for cat in palette:
+            for itm in cat.get("items", []):
+                cf = itm.get("commands_factory")
+                if cf:
+                    cmds = cf()
+                    self.assertIsInstance(cmds, list)
+                    self.assertGreater(len(cmds), 0)
+
+    def test_ut2004_palette_vehicle_factory_safety(self):
+        """Verifies no vehicle in the UT2004 palette spawns live pawns that crash USkeletalMeshInstance in editor."""
+        import re
+        from ui.palette_ut2004 import get_ut2004_palette
+        palette = get_ut2004_palette()
+        dangerous_pattern = re.compile(r"CLASS=(?:Onslaught|OnslaughtFull)\.(?:ONSHoverTank|ONSHoverBike|ONSRV|ONSPRV|ONSAttackCraft|ONSBomber|ONSPowerNode)\b(?!Factory)")
+        for cat in palette:
+            for itm in cat.get("items", []):
+                for cmd in itm.get("commands", []):
+                    m = dangerous_pattern.search(cmd)
+                    self.assertIsNone(m, f"Palette item '{itm.get('title')}' uses unsafe live vehicle/actor class: '{cmd}'")
+
+    def test_ut2004_all_generators_preload_textures(self):
+        """Verifies all UT2004 formula builders preload required texture packages via OBJ LOAD."""
+        from core.formula_engine import FormulaEngine
+        import tempfile
+        generators = [
+            FormulaEngine.generate_ut2004_tournament_colosseum,
+            FormulaEngine.generate_ut2004_onslaught_canyon_outpost,
+            FormulaEngine.generate_ut2004_arctic_glacier_facility,
+            FormulaEngine.generate_ut2004_orbital_asteroid_mining,
+            FormulaEngine.generate_ut2004_volcanic_magma_foundry,
+            FormulaEngine.generate_ut2004_anubis_egyptian_temple,
+            FormulaEngine.generate_ut2004_invasion_monster_arena,
+            FormulaEngine.generate_ut2004_reactor_core_chamber,
+            FormulaEngine.generate_ut2004_biohazard_quarantine_lab,
+            FormulaEngine.generate_ut2004_fortified_forward_base,
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            for gen in generators:
+                cmds = gen(system_dir=Path(tmp))
+                self.assertIn("MAP NEW", cmds[0])
+                self.assertTrue(any(c.startswith("OBJ LOAD FILE=") for c in cmds), f"{gen.__name__} missing OBJ LOAD commands")
+
+    def test_tools_schema_detail_level_presence(self):
+        tool_names = {t["function"]["name"]: t["function"] for t in UNREALED_TOOLS}
+        self.assertIn("build_tournament_arena", tool_names)
+        self.assertIn("detail_level", tool_names["build_tournament_arena"]["parameters"]["properties"])
+        self.assertIn("build_unreal1_sanctuary", tool_names)
+        self.assertIn("build_outdoor_world", tool_names)
+
+
+class TestFormulaEngineUltraGeometry(unittest.TestCase):
+    """Tests for the Ultra Geometry Detail Engine, Semi-Solid Brushes, and Unreal 1 RPG generators."""
+
+    def test_detail_presets_structure(self):
+        from core.formula_engine import DETAIL_PRESETS
+        self.assertIn("standard", DETAIL_PRESETS)
+        self.assertIn("high", DETAIL_PRESETS)
+        self.assertIn("ultra", DETAIL_PRESETS)
+        self.assertEqual(DETAIL_PRESETS["ultra"]["pillar_sides"], 32)
+        self.assertEqual(DETAIL_PRESETS["ultra"]["tower_sides"], 24)
+        self.assertTrue(DETAIL_PRESETS["ultra"]["semisolid_decoration"])
+        self.assertTrue(DETAIL_PRESETS["ultra"]["rich_story_elements"])
+
+    def test_primitive_shapes_generate_polylists(self):
+        from core.formula_engine import _generate_brush_polylist_t3d
+        shapes = ["BeveledBox", "Arch", "Buttress", "TrimStrip", "Cylinder", "HexColumn"]
+        for s in shapes:
+            t3d = _generate_brush_polylist_t3d((256.0, 256.0, 256.0), shape=s, sides=12)
+            self.assertIn("Begin PolyList", t3d)
+            self.assertIn("End PolyList", t3d)
+            self.assertIn("Vertex", t3d)
+
+    def test_semisolid_flag_output(self):
+        from core.formula_engine import _generate_brush_polylist_t3d
+        t3d_solid = _generate_brush_polylist_t3d((128.0, 128.0, 128.0), shape="Box", is_semisolid=False)
+        t3d_semi = _generate_brush_polylist_t3d((128.0, 128.0, 128.0), shape="Box", is_semisolid=True)
+        self.assertNotIn("Flags=32", t3d_solid)
+        self.assertIn("Flags=32", t3d_semi)
+
+    def test_unreal1_sp_sanctuary_generation(self):
+        cmds = FormulaEngine.generate_unreal1_sp_sanctuary(detail_level="ultra")
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 15)
+        cmd_str = "\n".join(cmds)
+        self.assertIn("MAP NEW", cmd_str)
+        self.assertIn("MAP REBUILD", cmd_str)
+        self.assertIn("NaliCast", cmd_str)
+
+    def test_verdant_mountain_valley_ultra_generation(self):
+        cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(detail_level="ultra")
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 20)
+        cmd_str = "\n".join(cmds)
+        self.assertIn("BridgeArchRib.t3d", cmd_str)
+        self.assertIn("CastleButtress.t3d", cmd_str)
+
+    def test_tournament_arena_ultra_vs_standard(self):
+        cmds_standard = FormulaEngine.generate_ut99_tournament_arena(detail_level="standard")
+        cmds_ultra = FormulaEngine.generate_ut99_tournament_arena(detail_level="ultra")
+        # Ultra adds fluted semi-solid columns, perimeter moldings, crown cornices, and alcoves (56 vs 26 commands)
+        self.assertGreater(len(cmds_ultra), len(cmds_standard))
+        self.assertGreaterEqual(len(cmds_ultra), 50)
+        self.assertLessEqual(len(cmds_standard), 30)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
 

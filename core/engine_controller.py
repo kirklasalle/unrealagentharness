@@ -27,6 +27,7 @@ try:
 except ImportError:
     HAS_PIL = False
 
+from .bootstrap import get_dpi_scale_factor
 from .config_manager import ConfigManager
 from .logger import get_logger
 
@@ -115,6 +116,7 @@ class EngineController:
 
         # Pick the best candidate
         for hwnd, pid, cls, title in candidates:
+            logger.trace(f"Evaluating candidate HWND={hwnd}, PID={pid}, Class='{cls}', Title='{title}'")
             if "Unreal" in title or "WUnrealEd" in cls or "WWindow" in cls or "UTron" in title:
                 self._hwnd_main = hwnd
                 self._pid = pid
@@ -162,6 +164,7 @@ class EngineController:
                 edit_controls.sort(key=lambda item: item[1][1], reverse=True)
                 self._hwnd_edit = edit_controls[0][0]
                 rect = edit_controls[0][1]
+                logger.trace(f"Identified {len(edit_controls)} candidate edit controls; selected HWND {self._hwnd_edit}")
                 logger.info(f"Located UnrealEd Command Edit Control -> HWND: {self._hwnd_edit}, Rect: {rect}")
             else:
                 logger.warning(f"No Edit child control found inside UnrealEd HWND {self._hwnd_main}")
@@ -337,7 +340,11 @@ class EngineController:
     # VIEWPORT CAPTURE
     # -----------------------------------------------------------------
     def capture_viewport_image(self) -> Optional[bytes]:
-        """Captures the active UnrealEd viewport as PNG bytes."""
+        """Captures the active UnrealEd viewport as PNG bytes.
+
+        Uses DPI-aware coordinates (initialised by bootstrap.py) so that
+        captures on 4K / multi-monitor setups return pixel-accurate images.
+        """
         if not HAS_PIL or not HAS_PYWIN32:
             return None
 
@@ -347,8 +354,15 @@ class EngineController:
 
         try:
             rect = win32gui.GetWindowRect(hwnd_main)
+            # With DPI awareness active, GetWindowRect already returns
+            # physical pixel coordinates; ImageGrab.grab also expects them.
             bbox = (rect[0], rect[1], rect[2], rect[3])
             img = ImageGrab.grab(bbox=bbox)
+            dpi_scale = get_dpi_scale_factor(hwnd_main)
+            logger.info(
+                f"Viewport captured: {img.size[0]}x{img.size[1]}px "
+                f"(DPI scale: {dpi_scale:.2f}x)"
+            )
             buf = io.BytesIO()
             img.save(buf, format="PNG")
             return buf.getvalue()

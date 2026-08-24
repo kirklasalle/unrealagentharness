@@ -1,5 +1,5 @@
 {
-  "active_engine": "ut99_utron",
+  "active_engine": "ut99_goty",
   "profiles": {
     "ut99_goty": {
       "id": "ut99_goty",
@@ -49,6 +49,16 @@
         "DamageAmplifier": "Botpack.UDamage",
         "GameType": "Botpack.DeathMatchPlus",
         "PlayerPawn": "Botpack.TMale2"
+      },
+      "status": {
+        "initialized": true,
+        "verified": true,
+        "root_exists": true,
+        "system_dir_exists": true,
+        "editor_exe_exists": true,
+        "game_exe_exists": true,
+        "last_checked": "2026-08-24 17:47:39",
+        "summary": "Verified: UnrealEd.exe ready in G:\\UnrealTournament\\System"
       }
     },
     "ut99_utron": {
@@ -322,14 +332,31 @@
         "HealthPack": "XPickups.HealthPack",
         "SuperHealthPack": "XPickups.SuperHealthPack",
         "UDamage": "XPickups.UDamagePack",
-        "Manta": "Onslaught.ONSHoverBike",
-        "Goliath": "Onslaught.ONSHoverTank",
-        "Raptor": "Onslaught.ONSAttackCraft",
-        "Scorpion": "Onslaught.ONSRV",
-        "Hellbender": "Onslaught.ONSPRV",
+        "Manta": "Onslaught.ONSHoverCraftFactory",
+        "Goliath": "Onslaught.ONSTankFactory",
+        "Raptor": "Onslaught.ONSAttackCraftFactory",
+        "Scorpion": "Onslaught.ONSRVFactory",
+        "Hellbender": "Onslaught.ONSPRVFactory",
+        "MantaFactory": "Onslaught.ONSHoverCraftFactory",
+        "GoliathFactory": "Onslaught.ONSTankFactory",
+        "RaptorFactory": "Onslaught.ONSAttackCraftFactory",
+        "ScorpionFactory": "Onslaught.ONSRVFactory",
+        "HellbenderFactory": "Onslaught.ONSPRVFactory",
+        "PowerCore": "Onslaught.ONSPowerCore",
+        "PowerNodeNeutral": "Onslaught.ONSPowerNodeNeutral",
         "GameType": "XGame.xDeathMatch",
         "OnslaughtGame": "Onslaught.ONSOnslaughtGame",
         "PlayerPawn": "XGame.xPawn"
+      },
+      "status": {
+        "initialized": true,
+        "verified": true,
+        "root_exists": true,
+        "system_dir_exists": true,
+        "editor_exe_exists": true,
+        "game_exe_exists": true,
+        "last_checked": "2026-08-24 17:26:58",
+        "summary": "Verified: UnrealEd.exe ready in G:\\UnrealTournament2004\\System"
       }
     },
     "ue5": {

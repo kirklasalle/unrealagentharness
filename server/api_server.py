@@ -15,14 +15,16 @@ from fastapi import FastAPI, HTTPException, Response, WebSocket, WebSocketDiscon
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# Add AgentHarness parent directory to path for package imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-from AgentHarness.core.config_manager import ConfigManager
-from AgentHarness.core.engine_controller import EngineController
-from AgentHarness.core.llm_engine import LLMEngine
-from AgentHarness.core.logger import get_logger
-from AgentHarness.core.nexus_bridge import NexusBridge
+import core.bootstrap
+from core.config_manager import ConfigManager
+from core.engine_controller import EngineController
+from core.llm_engine import LLMEngine
+from core.logger import get_logger
+from core.nexus_bridge import NexusBridge
 
 server_logger = get_logger("HarnessAPIServer", "harness_server.log")
 

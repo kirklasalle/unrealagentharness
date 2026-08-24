@@ -5,7 +5,7 @@ Provides instant 1-click procedural action buttons for UTron and classic UT99 le
 
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
-from AgentHarness.core.formula_engine import FormulaEngine
+from core.formula_engine import FormulaEngine
 
 
 def get_ut99_utron_palette(

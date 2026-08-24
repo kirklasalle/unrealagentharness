@@ -15,8 +15,22 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 from typing import Any, Dict, List, Optional
 
-# Add AgentHarness parent directory to path for package imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+# Ensure repository root is in sys.path BEFORE importing core
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+import core.bootstrap
+from core.config_manager import ConfigManager
+from core.engine_controller import EngineController
+from core.llm_engine import LLMEngine
+from core.logger import get_logger, set_global_log_level, flush_all_logs, write_crash_report, setup_global_exception_handlers
+from core.nexus_bridge import NexusBridge
+from core.update_engine import UpdateEngine
+from ui.palette_ut99_utron import get_ut99_utron_palette
+from ui.palette_ut99_goty import get_ut99_goty_palette
+from ui.palette_ut2004 import get_ut2004_palette
+from ui.settings_dialog import SettingsDialog
 
 try:
     import win32con
@@ -25,16 +39,6 @@ try:
     HAS_PYWIN32 = True
 except ImportError:
     HAS_PYWIN32 = False
-
-from AgentHarness.core.config_manager import ConfigManager
-from AgentHarness.core.engine_controller import EngineController
-from AgentHarness.core.llm_engine import LLMEngine
-from AgentHarness.core.logger import get_logger
-from AgentHarness.core.nexus_bridge import NexusBridge
-from AgentHarness.ui.palette_ut99_utron import get_ut99_utron_palette
-from AgentHarness.ui.palette_ut99_goty import get_ut99_goty_palette
-from AgentHarness.ui.palette_ut2004 import get_ut2004_palette
-from AgentHarness.ui.settings_dialog import SettingsDialog
 
 logger = get_logger("HarnessCockpit", "harness_ui.log")
 
@@ -62,6 +66,7 @@ class StandaloneHarnessCockpit(tk.Tk):
         self.is_docked = False
 
         self._build_ui()
+        self._switch_and_initialize_engine(self.config_mgr.get_active_engine_id(), force_recheck=False, is_startup=True)
         self._start_status_poll_thread()
         self._start_update_check_thread()
 
@@ -86,9 +91,24 @@ class StandaloneHarnessCockpit(tk.Tk):
         self.engine_combo.pack(side=tk.LEFT, padx=2)
         self.engine_combo.bind("<<ComboboxSelected>>", self._on_engine_selected)
 
+        # Quick Re-Check Button
+        tk.Button(
+            title_box,
+            text="🔄 RE-CHECK",
+            font=("Segoe UI", 8, "bold"),
+            bg="#1e293b",
+            fg="#38bdf8",
+            activebackground="#334155",
+            activeforeground="#7dd3fc",
+            relief=tk.FLAT,
+            padx=6,
+            pady=1,
+            command=self._on_recheck_clicked,
+        ).pack(side=tk.LEFT, padx=(4, 8))
+
         # Connection Status Pill
         self.status_pill = tk.Label(title_box, text="● SCANNING", font=("Segoe UI", 8, "bold"), fg="#f59e0b", bg="#1e293b", padx=8, pady=2)
-        self.status_pill.pack(side=tk.LEFT, padx=10)
+        self.status_pill.pack(side=tk.LEFT, padx=4)
 
         # Right-side Action Buttons (Launch Editor, Rebuild, Dock, Settings)
         act_box = tk.Frame(self.hdr, bg="#111726")
@@ -129,25 +149,32 @@ class StandaloneHarnessCockpit(tk.Tk):
         tk.Label(p_hdr, text="⚡ QUICK ARCHITECT PALETTE", font=("Segoe UI", 9, "bold"), fg="#38bdf8", bg="#1e293b").pack(anchor=tk.W)
 
         # Scrollable Notebook
-        nb = ttk.Notebook(parent)
-        nb.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
+        self.palette_notebook = ttk.Notebook(parent)
+        self.palette_notebook.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
 
-        sys_dir = self.controller.system_dir
+        self.tab_map = {
+            "ut99_goty": 0,
+            "ut99_chaosut": 0,
+            "ut99_tacticalops": 0,
+            "ut99_utron": 1,
+            "ut2004": 2,
+            "ut2003": 2,
+        }
 
         # Tab 1: UT99 GOTY Classic
-        tab_goty = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_goty, text="🏆 UT99 Base")
-        self._populate_palette_tab(tab_goty, get_ut99_goty_palette(self._send_prompt, system_dir=sys_dir))
+        tab_goty = tk.Frame(self.palette_notebook, bg="#0f172a")
+        self.palette_notebook.add(tab_goty, text="🏆 UT99 Base")
+        self._populate_palette_tab(tab_goty, get_ut99_goty_palette(self._send_prompt))
 
         # Tab 2: UTron Total Conversion Mod
-        tab_utron = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_utron, text="⚡ Mod: UTron (TC)")
-        self._populate_palette_tab(tab_utron, get_ut99_utron_palette(self._send_prompt, system_dir=sys_dir))
+        tab_utron = tk.Frame(self.palette_notebook, bg="#0f172a")
+        self.palette_notebook.add(tab_utron, text="⚡ Mod: UTron (TC)")
+        self._populate_palette_tab(tab_utron, get_ut99_utron_palette(self._send_prompt))
 
         # Tab 3: UT2004 Blueprints
-        tab_ut2004 = tk.Frame(nb, bg="#0f172a")
-        nb.add(tab_ut2004, text="⚔️ UT2004 Base")
-        self._populate_palette_tab(tab_ut2004, get_ut2004_palette(self._send_prompt, system_dir=sys_dir))
+        tab_ut2004 = tk.Frame(self.palette_notebook, bg="#0f172a")
+        self.palette_notebook.add(tab_ut2004, text="⚔️ UT2004 Base")
+        self._populate_palette_tab(tab_ut2004, get_ut2004_palette(self._send_prompt))
 
     def _populate_palette_tab(self, parent: tk.Frame, palette_data: List[Dict[str, Any]]):
         canvas = tk.Canvas(parent, bg="#0f172a", highlightthickness=0)
@@ -318,15 +345,78 @@ class StandaloneHarnessCockpit(tk.Tk):
         except Exception as e:
             logger.error(f"Inference worker error: {e}")
             self._append_chat("AI Architect", f"⚠️ Error: {str(e)}")
-            self.status_lbl.configure(text="Inference Error.")
+    def _select_palette_tab_for_engine(self, engine_id: str):
+        """Switches the active tab in the Quick Architect Palette notebook to match the engine."""
+        idx = getattr(self, "tab_map", {}).get(engine_id, 0)
+        try:
+            self.palette_notebook.select(idx)
+        except Exception:
+            pass
+
+    def _switch_and_initialize_engine(
+        self,
+        engine_id: str,
+        force_recheck: bool = False,
+        is_startup: bool = False,
+    ):
+        """
+        Performs one-time or on-demand checking and persistent initialization for the selected engine.
+        Updates controller paths, refreshes LLM context, switches palette notebook tab, and updates UI status.
+        """
+        logger.info(f"Target Engine Switching to: '{engine_id}' (force_recheck={force_recheck}, is_startup={is_startup})")
+
+        # 1. Update config & persistent verification state
+        self.config_mgr.set_active_engine_id(engine_id)
+        status = self.config_mgr.verify_and_initialize_engine(engine_id, force_recheck=force_recheck)
+
+        # 2. Refresh controller and LLM engine context
+        self.controller._refresh_paths()
+        self.llm_engine._refresh_context()
+
+        # 3. Switch Palette tab to match engine
+        self._select_palette_tab_for_engine(engine_id)
+
+        # 4. Check connection and update status UI
+        prof = self.config_mgr.get_active_engine_profile()
+        is_conn = self.controller.is_connected()
+        if is_conn:
+            self.status_pill.configure(text="● ONLINE", fg="#22c55e", bg="#14532d")
+        elif not status.get("verified", False):
+            self.status_pill.configure(text="⚠️ PATH CHECK", fg="#f59e0b", bg="#451a03")
+        else:
+            self.status_pill.configure(text="● OFFLINE", fg="#ef4444", bg="#450a0a")
+
+        summary_str = status.get("summary", "Initialized")
+        self.status_lbl.configure(text=f"Target: {prof.get('name')} | {summary_str}")
+
+        # 5. Output chat notification
+        gen = prof.get("generation", "UE1")
+        cat = prof.get("category", "Base Engine")
+        if is_startup:
+            self._append_chat(
+                "System",
+                f"⚡ **Initialized Target Engine**: **{prof.get('name')}** ({gen} / {cat})\n"
+                f"📁 System Dir: `{self.controller.system_dir}`\n"
+                f"🔍 Status: {summary_str}\n"
+                f"💡 To switch engines or mods, select the **Target** dropdown above and click **🔄 RE-CHECK** anytime.",
+            )
+        else:
+            recheck_tag = " (Forced Re-Check)" if force_recheck else ""
+            self._append_chat(
+                "System",
+                f"🔄 **Target Engine Switched{recheck_tag}**: **{prof.get('name')}** ({gen})\n"
+                f"📁 System Dir: `{self.controller.system_dir}`\n"
+                f"🔍 Status: {summary_str}\n"
+                f"⚡ Quick Architect Palette automatically switched to **{prof.get('name')}**.",
+            )
 
     def _on_engine_selected(self, event=None):
         selected_id = self.engine_var.get()
-        self.config_mgr.set_active_engine_id(selected_id)
-        self.controller._refresh_paths()
-        active_prof = self.config_mgr.get_active_engine_profile()
-        self._append_chat("System", f"🔄 Switched engine profile to: **{active_prof.get('name')}**")
-        self.status_lbl.configure(text=f"Target: {active_prof.get('name')}")
+        self._switch_and_initialize_engine(selected_id, force_recheck=False, is_startup=False)
+
+    def _on_recheck_clicked(self):
+        selected_id = self.engine_var.get()
+        self._switch_and_initialize_engine(selected_id, force_recheck=True, is_startup=False)
 
     def _quick_rebuild(self):
         res = self.controller.execute_batch(["MAP REBUILD", "PATHS BUILD"])
@@ -385,14 +475,17 @@ class StandaloneHarnessCockpit(tk.Tk):
         dlg._show_scan_modal()
 
     def _on_settings_saved(self):
-        self.engine_var.set(self.config_mgr.get_active_engine_id())
-        self.controller._refresh_paths()
+        active_id = self.config_mgr.get_active_engine_id()
+        self.engine_var.set(active_id)
+        profiles = self.config_mgr.get_all_engine_profiles()
+        self.engine_combo.configure(values=list(profiles.keys()))
+        self._switch_and_initialize_engine(active_id, force_recheck=True, is_startup=False)
 
     def _start_update_check_thread(self):
         """Silently checks for updates in the background on startup."""
         def _check():
             try:
-                from AgentHarness.core.update_engine import UpdateEngine
+                from core.update_engine import UpdateEngine
                 res = UpdateEngine.check_for_updates()
                 if res.get("update_available"):
                     latest_ver = res.get("latest_version")
@@ -431,9 +524,48 @@ class StandaloneHarnessCockpit(tk.Tk):
 
 if __name__ == "__main__":
     import argparse
+    import platform
+
+    setup_global_exception_handlers()
+
     parser = argparse.ArgumentParser(description="Standalone Unreal AI Agent Harness Cockpit")
     parser.add_argument("--engine", type=str, default=None, help="Initial engine profile ID (e.g. ut99_goty, ut99_utron, ut2004)")
+    parser.add_argument("--trace", action="store_true", help="Enable high-granularity TRACE logging")
+    parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging")
+    parser.add_argument("--log-level", type=str, default=None, help="Explicit log level: TRACE, DEBUG, INFO, WARN, ERROR")
     args, _ = parser.parse_known_args()
 
-    app = StandaloneHarnessCockpit(engine_id=args.engine)
-    app.mainloop()
+    if args.trace:
+        set_global_log_level("TRACE")
+    elif args.debug:
+        set_global_log_level("DEBUG")
+    elif args.log_level:
+        set_global_log_level(args.log_level)
+
+    logger.info("=" * 70)
+    logger.info("⚡ STARTING UNREAL AGENT HARNESS COCKPIT")
+    logger.info(f"Python Executable : {sys.executable} (v{platform.python_version()})")
+    logger.info(f"OS Platform       : {platform.platform()} ({platform.machine()})")
+    logger.info(f"Process PID       : {os.getpid()}")
+    logger.info(f"PyWin32 Support   : {HAS_PYWIN32}")
+    logger.info(f"Target Engine     : {args.engine or 'Default (from config)'}")
+    logger.info("=" * 70)
+
+    try:
+        app = StandaloneHarnessCockpit(engine_id=args.engine)
+        app.mainloop()
+        logger.info("Agent Harness UI exited cleanly.")
+    except Exception as e:
+        crash_file = write_crash_report(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2], context="Cockpit Main Loop")
+        logger.critical(f"FATAL: Harness Cockpit crashed: {e}", exc_info=True)
+        flush_all_logs()
+        try:
+            messagebox.showerror(
+                "Agent Harness Fatal Crash",
+                f"The Agent Harness encountered an unexpected error:\n\n{e}\n\n"
+                f"Detailed diagnostics written to:\n{crash_file}",
+            )
+        except Exception:
+            pass
+        sys.exit(1)
+

@@ -28,6 +28,7 @@ try:
 except ImportError:
     HAS_PYWIN32 = False
 
+from .bootstrap import get_dpi_scale_factor
 from .logger import get_logger
 
 logger = get_logger("VisionInspector", "vision_inspector.log")
@@ -66,6 +67,10 @@ class VisionInspector:
         """
         Captures the full UnrealEd window content as a PIL Image.
 
+        Uses DPI-aware coordinates so that captures on 4K / multi-monitor
+        setups produce pixel-accurate images rather than virtualised blurry
+        screenshots.  DPI awareness is initialised at bootstrap import-time.
+
         Args:
             hwnd: Win32 window handle for the UnrealEd main frame.
 
@@ -78,9 +83,16 @@ class VisionInspector:
 
         try:
             rect = win32gui.GetWindowRect(hwnd)
+            # GetWindowRect returns physical pixels when DPI awareness is
+            # active (set in bootstrap.py).  ImageGrab.grab() also expects
+            # physical pixels, so the bbox can be passed through directly.
             bbox = (rect[0], rect[1], rect[2], rect[3])
             img = ImageGrab.grab(bbox=bbox)
-            logger.info(f"Captured full window: {img.size[0]}x{img.size[1]}px")
+            dpi_scale = get_dpi_scale_factor(hwnd)
+            logger.info(
+                f"Captured full window: {img.size[0]}x{img.size[1]}px "
+                f"(DPI scale: {dpi_scale:.2f}x)"
+            )
             return img
         except Exception as e:
             logger.error(f"Full window capture failed: {e}")
@@ -112,9 +124,13 @@ class VisionInspector:
         x_pct, y_pct, w_pct, h_pct = VIEWPORT_QUADRANTS[viewport]
         img_w, img_h = full_img.size
 
-        # Account for title bar and toolbars (approximate offsets)
-        toolbar_height = 80  # toolbar + menu bar pixels
-        status_height = 24   # status bar
+        # Account for title bar and toolbars (approximate offsets).
+        # These physical-pixel constants are measured at 96 DPI (100%).
+        # On HiDPI displays the OS scales chrome proportionally, so we
+        # multiply by the DPI scale factor for pixel-accurate cropping.
+        dpi_scale = get_dpi_scale_factor(hwnd)
+        toolbar_height = int(80 * dpi_scale)   # toolbar + menu bar
+        status_height  = int(24 * dpi_scale)    # status bar
         content_h = img_h - toolbar_height - status_height
 
         left = int(x_pct * img_w)
@@ -123,7 +139,10 @@ class VisionInspector:
         bottom = top + int(h_pct * content_h)
 
         cropped = full_img.crop((left, top, right, bottom))
-        logger.info(f"Captured '{viewport}' viewport: {cropped.size[0]}x{cropped.size[1]}px")
+        logger.info(
+            f"Captured '{viewport}' viewport: {cropped.size[0]}x{cropped.size[1]}px "
+            f"(DPI scale: {dpi_scale:.2f}x)"
+        )
         return cropped
 
     def save_screenshot(

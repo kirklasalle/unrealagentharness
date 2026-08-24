@@ -1,12 +1,35 @@
 {
-  "active_profile": "openrouter",
+  "active_profile": "google-gemini-flash",
+  "default_detail_level": "ultra",
   "profiles": {
-    "google-gemini": {
+    "google-gemini-flash": {
+      "name": "Google Gemini 2.5 Flash (Recommended)",
+      "provider": "google",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "api_key": "",
+      "model": "gemini-2.5-flash",
+      "temperature": 0.2,
+      "max_tokens": 8192,
+      "enable_tools": true,
+      "enable_vision": true
+    },
+    "google-gemini-pro": {
       "name": "Google Gemini 2.5 Pro",
       "provider": "google",
       "base_url": "https://generativelanguage.googleapis.com/v1beta",
       "api_key": "",
       "model": "gemini-2.5-pro",
+      "temperature": 0.2,
+      "max_tokens": 8192,
+      "enable_tools": true,
+      "enable_vision": true
+    },
+    "anthropic-claude": {
+      "name": "Anthropic Claude 3.7 Sonnet",
+      "provider": "anthropic",
+      "base_url": "https://api.anthropic.com/v1",
+      "api_key": "",
+      "model": "claude-3-7-sonnet-20250219",
       "temperature": 0.2,
       "max_tokens": 8192,
       "enable_tools": true,
@@ -23,30 +46,19 @@
       "enable_tools": true,
       "enable_vision": true
     },
-    "anthropic-claude": {
-      "name": "Anthropic Claude 3.7 Sonnet",
-      "provider": "anthropic",
-      "base_url": "https://api.anthropic.com/v1",
-      "api_key": "",
-      "model": "claude-3-7-sonnet-20250219",
-      "temperature": 0.2,
-      "max_tokens": 8192,
-      "enable_tools": true,
-      "enable_vision": true
-    },
     "openrouter": {
       "name": "OpenRouter Gateway",
       "provider": "openrouter",
       "base_url": "https://openrouter.ai/api/v1",
-      "api_key": "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",
-      "model": "google/gemini-2.5-pro",
+      "api_key": "",
+      "model": "google/gemini-2.5-flash",
       "temperature": 0.2,
       "max_tokens": 4096,
       "enable_tools": true,
       "enable_vision": true
     },
     "groq": {
-      "name": "Groq Fast Inference",
+      "name": "Groq Fast Inference (Llama 3.3 70B)",
       "provider": "groq",
       "base_url": "https://api.groq.com/openai/v1",
       "api_key": "",
@@ -68,7 +80,7 @@
       "enable_vision": false
     },
     "ollama-local": {
-      "name": "Local Ollama (Offline)",
+      "name": "Local Ollama (Offline / Air-Gapped)",
       "provider": "ollama",
       "base_url": "http://127.0.0.1:11434/v1",
       "api_key": "ollama",

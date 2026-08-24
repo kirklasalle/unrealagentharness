@@ -39,16 +39,68 @@ class LLMEngine:
         self.vision_inspector = VisionInspector()
         logger.info("LLMEngine initialized.")
 
+    def _refresh_context(self) -> None:
+        """Refreshes pathing engine, controller paths, and system prompt context after an engine switch."""
+        self.controller._refresh_paths()
+        self.pathing_engine = PathingEngine(self.config_mgr)
+        active_prof = self.config_mgr.get_active_engine_profile()
+        logger.info(f"LLMEngine context refreshed for: '{active_prof.get('name', 'Unknown')}'")
+
     def _build_system_prompt(self) -> str:
         personality = self.config_mgr.get_active_personality()
         engine_prof = self.config_mgr.get_active_engine_profile()
+        engine_id = self.config_mgr.get_active_engine_id()
         engine_name = engine_prof.get("name", "Unreal Tournament")
         generation = engine_prof.get("generation", "UE1")
 
         sig_classes = engine_prof.get("signature_classes", {})
-        classes_str = ", ".join([f"{k}: {v}" for k, v in list(sig_classes.items())[:12]])
+        classes_str = ", ".join([f"{k}: {v}" for k, v in list(sig_classes.items())[:14]])
 
         preamble = personality.get("prompt_preamble", "You are the Master Level Architect.")
+
+        # Engine-specific architectural directives
+        engine_directives = []
+        if engine_id == "ut99_goty":
+            engine_directives = [
+                "Target: Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e).",
+                "Classic Tournament Weapons: Botpack.ShockRifle, Botpack.UT_FlakCannon, Botpack.UT_Eightball (Rocket Launcher), Botpack.SniperRifle, Botpack.minigun2, Botpack.UT_BioRifle, Botpack.PulseGun, Botpack.Enforcer.",
+                "Classic Pickups: Botpack.UT_ShieldBelt (150 AP), Botpack.Armor2 (100 AP), Botpack.ThighPads (50 AP), Botpack.UDamage (Amplifier), Botpack.HealthVial, Botpack.MedBox.",
+                "Navigation & Spawns: Engine.PlayerStart, Engine.PathNode, Botpack.UT_JumpPad, Botpack.TranslocatorTarget.",
+                "Game Types: Botpack.DeathMatchPlus, Botpack.CTFGame, Botpack.Domination, Botpack.Assault.",
+            ]
+        elif engine_id == "ut99_utron":
+            engine_directives = [
+                "Target: UTron Total Conversion Mod (UE1 / 469e).",
+                "UTron Classes: UTron.IdentityDisc, UTron.DiscAmmo, UTron.diffuser, UTron.wirenode, UTron.cycleMorph, UTron.DiscArena, UTron.Recognizer.",
+                "For diffusers, configure Baseglow, Touchiness, Transfer, Faderate, and TileTypes (TT_Normal, TT_Switcher, TT_Toggler, TT_Delayed, TT_Neuron).",
+                "For wirenodes, link them via Tag and Event with TemplateTag set to a template diffuser.",
+                "For light cycle grids, build smooth subtractive grid arenas with neon accent lighting.",
+            ]
+        elif engine_id in ["ut2004", "ut2003"]:
+            engine_directives = [
+                "Target: Unreal Tournament 2004 / 2003 (UE2.5 / v3369+).",
+                "Weapons: XWeapons.ShockRiflePickup, XWeapons.FlakCannonPickup, XWeapons.RocketLauncherPickup, XWeapons.SniperRiflePickup, XWeapons.MinigunPickup, XWeapons.LinkGunPickup, XWeapons.BioRiflePickup, XWeapons.AssaultRiflePickup, Onslaught.ONSAVRiL.",
+                "Pickups: XPickups.ShieldPickup, XPickups.SuperShieldPack, XPickups.UDamagePack, XPickups.HealthPack, XPickups.MiniHealthPack.",
+                "Vehicles & Onslaught: Onslaught.ONSPowerCore, Onslaught.ONSPowerNodeNeutral, Onslaught.ONSHoverCraftFactory (Manta), Onslaught.ONSAttackCraftFactory (Raptor), Onslaught.ONSTankFactory (Goliath), Onslaught.ONSRVFactory (Scorpion), Onslaught.ONSPRVFactory (Hellbender).",
+                "Navigation: Engine.PlayerStart, Engine.PathNode, XGame.xJumpPad, XGame.xDoor.",
+            ]
+        elif engine_id == "ut99_chaosut":
+            engine_directives = [
+                "Target: ChaosUT: Evolution Mod (UE1).",
+                "Chaos Weapons: ChaosUT.Crossbow, ChaosUT.ProxyLauncher, ChaosUT.Vortex, ChaosUT.ChaosSniper, ChaosUT.Turret, ChaosUT.GravityBelt.",
+            ]
+        elif engine_id == "ut99_tacticalops":
+            engine_directives = [
+                "Target: Tactical Ops: Assault on Terror (UE1).",
+                "Tactical Ops: Terrorist / Special Forces spawn points, Buy Zones, Hostage Rescue points, Bomb Target zones.",
+            ]
+        else:
+            engine_directives = [
+                f"Target: {engine_name} ({generation}).",
+                f"Use verified signature classes: {classes_str}.",
+            ]
+
+        directives_str = "\n".join([f"- {d}" for d in engine_directives])
 
         prompt = f"""{preamble}
 
@@ -61,11 +113,11 @@ TARGET ENGINE ENVIRONMENT:
 LEVEL DESIGN RULES & ARCHITECTURAL DIRECTIVES:
 1. In UnrealEd console, ALWAYS move the builder brush before placing actors: BRUSH MOVETO X=<x> Y=<y> Z=<z> followed by ACTOR ADD CLASS=<class>.
 2. When creating CSG rooms or arenas, issue proper PolyList brush imports and SUBTRACT/ADD operations, then spawn lights, player starts, weapons, and path nodes.
-3. If working in UTron (UE1), you have access to UTron.IdentityDisc, UTron.DiscAmmo, UTron.diffuser, UTron.wirenode, UTron.cycleMorph, and UTron.DiscArena.
-4. For diffusers, you can configure Baseglow, Touchiness, Transfer, Faderate, and TileTypes (TT_Normal, TT_Switcher, TT_Toggler, TT_Delayed, TT_Neuron).
-5. For wirenodes, link them via Tag and Event with TemplateTag set to a template diffuser.
-6. Always finalize level builds with MAP REBUILD, LIGHT APPLY, and PATHS BUILD.
-7. Execute tools decisively with exact 3D coordinates.
+3. Always finalize level builds with MAP REBUILD, LIGHT APPLY, and PATHS BUILD.
+4. Execute tools decisively with exact 3D coordinates.
+
+ACTIVE ENGINE SPECIFIC GUIDELINES:
+{directives_str}
 """
         return prompt
 
@@ -143,13 +195,48 @@ LEVEL DESIGN RULES & ARCHITECTURAL DIRECTIVES:
                 return {"status": "success", "archetype": arch, "commands": len(cmds)}
 
             elif tool_name == "build_tournament_arena":
-                w = int(arguments.get("width", 2560))
-                l = int(arguments.get("length", 2560))
-                h = int(arguments.get("height", 768))
-                cmds = self.formula_engine.generate_ut99_tournament_arena(system_dir=self.controller.system_dir, width=w, length=l, height=h)
+                w = int(arguments.get("width", 3072))
+                l = int(arguments.get("length", 3072))
+                h = int(arguments.get("height", 1024))
+                detail = arguments.get("detail_level", "ultra")
+                cmds = self.formula_engine.generate_ut99_tournament_arena(
+                    system_dir=self.controller.system_dir, width=w, length=l, height=h, detail_level=detail
+                )
                 results = self.controller.execute_batch(cmds)
-                self.nexus_bridge.report_build_event("ut99", "Built Tournament Arena", f"{w}x{l}x{h}")
-                return {"status": "success", "commands": len(cmds)}
+                self.nexus_bridge.report_build_event("ut99", f"Built Tournament Arena ({detail})", f"{w}x{l}x{h}")
+                return {"status": "success", "commands": len(cmds), "detail_level": detail}
+
+            elif tool_name == "build_unreal1_sanctuary":
+                detail = arguments.get("detail_level", "ultra")
+                cmds = self.formula_engine.generate_unreal1_sp_sanctuary(
+                    system_dir=self.controller.system_dir, detail_level=detail
+                )
+                results = self.controller.execute_batch(cmds)
+                self.nexus_bridge.report_build_event("unreal1", f"Built Sacred Nali Sanctuary ({detail})", f"{len(cmds)} cmds")
+                return {"status": "success", "commands": len(cmds), "detail_level": detail}
+
+            elif tool_name == "build_outdoor_world":
+                w_type = arguments.get("world_type", "mountain_valley")
+                detail = arguments.get("detail_level", "ultra")
+                if w_type == "mountain_valley":
+                    cmds = self.formula_engine.generate_ut99_verdant_mountain_valley(
+                        system_dir=self.controller.system_dir, detail_level=detail
+                    )
+                elif w_type == "desert_canyon":
+                    cmds = self.formula_engine.generate_ut99_desert_canyon_ruins(
+                        system_dir=self.controller.system_dir
+                    )
+                elif w_type == "asteroid_outpost":
+                    cmds = self.formula_engine.generate_ut99_orbital_asteroid_outpost(
+                        system_dir=self.controller.system_dir
+                    )
+                else:
+                    cmds = self.formula_engine.generate_ut99_verdant_mountain_valley(
+                        system_dir=self.controller.system_dir, detail_level=detail
+                    )
+                results = self.controller.execute_batch(cmds)
+                self.nexus_bridge.report_build_event("ut99", f"Built Outdoor World ({w_type}, {detail})", f"{len(cmds)} cmds")
+                return {"status": "success", "world_type": w_type, "commands": len(cmds), "detail_level": detail}
 
             elif tool_name == "build_path_lattice":
                 bounds = tuple(arguments.get("bounds", [-1024, -1024, -200, 1024, 1024, -200]))

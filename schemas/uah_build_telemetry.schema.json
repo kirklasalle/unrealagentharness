@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/kirklasalle/unrealagentharness/main/schemas/uah_build_telemetry.schema.json",
+  "title": "UAHBuildTelemetry",
+  "description": "UAH Standard Specification for Build Events, Reachability Audits, and Compilation Telemetry.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "timestamp",
+    "engine_id",
+    "action",
+    "status"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique UUID for the build event."
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 millisecond timestamp."
+    },
+    "engine_id": {
+      "type": "string",
+      "description": "Target engine profile identifier."
+    },
+    "action": {
+      "type": "string",
+      "description": "Procedural build action executed."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "FAILED", "WARNING", "IN_PROGRESS"]
+    },
+    "commands_executed": {
+      "type": "integer"
+    },
+    "execution_time_ms": {
+      "type": "number"
+    },
+    "reachability_audit": {
+      "type": "object",
+      "properties": {
+        "node_count": { "type": "integer" },
+        "reachable_nodes": { "type": "integer" },
+        "unreachable_nodes": { "type": "integer" },
+        "paths_defined": { "type": "integer" },
+        "quality_rating": { "type": "string", "enum": ["EXCELLENT", "GOOD", "NEEDS_WORK", "POOR"] }
+      }
+    },
+    "error": {
+      "type": "string",
+      "description": "Error details if status is FAILED."
+    }
+  }
+}

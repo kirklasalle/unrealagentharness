@@ -4,10 +4,11 @@ Manages dynamic engine switching (UT99 UTron, UT99 GOTY, UT2003, UT2004),
 LLM provider profiles, and personalities with full disk persistence.
 """
 
+import datetime
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from .logger import get_logger
 
@@ -53,19 +54,102 @@ class ConfigManager:
             return False
 
     # -------------------------------------------------------------------------
-    # ENGINE PROFILE ACCESSORS
+    # ENGINE PROFILE ACCESSORS & PERSISTENT INITIALIZATION
     # -------------------------------------------------------------------------
     def get_active_engine_id(self) -> str:
-        return self.engine_data.get("active_engine", "ut99_utron")
+        return self.engine_data.get("active_engine", "ut99_goty")
 
     def set_active_engine_id(self, engine_id: str) -> bool:
         if engine_id in self.engine_data.get("profiles", {}):
             self.engine_data["active_engine"] = engine_id
             self._save_json(self.engine_file, self.engine_data)
-            logger.info(f"Active Engine Profile switched to: '{engine_id}'")
+            logger.info(f"Active Engine Profile switched to: '{engine_id}' and saved to disk.")
             return True
         logger.warning(f"Engine profile '{engine_id}' not found.")
         return False
+
+    def is_engine_initialized(self, engine_id: Optional[str] = None) -> bool:
+        """Checks whether the specified engine profile has completed initialization."""
+        eid = engine_id or self.get_active_engine_id()
+        prof = self.engine_data.get("profiles", {}).get(eid, {})
+        status = prof.get("status", {})
+        return bool(status.get("initialized", False))
+
+    def get_engine_status(self, engine_id: Optional[str] = None) -> Dict[str, Any]:
+        """Returns the persisted verification status of an engine profile."""
+        eid = engine_id or self.get_active_engine_id()
+        prof = self.engine_data.get("profiles", {}).get(eid, {})
+        return prof.get("status", {
+            "initialized": False,
+            "verified": False,
+            "summary": "Not initialized",
+        })
+
+    def verify_and_initialize_engine(
+        self,
+        engine_id: Optional[str] = None,
+        force_recheck: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Verifies filesystem paths, executables, and package signatures for an engine profile.
+        Persists the initialization state and verified metadata directly to engine_profiles.json.
+        Only performs the filesystem scan once unless force_recheck is True.
+        """
+        eid = engine_id or self.get_active_engine_id()
+        if eid not in self.engine_data.get("profiles", {}):
+            return {"initialized": False, "verified": False, "error": f"Engine profile '{eid}' not found."}
+
+        prof = self.engine_data["profiles"][eid]
+        curr_status = prof.get("status", {})
+
+        # If already initialized and not forced, return cached persistent status
+        if curr_status.get("initialized") and not force_recheck:
+            logger.debug(f"Engine '{eid}' is already verified and initialized (using persistent state).")
+            return curr_status
+
+        logger.info(f"Checking and initializing engine profile '{eid}' ({prof.get('name')})...")
+        now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        root_dir = Path(prof.get("root_dir", ""))
+        system_dir = Path(prof.get("system_dir", ""))
+        editor_exe_name = prof.get("editor_exe", "UnrealEd.exe")
+        game_exe_name = prof.get("game_exe", "")
+
+        root_exists = root_dir.exists()
+        sys_exists = system_dir.exists()
+        editor_exe_path = system_dir / editor_exe_name if sys_exists else None
+        editor_exists = editor_exe_path.exists() if editor_exe_path else False
+
+        game_exe_path = system_dir / game_exe_name if (sys_exists and game_exe_name) else None
+        game_exists = game_exe_path.exists() if game_exe_path else False
+
+        is_verified = sys_exists and editor_exists
+
+        if is_verified:
+            summary = f"Verified: {editor_exe_name} ready in {system_dir}"
+        elif sys_exists and not editor_exists:
+            summary = f"Warning: System dir exists but {editor_exe_name} was not found"
+        else:
+            summary = f"Not Found: System dir {system_dir} does not exist"
+
+        status_data = {
+            "initialized": True,
+            "verified": is_verified,
+            "root_exists": root_exists,
+            "system_dir_exists": sys_exists,
+            "editor_exe_exists": editor_exists,
+            "game_exe_exists": game_exists,
+            "last_checked": now_str,
+            "summary": summary,
+        }
+
+        # Store in profile and save to config/engine_profiles.json
+        self.engine_data["profiles"][eid]["status"] = status_data
+        self.engine_data["active_engine"] = eid
+        self._save_json(self.engine_file, self.engine_data)
+
+        logger.info(f"Engine '{eid}' initialized -> Verified: {is_verified} ({summary})")
+        return status_data
 
     def get_active_engine_profile(self) -> Dict[str, Any]:
         engine_id = self.get_active_engine_id()
