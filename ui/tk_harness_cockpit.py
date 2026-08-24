@@ -172,7 +172,16 @@ class StandaloneHarnessCockpit(tk.Tk):
                 direct_cmds = itm.get("commands")
 
                 if cmds_factory:
-                    cmd = lambda t=title_text, cf=cmds_factory: self._execute_direct_blueprint(t, cf())
+                    def _make_cmd(t=title_text, cf=cmds_factory):
+                        def _handler():
+                            try:
+                                cmds = cf()
+                                self._execute_direct_blueprint(t, cmds)
+                            except Exception as ex:
+                                logger.error(f"Error evaluating blueprint factory for '{t}': {ex}")
+                                self._append_chat("AI Architect", f"⚠️ Error building blueprint **{t}**: {str(ex)}")
+                        return _handler
+                    cmd = _make_cmd()
                 elif direct_cmds:
                     cmd = lambda t=title_text, c=direct_cmds: self._execute_direct_blueprint(t, c)
                 elif action_cb:
@@ -198,8 +207,13 @@ class StandaloneHarnessCockpit(tk.Tk):
                 desc = tk.Label(btn_f, text=desc_text, font=("Segoe UI", 7), fg="#94a3b8", bg="#1e293b", justify=tk.LEFT, wraplength=280)
                 desc.pack(anchor=tk.W, pady=(2, 0))
 
-    def _execute_direct_blueprint(self, title: str, commands: List[str]):
+    def _execute_direct_blueprint(self, title: str, commands: Optional[List[str]]):
         """Executes a procedural blueprint directly into UnrealEd in real-time."""
+        if not commands:
+            logger.warning(f"No commands provided for blueprint: {title}")
+            self._append_chat("Quick Palette", f"⚠️ No commands generated for **{title}**.")
+            return
+
         self._append_chat("Quick Palette", f"🚀 Executing **{title}** ({len(commands)} commands)...")
         self.status_lbl.configure(text=f"Building {title}...")
 

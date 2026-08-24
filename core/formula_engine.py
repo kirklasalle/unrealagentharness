@@ -635,9 +635,27 @@ class FormulaEngine:
         ]
         f_actors = _write_file(system_dir, "LightCycleActors.t3d", "\n".join(t3d_actors))
 
-        # -------------------------------------------------------------------------
-        # 4.1 UTron MASTER CONTROL PROGRAM (MCP) CORE SANCTUM
-        # -------------------------------------------------------------------------
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_grid}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=0 Y=0 Z={floor_z + 64}",
+            f'BRUSH IMPORT FILE="{f_div}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+    # -------------------------------------------------------------------------
+    # 4.1 UTron MASTER CONTROL PROGRAM (MCP) CORE SANCTUM
+    # -------------------------------------------------------------------------
     @staticmethod
     def generate_utron_mcp_core(
         system_dir: Optional[Path] = None,
