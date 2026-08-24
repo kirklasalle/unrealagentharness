@@ -2610,16 +2610,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_arena}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_dais}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -2740,16 +2739,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_canyon}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_plateau}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 128}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -2817,16 +2815,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_glacier}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_bridge}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 32}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -2902,16 +2899,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_crater}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_gantry}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -2970,16 +2966,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_magma}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_platform}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 32}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -3041,16 +3036,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_temple}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_altar}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -3127,16 +3121,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_arena}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_bunker}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -3192,16 +3185,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_chamber}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_core}"',
             "BRUSH MOVETO X=0 Y=0 Z=0",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -3254,13 +3246,12 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_lab}"',
             "BRUSH SUBTRACT",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     @staticmethod
@@ -3320,16 +3311,15 @@ class FormulaEngine:
         return [
             "MAP NEW",
             *pkg_cmds,
-            f'MAP IMPORT FILE="{f_map}"',
             f'BRUSH IMPORT FILE="{f_fob}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_bunker}"',
             f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 128}",
             "BRUSH ADD",
+            f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
-            "FLUSH",
         ]
 
     # -------------------------------------------------------------------------

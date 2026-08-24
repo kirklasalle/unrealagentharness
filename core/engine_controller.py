@@ -277,8 +277,11 @@ class EngineController:
 
             # Heavy commands need extra breathing room for UnrealEd BSP/Path compiler
             c_upper = c.upper()
-            if "REBUILD" in c_upper or "IMPORT" in c_upper or "SUBTRACT" in c_upper or "PATHS BUILD" in c_upper or "MAP NEW" in c_upper:
-                time.sleep(0.35)
+            if "PATHS BUILD" in c_upper:
+                time.sleep(0.8)
+                self.dismiss_dialogs()
+            elif "REBUILD" in c_upper or "IMPORT" in c_upper or "SUBTRACT" in c_upper or "MAP NEW" in c_upper or "BRUSH ADD" in c_upper:
+                time.sleep(0.4)
                 self.dismiss_dialogs()
             elif delay_between > 0:
                 time.sleep(delay_between)
