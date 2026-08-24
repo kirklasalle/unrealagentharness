@@ -104,10 +104,10 @@ UT99_TEXTURE_THEMES = {
 UT2004_TEXTURE_THEMES = {
     "canyon": {
         "name": "Onslaught Canyon / Torlan (Rock & Sandstone)",
-        "packages": ["AntalusTextures.utx", "AnubisTextures.utx"],
+        "packages": ["AntalusTextures.utx", "AnubisTextures.utx", "AbaddonArchitecture.utx"],
         "floor": "AntalusTextures.Terrain.Dirt1",
         "wall": "AntalusTextures.Rock.CliffRock1",
-        "ceiling": "AntalusTextures.Skybox.Sky1",
+        "ceiling": "AntalusTextures.Sky.AntalusSky",
         "dais": "AnubisTextures.Stone.Sandstone1",
         "trim": "AbaddonArchitecture.Metal.SteelTrim1",
         "key_light_hue": 35,      # Warm Sunlit Gold
@@ -130,11 +130,11 @@ UT2004_TEXTURE_THEMES = {
     },
     "space": {
         "name": "Orbital Mining / Asteroid Platform",
-        "packages": ["AbaddonArchitecture.utx", "AW-Metals.utx", "AW-CityStuff.utx"],
+        "packages": ["AbaddonArchitecture.utx", "AW-Metals.utx", "AW-CityStuff.utx", "SkyBox.utx"],
         "floor": "AbaddonArchitecture.Metal.SteelFloor1",
         "wall": "AbaddonArchitecture.Rock.CliffRock1",
-        "ceiling": "AbaddonArchitecture.Skybox.SpaceSky1",
-        "dais": "AbaddonArchitecture.Metal.Platform1",
+        "ceiling": "SkyBox.space.starfield",
+        "dais": "AW-Metals.Metal.Metal01",
         "trim": "AbaddonArchitecture.Metal.SteelTrim1",
         "key_light_hue": 160,     # Cold Fluorescent
         "key_light_sat": 140,
@@ -2562,14 +2562,18 @@ class FormulaEngine:
         z_floor = -(height // 2)
         z_dais_top = z_floor + 128
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Tournament Colosseum"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "45"}),
             _generate_actor_t3d("XPickups.UDamagePack", "UDamage1", (0, 0, z_dais_top + 40)),
             _generate_actor_t3d("XPickups.SuperShieldPack", "Shield1", (0, 240, z_dais_top + 40)),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock1", (-width // 3, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak1", (width // 3, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket1", (0, -length // 3, z_floor + 36)),
             _generate_actor_t3d("XWeapons.SniperRiflePickup", "Sniper1", (0, length // 3, z_floor + 36)),
-            _generate_actor_t3d("XGame.xJumpPad", "JumpPad1", (-width // 4, -length // 4, z_floor + 36)),
-            _generate_actor_t3d("XGame.xJumpPad", "JumpPad2", (width // 4, length // 4, z_floor + 36)),
+            _generate_actor_t3d("XGame.xJumpPad", "JumpPad1", (-width // 4, -length // 4, z_floor + 36), {"JumpTarget": "DaisPathNode"}),
+            _generate_actor_t3d("XGame.xJumpPad", "JumpPad2", (width // 4, length // 4, z_floor + 36), {"JumpTarget": "DaisPathNode"}),
         ]
 
         # 8 Tournament Player Starts spaced circularly
@@ -2640,6 +2644,11 @@ class FormulaEngine:
         z_floor = -1024
         z_plateau_top = z_floor + 256  # -768
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'Onslaught.ONSOnslaughtGame'", "Title": '"Onslaught Canyon Outpost"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "55"}),
+
             # Red Base PowerCore & Vehicle Factories
             _generate_actor_t3d("Onslaught.ONSPowerCore", "Red_PowerCore", (-3072, 0, z_floor + 60), {"DefenderTeamIndex": "0"}),
             _generate_actor_t3d("Onslaught.ONSHoverCraftFactory", "Red_Manta_1", (-2800, -400, z_floor + 40)),
@@ -2672,33 +2681,51 @@ class FormulaEngine:
             _generate_actor_t3d("XPickups.SuperHealthPack", "SuperHealth_Mid", (250, 250, z_plateau_top + 36)),
             _generate_actor_t3d("XPickups.SuperShieldPack", "SuperShield_Mid", (-250, -250, z_plateau_top + 36)),
 
-            # Infantry PathNodes Network (Clean offsets, zero collision overlaps)
+            # Infantry PathNodes Network (Continuous corridor spacing <= 550 UU)
+            _generate_actor_t3d("Engine.PathNode", "Path_RedBase_In", (-3072, 150, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_RedBase_Out", (-2700, 250, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_RedMid", (-1600, 300, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedMid1", (-2150, 200, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedMid2", (-1600, 300, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_RedApproach", (-1100, 200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_CenterPlateau", (0, 0, z_plateau_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_RedPlateau_Ramp", (-600, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_CenterPlateau", (0, 200, z_plateau_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_PlateauNorth", (0, 600, z_plateau_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_PlateauSouth", (0, -600, z_plateau_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_PlateauEast", (600, 0, z_plateau_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_PlateauWest", (-600, 0, z_plateau_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_NorthNode", (0, 2400, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_SouthNode", (0, -2400, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_NorthMid1", (0, 1200, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_NorthNode", (150, 2400, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_SouthMid1", (0, -1200, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_SouthNode", (150, -2400, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BluePlateau_Ramp", (600, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_BlueApproach", (1100, -200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid", (1600, -300, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid2", (1600, -300, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueMid1", (2150, -200, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_Out", (2700, -250, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_BlueBase_In", (3072, 150, z_floor + 40)),
 
-            # RoadPathNodes (Vehicle Network - route cleanly around central plateau)
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_RedBase", (-3072, 0, z_floor + 50)),
+            # RoadPathNodes (Vehicle Network - spaced <= 600 UU to avoid intermediate path solver hangs)
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_RedBase", (-3072, -150, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_Red1", (-2300, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_RedMid", (-1536, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_RedApp", (-800, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth1", (0, 800, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth", (0, 1600, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth", (0, -1600, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidNorth3", (-150, 2400, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth1", (0, -800, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth", (0, -1500, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_MidSouth3", (-150, -2400, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueApp", (800, 0, z_floor + 50)),
             _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueMid", (1536, 0, z_floor + 50)),
-            _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueBase", (3072, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_Blue1", (2300, 0, z_floor + 50)),
+            _generate_actor_t3d("Engine.RoadPathNode", "Road_BlueBase", (3072, -150, z_floor + 50)),
 
-            # FlyingPathNodes (Aerial Raptor / Cicada Network)
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Red", (-2000, 0, z_floor + 600)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Center", (0, 0, z_floor + 700)),
-            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Blue", (2000, 0, z_floor + 600)),
+            # FlyingPathNodes (Aerial Raptor / Cicada Network near landing pads)
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Red", (-3200, -200, z_floor + 250)),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_RedMid", (-1536, 0, z_floor + 300)),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Center", (0, 0, z_floor + 500)),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_BlueMid", (1536, 0, z_floor + 300)),
+            _generate_actor_t3d("Engine.FlyingPathNode", "Air_Blue", (3200, -200, z_floor + 250)),
 
             # Sunlight & Ambient Sky Lighting
             _generate_actor_t3d("Engine.Sunlight", "Canyon_Sun", (0, 0, 500), {
@@ -2745,6 +2772,10 @@ class FormulaEngine:
         z_floor = -768
         z_bridge_top = z_floor + 64
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Arctic Glacier Facility"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "45"}),
             _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "Node_West_Facility", (-2048, 0, z_floor + 40)),
             _generate_actor_t3d("Onslaught.ONSPowerNodeNeutral", "Node_East_Facility", (2048, 0, z_floor + 40)),
             _generate_actor_t3d("Onslaught.ONSPRVFactory", "Hellbender_West", (-1800, 400, z_floor + 40)),
@@ -2759,14 +2790,18 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PlayerStart", "Spawn_W1", (-2200, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PlayerStart", "Spawn_E1", (2200, 0, z_floor + 40)),
 
-            # Navigation Lattice (spaced from PlayerStarts)
+            # Navigation Lattice (continuous corridor spacing <= 550 UU)
             _generate_actor_t3d("Engine.PathNode", "Path_WestExit", (-1900, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_WestNode", (-2048, 200, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestMid2", (-1500, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_WestApp", (-1024, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestBridgeApp", (-500, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Bridge1", (0, 0, z_bridge_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Bridge2", (0, 600, z_bridge_top + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Bridge3", (0, -600, z_bridge_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge2", (0, 500, z_bridge_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge3", (0, -500, z_bridge_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_EastBridgeApp", (500, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_EastApp", (1024, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_EastMid2", (1500, 0, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_EastNode", (2048, 200, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_EastExit", (1900, 0, z_floor + 40)),
 
@@ -2808,35 +2843,49 @@ class FormulaEngine:
         crater_poly = _generate_brush_polylist_t3d((5120, 5120, 1536), shape="Cylinder", sides=16, floor_tex=f_tex, wall_tex=w_tex, ceil_tex=c_tex)
         f_crater = _write_file(system_dir, "UT2k4_Space_Crater.t3d", crater_poly)
 
-        gantry_poly = _generate_brush_polylist_t3d((768, 768, 512), shape="Box", floor_tex=t["dais"], wall_tex=t["trim"], ceil_tex=t["dais"])
+        gantry_poly = _generate_brush_polylist_t3d((768, 768, 128), shape="Box", floor_tex=t["dais"], wall_tex=t["trim"], ceil_tex=t["dais"])
         f_gantry = _write_file(system_dir, "UT2k4_Space_Gantry.t3d", gantry_poly)
 
         z_floor = -768
-        z_gantry_top = z_floor + 512  # -256
+        z_gantry_top = z_floor + 128  # -640
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Orbital Asteroid Mining"',
+            }),
             _generate_actor_t3d("XWeapons.RedeemerPickup", "Redeemer_Apex", (0, 120, z_gantry_top + 36)),
             _generate_actor_t3d("XPickups.UDamagePack", "UDamage_Gantry", (0, -120, z_gantry_top + 36)),
-            _generate_actor_t3d("XGame.xJumpPad", "JumpPad_Crater_N", (0, 1500, z_floor + 36)),
-            _generate_actor_t3d("XGame.xJumpPad", "JumpPad_Crater_S", (0, -1500, z_floor + 36)),
+            _generate_actor_t3d("XGame.xJumpPad", "JumpPad_Crater_N", (0, 1500, z_floor + 36), {"JumpTarget": "Path_Gantry_Top"}),
+            _generate_actor_t3d("XGame.xJumpPad", "JumpPad_Crater_S", (0, -1500, z_floor + 36), {"JumpTarget": "Path_Gantry_Top"}),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock_Space_E", (1500, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_Space_W", (-1500, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.MinigunPickup", "Mini_Space", (800, 800, z_floor + 36)),
             _generate_actor_t3d("XPickups.SuperShieldPack", "Shield_Space", (-800, -800, z_floor + 36)),
-            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_1", (1200, 1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_2", (-1200, -1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_3", (-1200, 1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_4", (1200, -1200, z_floor + 40)),
+            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_1", (1250, 1250, z_floor + 40)),
+            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_2", (-1250, -1250, z_floor + 40)),
+            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_3", (-1250, 1250, z_floor + 40)),
+            _generate_actor_t3d("Engine.PlayerStart", "Space_Spawn_4", (1250, -1250, z_floor + 40)),
 
-            # Navigation Network
+            # Navigation Network (Dais + Intermediate & Outer Rings, spacing <= 550 UU)
+            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_Top", (0, 0, z_gantry_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_N", (0, 450, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_S", (0, -450, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_E", (450, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_W", (-450, 0, z_floor + 40)),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_Space_N", (0, 950, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Space_S", (0, -950, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Space_E", (950, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Space_W", (-950, 0, z_floor + 40)),
+
             _generate_actor_t3d("Engine.PathNode", "Path_Space_1", (900, 900, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Space_2", (-900, -900, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Space_3", (-900, 900, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Space_4", (900, -900, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Space_N", (0, 1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Space_S", (0, -1200, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Space_E", (1200, 0, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Space_W", (-1200, 0, z_floor + 40)),
-            _generate_actor_t3d("Engine.PathNode", "Path_Gantry_Top", (0, 0, z_gantry_top + 40)),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_Outer_N", (0, 1400, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Outer_S", (0, -1400, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Outer_E", (1400, 0, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Outer_W", (-1400, 0, z_floor + 40)),
 
             _generate_actor_t3d("Engine.ZoneInfo", "Space_Zone", (0, 0, 0), {
                 "KillZ": "-2000",
@@ -2848,7 +2897,7 @@ class FormulaEngine:
 
         map_content = "Begin Map\n" + "\n".join(actors) + "\nEnd Map\n"
         f_map = _write_file(system_dir, "UT2k4_Space_Actors.t3d", map_content)
-        pkg_cmds = _get_ut2004_obj_load_commands(t.get("packages", ["AbaddonArchitecture.utx", "AW-Metals.utx", "AW-CityStuff.utx"]))
+        pkg_cmds = _get_ut2004_obj_load_commands(t.get("packages", ["AbaddonArchitecture.utx", "AW-Metals.utx", "AW-CityStuff.utx", "SkyBox.utx"]))
 
         return [
             "MAP NEW",
@@ -2857,7 +2906,7 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_crater}"',
             "BRUSH SUBTRACT",
             f'BRUSH IMPORT FILE="{f_gantry}"',
-            f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 256}",
+            f"BRUSH MOVETO X=0 Y=0 Z={z_floor + 64}",
             "BRUSH ADD",
             "MAP REBUILD",
             "LIGHT APPLY",
@@ -2885,6 +2934,10 @@ class FormulaEngine:
         z_floor = -640
         z_plat_top = z_floor + 64
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Volcanic Magma Foundry"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "40"}),
             _generate_actor_t3d("XPickups.UDamagePack", "UDamage_Foundry", (0, 0, z_plat_top + 36)),
             _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket_Foundry", (0, 300, z_plat_top + 36)),
             _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_Foundry", (0, -300, z_plat_top + 36)),
@@ -2949,6 +3002,10 @@ class FormulaEngine:
         z_floor = -640
         z_altar_top = z_floor + 128
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Anubis Egyptian Temple"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "45"}),
             _generate_actor_t3d("XPickups.UDamagePack", "Anubis_UDamage", (0, 0, z_altar_top + 36)),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Anubis_Shock", (0, 600, z_floor + 36)),
             _generate_actor_t3d("XWeapons.SniperRiflePickup", "Anubis_Sniper", (0, -600, z_floor + 36)),
@@ -3016,6 +3073,11 @@ class FormulaEngine:
         z_floor = -640
         z_bunker_top = z_floor + 128
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'SkaarjPack.Invasion'", "Title": '"Invasion Monster Arena"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "45"}),
+
             # SkaarjPack Creature Spawners
             _generate_actor_t3d("SkaarjPack.Skaarj", "Invasion_Skaarj_1", (-1200, -1200, z_floor + 40)),
             _generate_actor_t3d("SkaarjPack.Skaarj", "Invasion_Skaarj_2", (1200, 1200, z_floor + 40)),
@@ -3040,10 +3102,14 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PlayerStart", "Def_Spawn_1", (-200, 0, z_bunker_top + 40)),
             _generate_actor_t3d("Engine.PlayerStart", "Def_Spawn_2", (200, 0, z_bunker_top + 40)),
 
-            # Navigation Network
+            # Navigation Network (center bunker and perimeter corridors)
             _generate_actor_t3d("Engine.PathNode", "Path_Def_N", (0, 350, z_bunker_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Def_S", (0, -350, z_bunker_top + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Def_Center", (0, 0, z_bunker_top + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Arena_MidNW", (-600, -600, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Arena_MidSE", (600, 600, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Arena_MidNE", (-600, 600, z_floor + 40)),
+            _generate_actor_t3d("Engine.PathNode", "Path_Arena_MidSW", (600, -600, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Arena_NW", (-1200, -1200, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Arena_SE", (1200, 1200, z_floor + 40)),
             _generate_actor_t3d("Engine.PathNode", "Path_Arena_NE", (-1200, 1200, z_floor + 40)),
@@ -3092,6 +3158,10 @@ class FormulaEngine:
 
         z_floor = -512
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Reactor Core Chamber"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "40"}),
             _generate_actor_t3d("XPickups.UDamagePack", "Reactor_UDamage", (0, 600, z_floor + 36)),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Reactor_Shock", (600, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.FlakCannonPickup", "Reactor_Flak", (-600, 0, z_floor + 36)),
@@ -3150,6 +3220,10 @@ class FormulaEngine:
 
         z_floor = -448
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'XGame.xDeathMatch'", "Title": '"Biohazard Quarantine Lab"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "45"}),
             _generate_actor_t3d("XWeapons.BioRiflePickup", "Lab_BioRifle_1", (0, 0, z_floor + 36)),
             _generate_actor_t3d("XWeapons.BioRiflePickup", "Lab_BioRifle_2", (0, 400, z_floor + 36)),
             _generate_actor_t3d("XWeapons.ShockRiflePickup", "Lab_Shock", (-600, 0, z_floor + 36)),
@@ -3209,6 +3283,11 @@ class FormulaEngine:
         z_floor = -512
         z_bunker_top = z_floor + 256  # -256
         actors = [
+            _generate_actor_t3d("Engine.LevelInfo", "LevelInfo0", (0, 0, 0), {
+                "TimeDilation": "1.000000", "DefaultGameType": "Class'Onslaught.ONSOnslaughtGame'", "Title": '"Fortified Forward Base"',
+            }),
+            _generate_actor_t3d("Engine.ZoneInfo", "ZoneInfo0", (0, 0, 0), {"AmbientBrightness": "50"}),
+
             # Vehicle Factory (Use safe ONSVehicleFactory to avoid editor skeletal mesh crash)
             _generate_actor_t3d("Onslaught.ONSRVFactory", "FOB_Scorpion", (0, -800, z_floor + 40)),
             _generate_actor_t3d("Onslaught.ONSAVRiLPickup", "FOB_AVRiL", (0, 0, z_bunker_top + 36)),

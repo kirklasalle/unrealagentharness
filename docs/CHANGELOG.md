@@ -2,6 +2,31 @@
 
 All notable changes, architectural enhancements, and procedural world-building procedures are documented in this file.
 
+## [v2.16.2] - 2026-08-24: UT2004 FPathBuilder AIController Crash Resolution, LevelInfo Root Actor Integration, Async PostMessage Command Dispatch, and Complete Nav Lattice Densification
+
+### 🛡️ Critical Bugfix: UT2004 `FPathBuilder::buildPaths` AIController Crash Resolution
+- **Root Cause Identified from Crash Dumps & Screenshots (`agentharness_106.png`, `agentharness_107.png`)**:
+  - UnrealEd 3.0 (UT2004 Build 3374) crashed during `PATHS BUILD` with:
+    `Actor not found: AIController MyLevel.AIController1`
+    `History: ULevel::GetActorIndex <- ULevel::DestroyActor <- (AIController MyLevel.AIController1) <- FPathBuilder::buildPaths <- UEditorEngine::Exec_Paths`
+  - In Unreal Engine 2.5, `FPathBuilder::buildPaths` spawns a temporary test controller (`AIController MyLevel.AIController1`) to test jump clearances and ReachSpecs. When the root singleton actor `Engine.LevelInfo` is missing from the imported level actors, the spawned `AIController` fails to register in `Level.ControllerList`, causing `ULevel::DestroyActor` / `ULevel::GetActorIndex` to crash.
+- **Architectural Solution — Universal `LevelInfo` & `ZoneInfo` Root Injection**:
+  - Added `Engine.LevelInfo` with proper `DefaultGameType` (`XGame.xDeathMatch`, `Onslaught.ONSOnslaughtGame`, or `SkaarjPack.Invasion`) and `Engine.ZoneInfo` across all 10 UT2004 procedural world generators in `core/formula_engine.py`.
+  - Added test assertions to `test_harness.py` guaranteeing `LevelInfo` presence in all generated worlds.
+
+### ⚡ Performance & Stability: Asynchronous `PostMessage` Command Dispatch
+- **Root Cause**:
+  - `EngineController.execute_command()` used blocking synchronous `win32gui.SendMessage(hwnd_edit, win32con.WM_CHAR, 13, 0)`, freezing the calling Python thread whenever UnrealEd engaged in long-running BSP or path builds.
+- **Architectural Solution**:
+  - Switched keystroke execution (`VK_RETURN`, `WM_CHAR 13`, `WM_KEYUP`) to non-blocking `win32gui.PostMessage()`.
+  - Broadened `dismiss_dialogs()` to automatically dismiss `Map Check` and progress popups by class and window title.
+
+### 🧭 Complete Navigation Network Densification & JumpPad Targeting
+- Densified navigation node grids across all UT2004 world generators (`Orbital Asteroid Mining`, `Arctic Glacier Outpost`, `Invasion Arena`, `Tournament Colosseum`) ensuring maximum node-to-node spacing $\le 550\text{ UU}$.
+- Converted steep 512 UU vertical ledges into walkable 128 UU daises with cardinal approach nodes.
+- Explicitly wired all `xJumpPad`s with designated `JumpTarget`s (`Path_Gantry_Top`, `DaisPathNode`).
+- Updated Space texture theme to preload `SkyBox.utx` with valid `SkyBox.space.starfield` materials.
+
 ## [v2.16.1] - 2026-08-24: UT2004 USkeletalMeshInstance Viewport Crash Resolution, Safe Vehicle Factory System, and Auto-Package Preloader
 
 ### 🛡️ Critical Bugfix: UT2004 `USkeletalMeshInstance::Render` General Protection Fault Resolution

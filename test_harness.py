@@ -332,6 +332,7 @@ class TestFormulaEngine(unittest.TestCase):
             t3d_file = Path(tmp) / "UT2k4_Space_Actors.t3d"
             self.assertTrue(t3d_file.exists())
             content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Engine.LevelInfo", content)
             self.assertIn("XWeapons.RedeemerPickup", content)
             self.assertIn("Space_Zone", content)
 
@@ -343,6 +344,7 @@ class TestFormulaEngine(unittest.TestCase):
             t3d_file = Path(tmp) / "UT2k4_Magma_Actors.t3d"
             self.assertTrue(t3d_file.exists())
             content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Engine.LevelInfo", content)
             self.assertIn("UDamage_Foundry", content)
 
     def test_ut2004_anubis_egyptian_temple_generates_world_elements(self):
@@ -353,6 +355,7 @@ class TestFormulaEngine(unittest.TestCase):
             t3d_file = Path(tmp) / "UT2k4_Anubis_Actors.t3d"
             self.assertTrue(t3d_file.exists())
             content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Engine.LevelInfo", content)
             self.assertIn("Anubis_UDamage", content)
 
     def test_ut2004_invasion_monster_arena_generates_skaarjpack_creatures(self):
@@ -363,6 +366,7 @@ class TestFormulaEngine(unittest.TestCase):
             t3d_file = Path(tmp) / "UT2k4_Invasion_Actors.t3d"
             self.assertTrue(t3d_file.exists())
             content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("Engine.LevelInfo", content)
             self.assertIn("SkaarjPack.Skaarj", content)
             self.assertIn("SkaarjPack.Krall", content)
             self.assertIn("SkaarjPack.Titan", content)

@@ -85,6 +85,7 @@ class EngineController:
         target_procs = profile.get("process_names", ["unrealed.exe", "utroneditor.exe"])
 
         prev_hwnd = self._hwnd_main
+        prev_edit = self._hwnd_edit
         self._hwnd_main = None
         self._hwnd_edit = None
         self._pid = None
@@ -165,9 +166,11 @@ class EngineController:
                 self._hwnd_edit = edit_controls[0][0]
                 rect = edit_controls[0][1]
                 logger.trace(f"Identified {len(edit_controls)} candidate edit controls; selected HWND {self._hwnd_edit}")
-                logger.info(f"Located UnrealEd Command Edit Control -> HWND: {self._hwnd_edit}, Rect: {rect}")
+                if self._hwnd_edit != prev_edit:
+                    logger.info(f"Located UnrealEd Command Edit Control -> HWND: {self._hwnd_edit}, Rect: {rect}")
             else:
-                logger.warning(f"No Edit child control found inside UnrealEd HWND {self._hwnd_main}")
+                if prev_edit is not None:
+                    logger.warning(f"No Edit child control found inside UnrealEd HWND {self._hwnd_main}")
 
         return self._hwnd_main, self._hwnd_edit, self._pid
 
@@ -223,15 +226,15 @@ class EngineController:
             try:
                 win32gui.SendMessage(hwnd_edit, win32con.WM_SETTEXT, 0, cmd)
                 time.sleep(0.01)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_CHAR, 13, 0)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_CHAR, 13, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
 
                 try:
                     parent_hwnd = win32gui.GetParent(hwnd_edit)
                     if parent_hwnd:
                         ctrl_id = win32gui.GetDlgCtrlID(hwnd_edit)
-                        win32gui.SendMessage(parent_hwnd, win32con.WM_COMMAND,
+                        win32gui.PostMessage(parent_hwnd, win32con.WM_COMMAND,
                                              (win32con.EN_CHANGE << 16) | (ctrl_id & 0xFFFF), hwnd_edit)
                 except Exception:
                     pass
@@ -252,9 +255,9 @@ class EngineController:
             if hwnd_edit and HAS_PYWIN32:
                 script_cmd = f'EXEC "{self.script_file.name}"'
                 win32gui.SendMessage(hwnd_edit, win32con.WM_SETTEXT, 0, script_cmd)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_CHAR, 13, 0)
-                win32gui.SendMessage(hwnd_edit, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_CHAR, 13, 0)
+                win32gui.PostMessage(hwnd_edit, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
 
             elapsed = (time.time() - start_time) * 1000.0
             return {"success": True, "command": cmd, "execution_time_ms": round(elapsed, 2), "method": "batch_script_exec"}
@@ -275,7 +278,8 @@ class EngineController:
             # Heavy commands need extra breathing room for UnrealEd BSP/Path compiler
             c_upper = c.upper()
             if "REBUILD" in c_upper or "IMPORT" in c_upper or "SUBTRACT" in c_upper or "PATHS BUILD" in c_upper or "MAP NEW" in c_upper:
-                time.sleep(0.18)
+                time.sleep(0.35)
+                self.dismiss_dialogs()
             elif delay_between > 0:
                 time.sleep(delay_between)
         return results
@@ -296,9 +300,9 @@ class EngineController:
                 return True
             try:
                 cls = win32gui.GetClassName(hwnd)
-                if cls == "#32770":
-                    title = win32gui.GetWindowText(hwnd).lower()
-                    if any(kw in title for kw in ["check", "progress", "warning", "information", "notice"]):
+                title = win32gui.GetWindowText(hwnd).lower()
+                if cls == "#32770" or any(kw in title for kw in ["check", "progress", "warning", "information", "notice", "map check"]):
+                    if any(kw in title for kw in ["check", "progress", "warning", "information", "notice", "map check"]):
                         dialog_hwnds.append(hwnd)
             except Exception:
                 pass
