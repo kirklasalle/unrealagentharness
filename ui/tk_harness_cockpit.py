@@ -419,8 +419,8 @@ class StandaloneHarnessCockpit(tk.Tk):
         self._switch_and_initialize_engine(selected_id, force_recheck=True, is_startup=False)
 
     def _quick_rebuild(self):
-        res = self.controller.execute_batch(["MAP REBUILD", "PATHS BUILD"])
-        self._append_chat("System", "🔄 Executed complete level rebuild (`MAP REBUILD` + `PATHS BUILD`).")
+        res = self.controller.execute_batch(["MAP REBUILD", "PATHS DEFINE"])
+        self._append_chat("System", "🔄 Executed complete level rebuild (`MAP REBUILD` + `PATHS DEFINE`).")
 
     def _toggle_dock(self):
         if not HAS_PYWIN32:

@@ -284,7 +284,7 @@ class TestFormulaEngine(unittest.TestCase):
             cmds = self.fe.generate_ut2004_tournament_colosseum(system_dir=Path(tmp))
             self.assertIn("MAP NEW", cmds[0])
             self.assertTrue(any("BRUSH SUBTRACT" in c for c in cmds))
-            self.assertTrue(any("PATHS BUILD" in c for c in cmds))
+            self.assertTrue(any("PATHS DEFINE" in c for c in cmds))
             t3d_file = Path(tmp) / "UT2k4_Colosseum_Actors.t3d"
             self.assertTrue(t3d_file.exists())
             content = t3d_file.read_text(encoding="utf-8")

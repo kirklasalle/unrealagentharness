@@ -2618,7 +2618,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -2747,7 +2747,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -2823,7 +2823,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -2907,7 +2907,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -2974,7 +2974,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -3044,7 +3044,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -3129,7 +3129,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -3193,7 +3193,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -3251,7 +3251,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     @staticmethod
@@ -3319,7 +3319,7 @@ class FormulaEngine:
             f'MAP IMPORT FILE="{f_map}"',
             "MAP REBUILD",
             "LIGHT APPLY",
-            "PATHS BUILD",
+            "PATHS DEFINE",
         ]
 
     # -------------------------------------------------------------------------
