@@ -95,6 +95,17 @@ class SettingsDialog(tk.Toplevel):
 
         self.engine_var = tk.StringVar(value=self.config_mgr.get_active_engine_id())
 
+        # Top Auto-Scan Banner
+        scan_box = tk.Frame(scrollable_frame, bg="#0f172a", padx=12, pady=10, highlightbackground="#0284c7", highlightthickness=1)
+        scan_box.pack(fill=tk.X, pady=(0, 10))
+
+        scan_hdr = tk.Frame(scan_box, bg="#0f172a")
+        scan_hdr.pack(fill=tk.X)
+        tk.Label(scan_hdr, text="🔍 STANDALONE AUTO-DISCOVERY SCANNER", font=("Segoe UI", 10, "bold"), fg="#38bdf8", bg="#0f172a").pack(side=tk.LEFT)
+        tk.Button(scan_hdr, text="🔍 SCAN ALL DRIVES", font=("Segoe UI", 9, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=12, pady=4, command=self._show_scan_modal).pack(side=tk.RIGHT)
+
+        tk.Label(scan_box, text="Scans all local drives, Steam, GOG, and folders to automatically find and link every installed Unreal engine and Total Conversion mod on this computer.", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a", justify=tk.LEFT, wraplength=580).pack(anchor=tk.W, pady=(4, 0))
+
         # Section 1: Base Game Engines
         tk.Label(scrollable_frame, text="🎮 BASE GAME ENGINES", font=("Segoe UI", 10, "bold"), fg="#38bdf8", bg="#12151c").pack(anchor=tk.W, pady=(0, 4))
         base_engines = self.config_mgr.get_base_engines()
@@ -168,6 +179,96 @@ class SettingsDialog(tk.Toplevel):
 
             details_str = f"Mod Type: {p.get('mod_type', 'Total Conversion')} | Base: {p.get('parent_engine', 'ut99_goty')} | INI: {p.get('editor_args', 'Default')}"
             tk.Label(rb_frame, text=details_str, font=("Consolas", 8), fg="#94a3b8", bg="#1e293b").pack(anchor=tk.W, padx=24)
+
+    def _show_scan_modal(self):
+        """Displays interactive modal dialog to scan all drives for Unreal engines & mods."""
+        dlg = tk.Toplevel(self)
+        dlg.title("🔍 Unreal Engine & Game Mod Auto-Discovery")
+        dlg.geometry("640x500")
+        dlg.configure(bg="#12151c")
+        dlg.transient(self)
+        dlg.grab_set()
+
+        tk.Label(dlg, text="🔍 Auto-Scanning All Drives for Unreal Engines & Mods...", font=("Segoe UI", 11, "bold"), fg="#38bdf8", bg="#12151c").pack(anchor=tk.W, padx=16, pady=(12, 4))
+        status_lbl = tk.Label(dlg, text="Initializing storage scanner...", font=("Segoe UI", 8), fg="#94a3b8", bg="#12151c")
+        status_lbl.pack(anchor=tk.W, padx=16, pady=(0, 6))
+
+        pbar = ttk.Progressbar(dlg, orient="horizontal", mode="determinate")
+        pbar.pack(fill=tk.X, padx=16, pady=(0, 10))
+
+        # Results TreeView Frame
+        tree_f = tk.Frame(dlg, bg="#1e293b", padx=2, pady=2)
+        tree_f.pack(fill=tk.BOTH, expand=True, padx=16, pady=4)
+
+        tree = ttk.Treeview(tree_f, columns=("type", "path"), show="tree headings", selectmode="browse")
+        tree.heading("#0", text="Engine / Mod Name", anchor=tk.W)
+        tree.heading("type", text="Category", anchor=tk.W)
+        tree.heading("path", text="Discovered Root Path", anchor=tk.W)
+        tree.column("#0", width=220)
+        tree.column("type", width=140)
+        tree.column("path", width=240)
+
+        tree_scroll = ttk.Scrollbar(tree_f, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=tree_scroll.set)
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        discovered_holder = {}
+
+        btn_bar = tk.Frame(dlg, bg="#12151c", pady=10, padx=16)
+        btn_bar.pack(fill=tk.X)
+
+        apply_btn = tk.Button(
+            btn_bar,
+            text="✅ Save & Apply Discovered Paths",
+            font=("Segoe UI", 9, "bold"),
+            bg="#10b981",
+            fg="#ffffff",
+            relief=tk.FLAT,
+            padx=14,
+            pady=5,
+            state=tk.DISABLED,
+        )
+        apply_btn.pack(side=tk.RIGHT, padx=4)
+
+        cancel_btn = tk.Button(btn_bar, text="Close", font=("Segoe UI", 9), bg="#334155", fg="#ffffff", relief=tk.FLAT, padx=10, pady=5, command=dlg.destroy)
+        cancel_btn.pack(side=tk.RIGHT)
+
+        def _on_apply():
+            if discovered_holder.get("data"):
+                count = self.config_mgr.apply_scan_results(discovered_holder["data"])
+                messagebox.showinfo("Configuration Updated", f"Successfully linked {count} Unreal Engine & Mod installation(s) to Agent Harness configuration!", parent=dlg)
+                dlg.destroy()
+                if self.on_saved_cb:
+                    self.on_saved_cb()
+
+        apply_btn.configure(command=_on_apply)
+
+        def _worker():
+            from ..core.engine_scanner import EngineScanner
+            def _progress_cb(msg: str, pct: int):
+                dlg.after(0, lambda m=msg, p=pct: (
+                    status_lbl.configure(text=m),
+                    pbar.configure(value=p)
+                ))
+
+            res = EngineScanner.scan_all(progress_cb=_progress_cb)
+            discovered_holder["data"] = res
+
+            def _populate():
+                pbar.configure(value=100)
+                status_lbl.configure(text=f"Scan complete! Discovered {len(res)} Unreal installations & Total Conversion mods.")
+                for target_id, info in res.items():
+                    name_disp = f"{info.get('icon', '🎮')} {info.get('name', target_id)}"
+                    cat_disp = info.get("category", "Engine")
+                    path_disp = info.get("root_dir", "")
+                    tree.insert("", tk.END, text=name_disp, values=(cat_disp, path_disp))
+                if res:
+                    apply_btn.configure(state=tk.NORMAL)
+
+            dlg.after(0, _populate)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _delete_mod(self, mod_id: str):
         if messagebox.askyesno("Delete Mod Profile", f"Are you sure you want to remove the mod profile '{mod_id}'?"):

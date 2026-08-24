@@ -424,6 +424,50 @@ class TestVisionInspector(unittest.TestCase):
         self.assertEqual(len(context["viewports"]), 0)
 
 
+class TestEngineScanner(unittest.TestCase):
+    """Tests for the Universal Unreal Engine and Game Mod Auto-Discovery Engine."""
+
+    def test_get_available_drives(self):
+        from AgentHarness.core.engine_scanner import EngineScanner
+        drives = EngineScanner.get_available_drives()
+        self.assertIsInstance(drives, list)
+        self.assertTrue(len(drives) > 0)
+
+    def test_inspect_directory_with_valid_ut99(self):
+        import tempfile
+        from AgentHarness.core.engine_scanner import EngineScanner
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            sys_dir = tmp_path / "System"
+            sys_dir.mkdir()
+            (sys_dir / "UnrealTournament.exe").touch()
+            (sys_dir / "Botpack.u").touch()
+
+            info = EngineScanner.inspect_directory(tmp_path)
+            self.assertIsNotNone(info)
+            self.assertEqual(info["id"], "ut99_goty")
+            self.assertEqual(info["category"], "Base Game Engine")
+
+    def test_inspect_mods_with_valid_utron(self):
+        import tempfile
+        from AgentHarness.core.engine_scanner import EngineScanner
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            sys_dir = tmp_path / "System"
+            sys_dir.mkdir()
+            (sys_dir / "UTron.u").touch()
+
+            mods = EngineScanner.inspect_mods_in_directory(tmp_path)
+            self.assertTrue(any(m["id"] == "ut99_utron" for m in mods))
+
+    def test_scan_all_finds_targets(self):
+        from AgentHarness.core.engine_scanner import EngineScanner
+        res = EngineScanner.scan_all()
+        self.assertIsInstance(res, dict)
+        # Should detect local UT99 or UT2004 installation
+        self.assertTrue(len(res) > 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

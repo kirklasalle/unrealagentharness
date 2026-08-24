@@ -119,6 +119,43 @@ class ConfigManager:
             return True
         return False
 
+    def apply_scan_results(self, discovered: Dict[str, Dict[str, Any]]) -> int:
+        """
+        Updates paths of existing engine/mod profiles and registers newly discovered targets.
+        Saves changes to disk immediately.
+        """
+        if "profiles" not in self.engine_data:
+            self.engine_data["profiles"] = {}
+
+        updated_count = 0
+        for target_id, disc in discovered.items():
+            if target_id in self.engine_data["profiles"]:
+                # Update existing profile paths
+                prof = self.engine_data["profiles"][target_id]
+                prof["root_dir"] = disc.get("root_dir", prof.get("root_dir"))
+                prof["system_dir"] = disc.get("system_dir", prof.get("system_dir"))
+                if "editor_exe" in disc:
+                    prof["editor_exe"] = disc["editor_exe"]
+                if "game_exe" in disc:
+                    prof["game_exe"] = disc["game_exe"]
+                updated_count += 1
+            else:
+                # Add newly discovered engine or mod
+                self.engine_data["profiles"][target_id] = disc
+                updated_count += 1
+
+        self._save_json(self.engine_file, self.engine_data)
+        logger.info(f"Applied scan results: updated/registered {updated_count} engine/mod profiles.")
+        return updated_count
+
+    def run_engine_scan(self, progress_cb: Optional[Callable[[str, int], None]] = None) -> Dict[str, Dict[str, Any]]:
+        """Invokes EngineScanner and automatically applies results to the active configuration."""
+        from .engine_scanner import EngineScanner
+        discovered = EngineScanner.scan_all(progress_cb=progress_cb)
+        if discovered:
+            self.apply_scan_results(discovered)
+        return discovered
+
     # -------------------------------------------------------------------------
     # LLM PROFILE ACCESSORS
     # -------------------------------------------------------------------------

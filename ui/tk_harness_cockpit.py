@@ -93,8 +93,9 @@ class StandaloneHarnessCockpit(tk.Tk):
         act_box = tk.Frame(self.hdr, bg="#111726")
         act_box.pack(side=tk.RIGHT)
 
+        tk.Button(act_box, text="🔍 SCAN ENGINES", font=("Segoe UI", 8, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_engine_scanner).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="🎮 LAUNCH EDITOR", font=("Segoe UI", 8, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._launch_editor).pack(side=tk.LEFT, padx=3)
-        tk.Button(act_box, text="🔄 REBUILD", font=("Segoe UI", 8, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._quick_rebuild).pack(side=tk.LEFT, padx=3)
+        tk.Button(act_box, text="🔄 REBUILD", font=("Segoe UI", 8, "bold"), bg="#38bdf8", fg="#0f172a", relief=tk.FLAT, padx=8, pady=3, command=self._quick_rebuild).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="📌 DOCK", font=("Segoe UI", 8), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=8, pady=3, command=self._toggle_dock).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="⚙️ SETTINGS", font=("Segoe UI", 8), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=8, pady=3, command=self._open_settings).pack(side=tk.LEFT, padx=3)
 
@@ -362,6 +363,11 @@ class StandaloneHarnessCockpit(tk.Tk):
 
     def _open_settings(self):
         SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
+
+    def _open_engine_scanner(self):
+        """Opens Settings with the auto-scanner modal automatically triggered."""
+        dlg = SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
+        dlg._show_scan_modal()
 
     def _on_settings_saved(self):
         self.engine_var.set(self.config_mgr.get_active_engine_id())
