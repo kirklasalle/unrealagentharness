@@ -14,7 +14,26 @@ def get_ut99_goty_palette(
 ) -> List[Dict[str, Any]]:
     """Returns category groupings of UT99 GOTY blueprints and quick action commands."""
 
+    from core.mind_synthesizer import MindSynthesizer
+
     return [
+        {
+            "category": "🧠 SOTA MIND-TO-WORLD NEURO SYNTHESIZERS",
+            "items": [
+                {
+                    "title": "🔮 Neuro-Symbolic Arena Synthesizer",
+                    "desc": "Mind-to-World generative compiler: Synthesizes a watertight, illuminated, and fully pathed level from dynamic thematic reasoning.",
+                    "commands_factory": lambda: MindSynthesizer.synthesize_level_from_mind("Ancient Skaarj Temple Arena with central combat dais and jump pads", system_dir=system_dir, engine_id="ut99_goty"),
+                    "prompt": "Synthesize a world-class watertight Unreal Tournament arena from creative intent with 75% engine budget detail, dynamic radiosity lighting, and full Botpack pathing lattice.",
+                },
+                {
+                    "title": "🏰 Interconnected Multi-Chamber Compound",
+                    "desc": "Carves a 3-chamber facility (Central Hub, East Wing, West Wing) connected via sealed corridors with full weapon armories and pathing.",
+                    "commands_factory": lambda: MindSynthesizer.generate_procedural_compound(room_count=3, system_dir=system_dir, engine_id="ut99_goty"),
+                    "prompt": "Carve a multi-room interconnected facility with central hub, connecting corridors, and defense perches.",
+                },
+            ],
+        },
         {
             "category": "🏆 UT99 ARENA BLUEPRINTS",
             "items": [

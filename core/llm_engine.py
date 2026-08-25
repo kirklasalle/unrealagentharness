@@ -1,7 +1,7 @@
 r"""
 Multi-Provider LLM Engine for Standalone Agent Harness.
-Dispatches queries with tool-calling schemas to Google Gemini, Anthropic Claude, OpenAI, Ollama, DeepSeek, and Groq.
-Executes tool calls directly in UnrealEd via EngineController and FormulaEngine.
+Dispatches queries with full native tool-calling schemas to Google Gemini, Anthropic Claude, OpenAI, Ollama, DeepSeek, and Groq.
+Executes tool calls directly in UnrealEd via EngineController and FormulaEngine, with persistent MemoryEngine wisdom integration.
 """
 
 import json
@@ -14,6 +14,7 @@ from .config_manager import ConfigManager
 from .engine_controller import EngineController
 from .formula_engine import FormulaEngine, _write_brush_file
 from .logger import get_logger
+from .memory_engine import MemoryEngine
 from .nexus_bridge import NexusBridge
 from .pathing_engine import PathingEngine
 from .tools_schema import UNREALED_TOOLS
@@ -22,14 +23,42 @@ from .vision_inspector import VisionInspector
 logger = get_logger("LLMEngine", "llm_engine.log")
 
 
+def _tools_to_gemini_schema(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Converts OpenAI-style tool definitions to Google Gemini functionDeclarations format."""
+    declarations = []
+    for t in tools:
+        fn = t.get("function", {})
+        params = fn.get("parameters", {"type": "object", "properties": {}})
+        declarations.append({
+            "name": fn.get("name", ""),
+            "description": fn.get("description", ""),
+            "parameters": params,
+        })
+    return [{"functionDeclarations": declarations}]
+
+
+def _tools_to_anthropic_schema(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Converts OpenAI-style tool definitions to Anthropic Claude input_schema format."""
+    claude_tools = []
+    for t in tools:
+        fn = t.get("function", {})
+        claude_tools.append({
+            "name": fn.get("name", ""),
+            "description": fn.get("description", ""),
+            "input_schema": fn.get("parameters", {"type": "object", "properties": {}}),
+        })
+    return claude_tools
+
+
 class LLMEngine:
-    """Orchestrates multi-provider LLM inference, tool execution, and UnrealEd level automation."""
+    """Orchestrates multi-provider LLM inference, native tool execution, and UnrealEd level automation."""
 
     def __init__(
         self,
         config_mgr: Optional[ConfigManager] = None,
         controller: Optional[EngineController] = None,
         nexus_bridge: Optional[NexusBridge] = None,
+        memory_engine: Optional[MemoryEngine] = None,
     ):
         self.config_mgr = config_mgr or ConfigManager()
         self.controller = controller or EngineController(self.config_mgr)
@@ -37,7 +66,15 @@ class LLMEngine:
         self.formula_engine = FormulaEngine()
         self.pathing_engine = PathingEngine(self.config_mgr)
         self.vision_inspector = VisionInspector()
-        logger.info("LLMEngine initialized.")
+        self.memory_engine = memory_engine or MemoryEngine()
+
+        # Seed documentation knowledge base into memory index
+        try:
+            self.memory_engine.index_documentation_directory()
+        except Exception as e:
+            logger.debug(f"Knowledge base indexing note: {e}")
+
+        logger.info("LLMEngine initialized with native tool calling and MemoryEngine integration.")
 
     def _refresh_context(self) -> None:
         """Refreshes pathing engine, controller paths, and system prompt context after an engine switch."""
@@ -46,7 +83,7 @@ class LLMEngine:
         active_prof = self.config_mgr.get_active_engine_profile()
         logger.info(f"LLMEngine context refreshed for: '{active_prof.get('name', 'Unknown')}'")
 
-    def _build_system_prompt(self) -> str:
+    def _build_system_prompt(self, user_query: str = "") -> str:
         personality = self.config_mgr.get_active_personality()
         engine_prof = self.config_mgr.get_active_engine_profile()
         engine_id = self.config_mgr.get_active_engine_id()
@@ -102,6 +139,14 @@ class LLMEngine:
 
         directives_str = "\n".join([f"- {d}" for d in engine_directives])
 
+        # Dynamic Memory Context Augmentation (RAG)
+        augmented_memory = ""
+        if user_query:
+            try:
+                augmented_memory = self.memory_engine.build_augmented_context(user_query, engine_id)
+            except Exception as e:
+                logger.debug(f"Memory augmentation note: {e}")
+
         prompt = f"""{preamble}
 
 TARGET ENGINE ENVIRONMENT:
@@ -113,23 +158,27 @@ TARGET ENGINE ENVIRONMENT:
 LEVEL DESIGN RULES & ARCHITECTURAL DIRECTIVES:
 1. In UnrealEd console, ALWAYS move the builder brush before placing actors: BRUSH MOVETO X=<x> Y=<y> Z=<z> followed by ACTOR ADD CLASS=<class>.
 2. When creating CSG rooms or arenas, issue proper PolyList brush imports and SUBTRACT/ADD operations, then spawn lights, player starts, weapons, and path nodes.
-3. Always finalize level builds with MAP REBUILD, LIGHT APPLY, and PATHS BUILD.
+3. Always finalize level builds with MAP REBUILD, LIGHT APPLY, and PATHS BUILD (or PATHS DEFINE in UT2004).
 4. Execute tools decisively with exact 3D coordinates.
 
 ACTIVE ENGINE SPECIFIC GUIDELINES:
 {directives_str}
 """
+        if augmented_memory:
+            prompt += f"\n\n{augmented_memory}"
+
         return prompt
 
     def execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """Executes tool calls generated by LLMs."""
         logger.info(f"Executing tool: '{tool_name}' with args: {arguments}")
-        start_time = time.time()
+        active_engine = self.config_mgr.get_active_engine_id()
 
         try:
             if tool_name == "execute_unrealed_commands":
                 cmds = arguments.get("commands", [])
                 results = self.controller.execute_batch(cmds)
+                self.memory_engine.record_build_event(active_engine, "Custom Batch Commands", len(cmds))
                 return {"status": "success", "results": results}
 
             elif tool_name == "create_bsp_room":
@@ -164,6 +213,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
 
                 cmds.extend(["MAP REBUILD", "LIGHT APPLY", "FLUSH"])
                 results = self.controller.execute_batch(cmds)
+                self.memory_engine.record_build_event(active_engine, f"CSG Room ({shape})", len(cmds))
                 return {"status": "success", "commands_executed": cmds, "results": results}
 
             elif tool_name == "spawn_actor":
@@ -192,6 +242,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
 
                 results = self.controller.execute_batch(cmds)
                 self.nexus_bridge.report_build_event("ut99_utron", f"Built UTron {arch}", f"{len(cmds)} commands")
+                self.memory_engine.record_build_event("ut99_utron", f"UTron {arch}", len(cmds))
                 return {"status": "success", "archetype": arch, "commands": len(cmds)}
 
             elif tool_name == "build_tournament_arena":
@@ -204,6 +255,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 )
                 results = self.controller.execute_batch(cmds)
                 self.nexus_bridge.report_build_event("ut99", f"Built Tournament Arena ({detail})", f"{w}x{l}x{h}")
+                self.memory_engine.record_build_event("ut99_goty", f"Tournament Arena ({detail})", len(cmds))
                 return {"status": "success", "commands": len(cmds), "detail_level": detail}
 
             elif tool_name == "build_unreal1_sanctuary":
@@ -213,6 +265,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 )
                 results = self.controller.execute_batch(cmds)
                 self.nexus_bridge.report_build_event("unreal1", f"Built Sacred Nali Sanctuary ({detail})", f"{len(cmds)} cmds")
+                self.memory_engine.record_build_event("unreal1", f"Sacred Nali Sanctuary ({detail})", len(cmds))
                 return {"status": "success", "commands": len(cmds), "detail_level": detail}
 
             elif tool_name == "build_outdoor_world":
@@ -236,6 +289,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                     )
                 results = self.controller.execute_batch(cmds)
                 self.nexus_bridge.report_build_event("ut99", f"Built Outdoor World ({w_type}, {detail})", f"{len(cmds)} cmds")
+                self.memory_engine.record_build_event("ut99_goty", f"Outdoor World ({w_type}, {detail})", len(cmds))
                 return {"status": "success", "world_type": w_type, "commands": len(cmds), "detail_level": detail}
 
             elif tool_name == "build_path_lattice":
@@ -243,7 +297,8 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 spacing = int(arguments.get("spacing", 512))
                 z_floor = arguments.get("z_floor")
                 cmds = self.pathing_engine.generate_path_lattice(bounds=bounds, spacing=spacing, z_floor=z_floor)
-                cmds.extend(["PATHS BUILD", "FLUSH"])
+                path_build_cmd = "PATHS DEFINE" if active_engine in ["ut2004", "ut2003"] else "PATHS BUILD"
+                cmds.extend([path_build_cmd, "FLUSH"])
                 results = self.controller.execute_batch(cmds)
                 return {"status": "success", "nodes_generated": len(cmds) // 2}
 
@@ -252,7 +307,8 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 radius = int(arguments.get("radius", 1024))
                 count = int(arguments.get("count", 8))
                 cmds = self.pathing_engine.generate_perimeter_nodes(center=center, radius=radius, count=count)
-                cmds.extend(["PATHS BUILD", "FLUSH"])
+                path_build_cmd = "PATHS DEFINE" if active_engine in ["ut2004", "ut2003"] else "PATHS BUILD"
+                cmds.extend([path_build_cmd, "FLUSH"])
                 results = self.controller.execute_batch(cmds)
                 return {"status": "success", "nodes_generated": count}
 
@@ -261,7 +317,8 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 landing = tuple(arguments.get("landing_pos", [0, 0, 400]))
                 tag = arguments.get("tag", "JumpPad1")
                 cmds = self.pathing_engine.generate_jumppad_pair(launch_pos=launch, landing_pos=landing, tag=tag)
-                cmds.extend(["PATHS BUILD", "FLUSH"])
+                path_build_cmd = "PATHS DEFINE" if active_engine in ["ut2004", "ut2003"] else "PATHS BUILD"
+                cmds.extend([path_build_cmd, "FLUSH"])
                 results = self.controller.execute_batch(cmds)
                 return {"status": "success", "pair": tag}
 
@@ -270,23 +327,22 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 exit_pos = tuple(arguments.get("exit_pos", [1000, 1000, 0]))
                 url = arguments.get("url_tag", "TeleA")
                 cmds = self.pathing_engine.generate_teleporter_pair(entry_pos=entry, exit_pos=exit_pos, url_tag=url)
-                cmds.extend(["PATHS BUILD", "FLUSH"])
+                path_build_cmd = "PATHS DEFINE" if active_engine in ["ut2004", "ut2003"] else "PATHS BUILD"
+                cmds.extend([path_build_cmd, "FLUSH"])
                 results = self.controller.execute_batch(cmds)
                 return {"status": "success", "teleporter": url}
 
             elif tool_name == "audit_pathing":
                 log_lines = self.controller.get_log_deltas()
                 report = self.pathing_engine.generate_reachability_report(log_lines)
-                if arguments.get("fix_gaps", False):
-                    # Gap filling
-                    pass
                 return {"status": "success", "audit_report": report}
 
             elif tool_name == "rebuild_level":
                 build_paths = arguments.get("build_paths", True)
                 cmds = ["MAP REBUILD", "LIGHT APPLY"]
                 if build_paths:
-                    cmds.append("PATHS BUILD")
+                    path_cmd = "PATHS DEFINE" if active_engine in ["ut2004", "ut2003"] else "PATHS BUILD"
+                    cmds.append(path_cmd)
                 cmds.append("FLUSH")
                 results = self.controller.execute_batch(cmds)
                 return {"status": "success", "results": results}
@@ -301,6 +357,80 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 img_bytes = self.controller.capture_viewport_image()
                 return {"status": "success" if img_bytes else "failed", "bytes": len(img_bytes) if img_bytes else 0}
 
+            elif tool_name == "synthesize_mind_level":
+                prompt = arguments.get("prompt", "")
+                from .mind_synthesizer import MindSynthesizer
+                cmds = MindSynthesizer.synthesize_level_from_mind(
+                    prompt=prompt,
+                    system_dir=self.controller.system_dir,
+                    engine_id=active_engine,
+                )
+                results = self.controller.execute_batch(cmds)
+                self.nexus_bridge.report_build_event(active_engine, "Mind-to-World Synthesis", f"{len(cmds)} cmds: {prompt[:40]}")
+                self.memory_engine.record_build_event(active_engine, f"Mind Synthesis: {prompt[:30]}", len(cmds))
+                return {"status": "success", "commands": len(cmds), "intent_prompt": prompt}
+
+            elif tool_name == "generate_procedural_compound":
+                room_count = int(arguments.get("room_count", 3))
+                from .mind_synthesizer import MindSynthesizer
+                cmds = MindSynthesizer.generate_procedural_compound(
+                    room_count=room_count,
+                    system_dir=self.controller.system_dir,
+                    engine_id=active_engine,
+                )
+                results = self.controller.execute_batch(cmds)
+                self.memory_engine.record_build_event(active_engine, f"Procedural Compound ({room_count} rooms)", len(cmds))
+                return {"status": "success", "rooms": room_count, "commands": len(cmds)}
+
+            elif tool_name == "distill_and_register_skill":
+                s_name = arguments.get("skill_name", "CustomSkill")
+                cat = arguments.get("category", "geometry")
+                desc = arguments.get("description", "")
+                params = arguments.get("parameters", {})
+                from .skill_genesis import SkillGenesis
+                genesis = SkillGenesis(self.memory_engine)
+                ok = genesis.distill_and_register_skill(
+                    skill_name=s_name,
+                    category=cat,
+                    description=desc,
+                    parameters=params,
+                    command_template=[],
+                )
+                return {"status": "success" if ok else "failed", "skill_name": s_name}
+
+            elif tool_name == "wizard_build_level":
+                preset = arguments.get("preset_key", "chizra_temple")
+                crypt = arguments.get("include_secret_crypt", True)
+                detail = arguments.get("detail_level", "ultra")
+                from .wizard_builder import UnrealWizardBuilder
+                cmds = UnrealWizardBuilder.build_unreal1_rpg_campaign_level(
+                    preset_key=preset,
+                    system_dir=self.controller.system_dir,
+                    include_secret_crypt=crypt,
+                    detail_level=detail,
+                )
+                results = self.controller.execute_batch(cmds)
+                self.nexus_bridge.report_build_event(active_engine, "Wizard Build Level", f"{preset} ({len(cmds)} cmds)")
+                self.memory_engine.record_build_event(active_engine, f"Wizard Level: {preset}", len(cmds))
+                return {"status": "success", "preset": preset, "commands": len(cmds)}
+
+            elif tool_name == "wizard_inject_extension":
+                anchor = tuple(arguments.get("anchor_location", [0, 0, 0]))
+                wing = arguments.get("wing_type", "secret_crypt")
+                direction = arguments.get("direction", "North")
+                from .wizard_builder import UnrealWizardBuilder
+                cmds = UnrealWizardBuilder.inject_wing_into_existing_map(
+                    anchor_location=anchor,
+                    wing_type=wing,
+                    direction=direction,
+                    system_dir=self.controller.system_dir,
+                    engine_id=active_engine,
+                )
+                results = self.controller.execute_batch(cmds)
+                self.nexus_bridge.report_build_event(active_engine, "Wizard Inject Extension", f"{wing} ({direction})")
+                self.memory_engine.record_build_event(active_engine, f"Injected Wing: {wing}", len(cmds))
+                return {"status": "success", "wing_type": wing, "direction": direction, "commands": len(cmds)}
+
             else:
                 return {"status": "error", "error": f"Unknown tool '{tool_name}'"}
 
@@ -309,14 +439,12 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
             return {"status": "error", "error": str(e)}
 
     def chat(self, user_message: str, history: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
-        """Dispatches a user query to the active LLM provider."""
+        """Dispatches a user query with dynamic memory RAG and native tool-calling schemas to active provider."""
         profile = self.config_mgr.get_active_llm_profile()
         provider = profile.get("provider", "google")
-        api_key = profile.get("api_key", "")
-        model = profile.get("model", "gemini-2.5-pro")
-        base_url = profile.get("base_url", "")
+        model = profile.get("model", "gemini-2.5-flash")
 
-        system_prompt = self._build_system_prompt()
+        system_prompt = self._build_system_prompt(user_query=user_message)
         logger.info(f"Dispatching chat to provider '{provider}' (Model: '{model}')")
 
         # Handle local offline Ollama / LM Studio or OpenAI-compatible
@@ -346,7 +474,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 messages.append(h)
         messages.append({"role": "user", "content": user_message})
 
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": messages,
             "temperature": profile.get("temperature", 0.2),
@@ -390,7 +518,7 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
         system_prompt: str,
     ) -> Dict[str, Any]:
         api_key = profile.get("api_key", "")
-        model = profile.get("model", "gemini-2.5-pro")
+        model = profile.get("model", "gemini-2.5-flash")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
         contents = []
@@ -409,17 +537,34 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
             },
         }
 
+        if profile.get("enable_tools", True):
+            payload["tools"] = _tools_to_gemini_schema(UNREALED_TOOLS)
+
         try:
             req = Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
             with urlopen(req, timeout=45) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
             candidates = data.get("candidates", [])
-            if candidates:
-                parts = candidates[0].get("content", {}).get("parts", [])
-                text_out = "".join([p.get("text", "") for p in parts])
-                return {"role": "assistant", "content": text_out, "tool_executions": []}
-            return {"role": "assistant", "content": "No response received from Gemini.", "tool_executions": []}
+            if not candidates:
+                return {"role": "assistant", "content": "No response received from Gemini.", "tool_executions": []}
+
+            parts = candidates[0].get("content", {}).get("parts", [])
+            text_parts = []
+            executed_tools = []
+
+            for p in parts:
+                if "text" in p:
+                    text_parts.append(p["text"])
+                if "functionCall" in p:
+                    fc = p["functionCall"]
+                    name = fc.get("name", "")
+                    args = fc.get("args", {})
+                    res = self.execute_tool(name, args)
+                    executed_tools.append({"tool": name, "args": args, "result": res})
+
+            response_text = "".join(text_parts) if text_parts else ("Executed tools successfully." if executed_tools else "")
+            return {"role": "assistant", "content": response_text, "tool_executions": executed_tools}
 
         except Exception as e:
             logger.error(f"Gemini request error: {e}")
@@ -442,13 +587,16 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
         messages.append({"role": "user", "content": user_message})
 
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "system": system_prompt,
             "messages": messages,
             "max_tokens": profile.get("max_tokens", 8192),
             "temperature": profile.get("temperature", 0.2),
         }
+
+        if profile.get("enable_tools", True):
+            payload["tools"] = _tools_to_anthropic_schema(UNREALED_TOOLS)
 
         headers = {
             "Content-Type": "application/json",
@@ -462,8 +610,21 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 data = json.loads(resp.read().decode("utf-8"))
 
             content_blocks = data.get("content", [])
-            text_out = "".join([b.get("text", "") for b in content_blocks if b.get("type") == "text"])
-            return {"role": "assistant", "content": text_out, "tool_executions": []}
+            text_parts = []
+            executed_tools = []
+
+            for b in content_blocks:
+                b_type = b.get("type", "")
+                if b_type == "text":
+                    text_parts.append(b.get("text", ""))
+                elif b_type == "tool_use":
+                    name = b.get("name", "")
+                    args = b.get("input", {})
+                    res = self.execute_tool(name, args)
+                    executed_tools.append({"tool": name, "args": args, "result": res})
+
+            response_text = "".join(text_parts) if text_parts else ("Executed tools successfully." if executed_tools else "")
+            return {"role": "assistant", "content": response_text, "tool_executions": executed_tools}
 
         except Exception as e:
             logger.error(f"Anthropic request error: {e}")

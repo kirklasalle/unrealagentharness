@@ -1,30 +1,53 @@
-# LLM Provider Setup & Live Connection Testing Guide
+# LLM Provider Setup & Top 20 Model Evaluation Guide
 ## Multi-Provider Model Configuration for Unreal Editor World Creation
 
 **Author:** Kirk LaSalle & Antigravity AI Architect  
-**Version:** v2.14.0  
+**Version:** v2.17.0  
 **Target Capabilities:** Procedural 3D Level Architecture, Tool Calling, UnrealScript Coding, and Viewport Vision  
 
 ---
 
-## 1. Top Recommended Models for Unreal Editor World Creation
+## 1. Top 20 Evaluated Models for Unreal Agent Harness
 
-Level design and spatial synthesis require strong 3D spatial reasoning, deterministic JSON tool calling, and low latency:
+To qualify for autonomous UnrealEd level design, every model must pass the **5 Core Harness Tests**:
+1. **Strict Tool / Function Calling**: Flawlessly format JSON parameters for `execute_unrealed_commands`, `create_bsp_room`, `build_outdoor_world`, `build_path_lattice`, and `switch_engine_profile`.
+2. **3D Spatial Geometry & Coordinate Math**: Correctly calculate bounding boxes, $+30\text{ UU}$ floor offsets for path nodes, $+50\text{ UU}$ spawn clearances, and jump pad trajectories.
+3. **T3D & UnrealScript Syntax Adherence**: Write watertight `.t3d` PolyList polygon windings and correct `.uc` state/function declarations without hallucinated engine classes.
+4. **Log Delta Diagnostic & Error Self-Correction**: Parse `Editor.log` / `UnrealEd.log` compiler outputs (detecting embedded pickups, missing textures, or `FPathBuilder` warnings) and formulate immediate in-editor corrective commands.
+5. **Multi-Modal Viewport Vision Perception**: Visually inspect the 4-quadrant UnrealEd viewports (Top, Front, Side, 3D Perspective) to detect geometry leaks and lighting misalignments.
 
-| Model | Provider | Strengths | Speed | Setup Simplicity |
-| :--- | :--- | :--- | :---: | :---: |
-| 🥇 **Google Gemini 2.5 Flash** | Google AI Studio | **Top Overall**: Sub-400ms speed, 1M context, exceptional JSON tool calling, multi-modal viewport vision. | ⚡ Ultra-Fast | ⭐⭐⭐⭐⭐ (Single API Key) |
-| 🥈 **Google Gemini 2.5 Pro** | Google AI Studio | **Deep Architecture**: 2M context, unmatched multi-room reasoning, full package code trees. | 🚀 Fast | ⭐⭐⭐⭐⭐ (Single API Key) |
-| 🥉 **Claude 3.7 Sonnet** | Anthropic | **Hybrid Reasoning**: Extended thinking for complex coordinate math & UnrealScript syntax. | 🚀 Fast | ⭐⭐⭐⭐⭐ (Single API Key) |
-| **OpenAI GPT-4o** | OpenAI | **Rock-Solid Tool Calling**: Consistent schema execution and standard in-editor commands. | 🚀 Fast | ⭐⭐⭐⭐⭐ (Single API Key) |
-| **Llama 3.3 70B (Groq)** | Groq | **Instantaneous**: 300+ tokens/sec for rapid conversational level design. | ⚡ Extreme | ⭐⭐⭐⭐⭐ (Single API Key) |
-| **Qwen 2.5 Coder 32B** | Local (Ollama) | **Top Offline Model**: 100% private, zero internet required, exceptional code/T3D syntax. | 💻 Local GPU | ⭐⭐⭐⭐ (One CLI command) |
+---
+
+### 📊 Top 20 Model Tier Matrix (Budget to Frontier)
+
+| Rank | Model Name | Provider / Host | Context | Vision | Cost Tier | Best Use Case in UAH |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
+| 🥇 **1** | **Google Gemini 2.5 Flash** | Google AI Studio | **1M** | ✅ | **Ultra-Budget** | **#1 Overall Recommendation**: Sub-400ms speed, essentially near-free pricing, native tool calling, and instant multi-modal viewport inspection. |
+| 🥈 **2** | **Google Gemini 2.5 Flash-Lite** | Google AI Studio | **1M** | ✅ | **Ultra-Budget** | Maximum cost efficiency for rapid continuous command loops and real-time brush manipulation. |
+| 🥉 **3** | **DeepSeek V3 (Chat)** | DeepSeek API | **64k** | ❌ | **Ultra-Budget** | Unbeatable text/coding price-to-performance ratio for pure UnrealScript syntax and T3D generation. |
+| **4** | **Llama 3.3 70B Versatile** | Groq | **128k** | ❌ | **Ultra-Budget** | Blazing fast inference (250+ tokens/sec on Groq) for instant UnrealEd console command execution. |
+| **5** | **Qwen 2.5 Coder 32B** | OpenRouter / Together | **128k** | ❌ | **Ultra-Budget** | Open-weights coding champion with top-tier UnrealScript and C++ structural logic. |
+| **6** | **Qwen 2.5 Coder 32B Instruct** | Local (Ollama) | **32k-128k** | ❌ | **100% Free / Offline** | **#1 Local Model**: Flawless T3D grammar, watertight CSG math, and zero internet connection required. |
+| **7** | **DeepSeek-Coder-V2.5 (16B/33B)** | Local (Ollama) | **32k** | ❌ | **100% Free / Offline** | Exceptional low-level C++ and UnrealScript bytecode understanding. |
+| **8** | **Llama 3.3 70B Instruct** | Local (Ollama) | **32k** | ❌ | **100% Free / Offline** | Massive general knowledge of 25+ years of Unreal Engine history and modding. |
+| **9** | **Mistral Small 3 (24B)** | Local (Ollama) | **32k** | ❌ | **100% Free / Offline** | Reliable local function/tool calling with concise, deterministic responses. |
+| **10** | **Qwen 2.5 Coder 14B Instruct** | Local (Ollama) | **32k** | ❌ | **100% Free / Offline** | Lightweight option that fits on standard consumer GPUs (RTX 3060/4060) while maintaining solid CSG math. |
+| **11** | **Google Gemini 2.5 Pro** | Google AI Studio | **2M** | ✅ | **Mid-Tier** | Unrivaled context capacity: Can ingest entire multi-package `.uc` source trees and build multi-room interconnected compounds. |
+| **12** | **OpenAI GPT-4o-mini** | OpenAI | **128k** | ✅ | **Mid-Tier** | Rock-solid schema compliance, fast viewport inspection, and low latency. |
+| **13** | **DeepSeek R1 (Reasoner)** | DeepSeek API | **64k** | ❌ | **Mid-Tier** | Extended reasoning chain for complex 3D coordinate trigonometry and JumpPad ballistic calculations. |
+| **14** | **Mistral Large 2 (2407)** | Mistral AI | **128k** | ❌ | **Mid-Tier** | High adherence to strict system prompts and multi-stage build pipelines. |
+| **15** | **Claude 3.5 Haiku** | Anthropic | **200k** | ❌ | **Mid-Tier** | Ultra-crisp, intelligent tool execution with high instruction following. |
+| **16** | **Claude 3.7 Sonnet (Thinking)** | Anthropic | **200k** | ✅ | **Frontier Flagship** | **Top Frontier Model**: Extended thinking mode solves complex multi-tier fortress layouts and intricate UnrealScript replication code without errors. |
+| **17** | **OpenAI GPT-4o** | OpenAI | **128k** | ✅ | **Frontier Flagship** | Industry gold standard for multi-modal viewport auditing and function calling. |
+| **18** | **OpenAI o3-mini (High)** | OpenAI | **200k** | ❌ | **Frontier Flagship** | Deep algorithmic reasoning for optimizing BSP tree node cuts and navigation reachability lattices. |
+| **19** | **Claude 3.5 Sonnet** | Anthropic | **200k** | ✅ | **Frontier Flagship** | Proven architect model for writing complete new Total Conversion game modes. |
+| **20** | **OpenAI o1** | OpenAI | **200k** | ✅ | **Frontier Flagship** | Deep conceptual brainstorming, game design documents, and complex architectural mechanics. |
 
 ---
 
 ## 2. Step-by-Step Provider Setup
 
-### 2.1 Google Gemini 2.5 Flash & Pro (Recommended)
+### 2.1 Google Gemini 2.5 Flash & Pro (Top Recommendation)
 1. **Get an API Key**: Visit [Google AI Studio](https://aistudio.google.com/) and click **"Create API Key"**.
 2. **Configure in UAH**:
    - Open the In-Editor Cockpit -> Click **`⚙️ SETTINGS`**.

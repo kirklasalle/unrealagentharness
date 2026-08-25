@@ -9,11 +9,43 @@ venv/
 env/
 .env
 
-# Logs and runtime artifacts
-logs/*.log
-*.t3d
+# Logs, databases and runtime artifacts
+logs/
+*.log
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE configuration
 .vscode/
 .idea/
 *.swp
+
+# Unreal Engine Assets, Packages & Binaries (UTron, UT99, UT2004, UE2, UE5)
+*.u
+*.unr
+*.utx
+*.uax
+*.umx
+*.uc
+*.int
+*.ini
+*.t3d
+*.obj
+*.3ds
+*.ase
+*.dxf
+*.blend
+*.fbx
+*.psk
+*.psa
+
+# Unreal Project Directories & Source Trees
+UTronProject/
+System/
+Maps/
+Textures/
+Sounds/
+Music/
+Classes/
+Backup_U_Files/

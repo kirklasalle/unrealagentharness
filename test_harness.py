@@ -966,6 +966,214 @@ class TestFormulaEngineUltraGeometry(unittest.TestCase):
         self.assertLessEqual(len(cmds_standard), 30)
 
 
+class TestMemoryEngine(unittest.TestCase):
+    """Tests for the SQLite Persistent Memory, Wisdom Recorder, and Dynamic RAG Engine."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_db = Path(self.tmp_dir.name) / "test_memory.db"
+        from core.memory_engine import MemoryEngine
+        self.memory = MemoryEngine(db_path=str(self.tmp_db))
+
+    def tearDown(self):
+        self.memory = None
+        import gc
+        gc.collect()
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
+
+    def test_database_initialization_and_seeding(self):
+        wisdom = self.memory.query_wisdom("", limit=10)
+        self.assertGreaterEqual(len(wisdom), 5)
+        titles = [w["title"] for w in wisdom]
+        self.assertTrue(any("Watertight Brush" in t for t in titles))
+        self.assertTrue(any("UT2004 Navigation" in t for t in titles))
+
+    def test_record_and_query_wisdom(self):
+        ok = self.memory.record_wisdom(
+            category="custom_test",
+            title="Custom Lighting Philosophy",
+            content="Use amber key lights at hue 32 with violet shadows at hue 210.",
+            tags="lighting,philosophy,colors",
+        )
+        self.assertTrue(ok)
+
+        results = self.memory.query_wisdom("lighting amber", limit=5)
+        self.assertGreaterEqual(len(results), 1)
+        self.assertEqual(results[0]["title"], "Custom Lighting Philosophy")
+
+    def test_record_and_get_build_telemetry(self):
+        ok = self.memory.record_build_event(
+            engine_id="ut99_goty",
+            build_type="Verdant Mountain Valley",
+            command_count=42,
+            entity_count=28,
+            details="Successfully synthesized valley fortress with 20 path nodes."
+        )
+        self.assertTrue(ok)
+
+        recent = self.memory.get_recent_builds(limit=5)
+        self.assertEqual(len(recent), 1)
+        self.assertEqual(recent[0]["engine_id"], "ut99_goty")
+        self.assertEqual(recent[0]["command_count"], 42)
+
+    def test_knowledge_base_indexing_and_search(self):
+        docs_dir = Path(__file__).resolve().parent / "docs"
+        if docs_dir.exists():
+            count = self.memory.index_documentation_directory(str(docs_dir))
+            self.assertGreater(count, 0)
+
+            results = self.memory.search_knowledge_base("UnrealScript syntax", limit=3)
+            self.assertIsInstance(results, list)
+
+    def test_build_augmented_context(self):
+        ctx = self.memory.build_augmented_context("How do I build lights and path nodes?", "ut99_goty")
+        self.assertIsInstance(ctx, str)
+        self.assertIn("RETRIEVED ARCHITECTURAL WISDOM", ctx)
+
+
+class TestLLMNativeToolFormatters(unittest.TestCase):
+    """Tests for multi-provider native tool schema formatting."""
+
+    def test_gemini_schema_formatter(self):
+        from core.llm_engine import _tools_to_gemini_schema
+        from core.tools_schema import UNREALED_TOOLS
+
+        gemini_tools = _tools_to_gemini_schema(UNREALED_TOOLS)
+        self.assertIsInstance(gemini_tools, list)
+        self.assertEqual(len(gemini_tools), 1)
+        self.assertIn("functionDeclarations", gemini_tools[0])
+
+        decls = gemini_tools[0]["functionDeclarations"]
+        self.assertGreater(len(decls), 5)
+        names = [d["name"] for d in decls]
+        self.assertIn("execute_unrealed_commands", names)
+        self.assertIn("build_outdoor_world", names)
+        self.assertIn("build_tournament_arena", names)
+
+    def test_anthropic_schema_formatter(self):
+        from core.llm_engine import _tools_to_anthropic_schema
+        from core.tools_schema import UNREALED_TOOLS
+
+        claude_tools = _tools_to_anthropic_schema(UNREALED_TOOLS)
+        self.assertIsInstance(claude_tools, list)
+        self.assertGreater(len(claude_tools), 5)
+
+        for ct in claude_tools:
+            self.assertIn("name", ct)
+            self.assertIn("description", ct)
+            self.assertIn("input_schema", ct)
+
+
+class TestMindSynthesizer(unittest.TestCase):
+    """Tests for the SOTA Mind-to-World Neuro-Symbolic Synthesizer."""
+
+    def test_intent_analysis(self):
+        from core.mind_synthesizer import MindSynthesizer
+        intent = MindSynthesizer.analyze_design_intent("Huge ancient gothic temple with snipers and jump pads")
+        self.assertEqual(intent["theme"], "ancient")
+        self.assertEqual(intent["scale"], "large")
+        self.assertTrue(intent["has_jump_pad"])
+        self.assertTrue(intent["has_sniper_perch"])
+
+    def test_synthesize_level_from_mind(self):
+        from core.mind_synthesizer import MindSynthesizer
+        cmds = MindSynthesizer.synthesize_level_from_mind("Cybernetic neon combat arena with central dais")
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 10)
+        cmd_str = "\n".join(cmds)
+        self.assertIn("MAP NEW", cmd_str)
+        self.assertIn("OBJ LOAD", cmd_str)
+        self.assertIn("BRUSH SUBTRACT", cmd_str)
+        self.assertIn("MAP REBUILD", cmd_str)
+
+    def test_generate_procedural_compound(self):
+        from core.mind_synthesizer import MindSynthesizer
+        cmds = MindSynthesizer.generate_procedural_compound(room_count=3)
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 12)
+        cmd_str = "\n".join(cmds)
+        self.assertIn("HubRoom.t3d", cmd_str)
+        self.assertIn("EastRoom.t3d", cmd_str)
+        self.assertIn("WestRoom.t3d", cmd_str)
+
+
+class TestSkillGenesis(unittest.TestCase):
+    """Tests for lifelong autonomous skill discovery and registration."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_db = Path(self.tmp_dir.name) / "test_skills.db"
+        from core.memory_engine import MemoryEngine
+        from core.skill_genesis import SkillGenesis
+        self.memory = MemoryEngine(db_path=str(self.tmp_db))
+        self.genesis = SkillGenesis(self.memory)
+
+    def tearDown(self):
+        self.memory = None
+        self.genesis = None
+        import gc
+        gc.collect()
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
+
+    def test_distill_and_list_skills(self):
+        ok = self.genesis.distill_and_register_skill(
+            skill_name="TestCathedralVault",
+            category="geometry",
+            description="Vaulted cathedral ceiling with fluted buttresses.",
+            parameters={"vault_height": 1024, "arch_radius": 512},
+            command_template=["BRUSH IMPORT FILE=Vault.t3d", "BRUSH SUBTRACT"],
+            tags="cathedral,vault,gothic",
+        )
+        self.assertTrue(ok)
+
+        skills = self.genesis.list_learned_skills()
+        self.assertGreaterEqual(len(skills), 1)
+        self.assertEqual(skills[0]["skill_name"], "TestCathedralVault")
+
+
+class TestUnrealWizardBuilder(unittest.TestCase):
+    """Tests for the Unreal Architect Wizard Builder dual-mode generator."""
+
+    def test_unreal1_campaign_level_generation(self):
+        from core.wizard_builder import UnrealWizardBuilder
+        cmds = UnrealWizardBuilder.build_unreal1_rpg_campaign_level(
+            preset_key="chizra_temple",
+            include_secret_crypt=True,
+            detail_level="ultra",
+        )
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 15)
+        cmd_str = "\n".join(cmds)
+        self.assertIn("MAP NEW", cmd_str)
+        self.assertIn("WizNave.t3d", cmd_str)
+        self.assertIn("WizActors.t3d", cmd_str)
+        self.assertIn("MAP REBUILD", cmd_str)
+
+    def test_inject_wing_into_existing_map(self):
+        from core.wizard_builder import UnrealWizardBuilder
+        cmds = UnrealWizardBuilder.inject_wing_into_existing_map(
+            anchor_location=(1000.0, 500.0, 0.0),
+            wing_type="secret_crypt",
+            direction="North",
+        )
+        self.assertIsInstance(cmds, list)
+        self.assertGreater(len(cmds), 8)
+        cmd_str = "\n".join(cmds)
+        # Injection MUST NOT wipe the existing map with MAP NEW
+        self.assertNotIn("MAP NEW", cmd_str)
+        self.assertIn("InjectHall.t3d", cmd_str)
+        self.assertIn("InjectWing.t3d", cmd_str)
+        self.assertIn("MAP REBUILD", cmd_str)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

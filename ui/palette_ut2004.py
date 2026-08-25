@@ -16,7 +16,26 @@ def get_ut2004_palette(
 ) -> List[Dict[str, Any]]:
     """Returns an exhaustive, world-class category grouping of UT2004 blueprints and quick action commands."""
 
+    from core.mind_synthesizer import MindSynthesizer
+
     return [
+        {
+            "category": "🧠 SOTA MIND-TO-WORLD NEURO SYNTHESIZERS",
+            "items": [
+                {
+                    "title": "🔮 Neuro-Symbolic UT2004 Arena Synthesizer",
+                    "desc": "Mind-to-World generative compiler: Synthesizes a watertight, illuminated, and fully pathed level from dynamic thematic reasoning with PATHS DEFINE safety.",
+                    "commands_factory": lambda: MindSynthesizer.synthesize_level_from_mind("UT2004 Cybernetic Arena with super shield dais and shock rifles", system_dir=system_dir, engine_id="ut2004"),
+                    "prompt": "Synthesize an authentic UT2004 arena with 75% engine budget detail, dynamic radiosity lighting, and full bot navigation network.",
+                },
+                {
+                    "title": "🏰 Interconnected Multi-Chamber Compound",
+                    "desc": "Carves a 3-chamber facility connected via sealed corridors with full weapon armories and pathing.",
+                    "commands_factory": lambda: MindSynthesizer.generate_procedural_compound(room_count=3, system_dir=system_dir, engine_id="ut2004"),
+                    "prompt": "Carve a multi-room interconnected facility with central hub, connecting corridors, and defense perches.",
+                },
+            ],
+        },
         # ---------------------------------------------------------------------
         # 1. PREMIER FULL WORLD ENVIRONMENTS
         # ---------------------------------------------------------------------

@@ -22,6 +22,10 @@ from .tools_schema import UNREALED_TOOLS
 from .vision_inspector import VisionInspector
 from .update_engine import UpdateEngine
 from .engine_scanner import EngineScanner
+from .memory_engine import MemoryEngine
+from .mind_synthesizer import MindSynthesizer
+from .skill_genesis import SkillGenesis
+from .wizard_builder import UnrealWizardBuilder
 
 __all__ = [
     "get_logger",
@@ -40,4 +44,8 @@ __all__ = [
     "VisionInspector",
     "UpdateEngine",
     "EngineScanner",
+    "MemoryEngine",
+    "MindSynthesizer",
+    "SkillGenesis",
+    "UnrealWizardBuilder",
 ]

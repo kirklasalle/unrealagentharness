@@ -2,6 +2,54 @@
 
 All notable changes, architectural enhancements, and procedural world-building procedures are documented in this file.
 
+## [v2.18.0] - 2026-08-25: "Connecting the Human Mind to the Visual Interactive" — SOTA Mind-to-World Synthesizer, Skill Genesis, and Dual-Mode Unreal Architect Wizard
+
+### 🧠 SOTA Mind-to-World Neuro-Symbolic Synthesizer (`core/mind_synthesizer.py`)
+- **Intent Deconstruction Engine**: Translates free-form human conceptual ideas into concrete CSG geometry, atmospheric lighting, and combat topology within strict **75% engine budget limits**.
+- **Watertight CSG Geometry Compiler**: Automatic carving with semi-solid fluted columns, central combat daises, perimeter trim moldings, and zero BSP errors.
+- **Atmospheric Lighting & Color Harmonizer**: Calculates 8-bit HSV complementary key/accent radiosity and animated torchlight/breathing waveforms (`LT_Flicker`, `LT_SubtlePulse`).
+- **Autonomous Multi-Chamber Compound Synthesizer**: Recursively carves 3-to-5 interconnected chambers (Central Hub, East/West Wings) connected by sealed corridor bulkheads with complete weapon armories and pathing lattices.
+
+### 🔮 Lifelong Skill Genesis & Wisdom System (`core/skill_genesis.py`)
+- **Autonomous Skill Extraction**: Automatically parameterizes novel level archetypes, summarizes procedural techniques, and commits them as persistent `.uah_skill` records into the SQLite `MemoryEngine`.
+- Continuous learning loop that enriches the knowledgebase with every map built.
+
+### 🧙 Dual-Mode Unreal Architect Wizard Builder (`core/wizard_builder.py` & `ui/wizard_builder_dialog.py`)
+- **Mode A (Clean Slate)**: Synthesizes complete standalone worlds with deep 1998 *Unreal* single-player RPG lore, `TranslatorEvent` message logs, `Nali` monks, `Skaarj` AI enemies, and secret subterranean crypts.
+- **Mode B (In-Situ Non-Destructive Extension)**: Injects connected rooms, crypts, sniper overlooks, and corridors directly into whatever active map is currently open in UnrealEd without resetting geometry.
+- Interactive multi-step Wizard UI dialog accessible via the **`🧙 WIZARD`** cockpit button.
+
+### 📚 Master Architectural Documentation
+- Created `docs/UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md`: The definitive standard for neuro-symbolic level design, combat flow psychology, and 75% engine limit laws.
+- Created `docs/UNREAL_ARCHITECT_WIZARD_GUIDE.md`: Comprehensive reference for Unreal 1 RPG systems, TranslatorEvent message graphs, and CSG injection mathematics.
+
+### 🧪 Test Suite Expansion (103 Tests Passing)
+- Added `TestMindSynthesizer`, `TestSkillGenesis`, and `TestUnrealWizardBuilder` in `test_harness.py`, executing **103 unit tests with 100% pass rate** in ~6.3s.
+
+## [v2.17.0] - 2026-08-25: Public Release Elevation — MIT Licensing, GitHub Actions CI, Persistent SQLite Memory & Wisdom Engine, and Native Multi-Provider Tool Calling
+
+### 📜 Open-Source Readiness & Licensing
+- Added official **MIT License** (`LICENSE`) in repository root under **Kirk LaSalle (2026)**.
+- Renamed all 9 Markdown documentation files in `docs/` to include `.md` extensions for flawless rendering on GitHub web.
+- Configured automated GitHub Actions Continuous Integration (`.github/workflows/ci.yml`) running test suites on Windows across Python 3.10, 3.11, and 3.12.
+- Added `ide/README.md` documenting UnrealScript IDE tools and community resources.
+- Updated `.gitignore` to protect runtime SQLite databases and logging outputs.
+
+### 🧠 Persistent SQLite Memory & Wisdom Engine (`core/memory_engine.py`)
+- Engineered zero-dependency SQLite-backed **`MemoryEngine`** featuring:
+  - **Architectural Wisdom Store**: Records procedural lessons, coplanar polygon constraints, HSV lighting formulas, and crash mitigations.
+  - **Build Telemetry Recorder**: Logs map build history, engine targets, command counts, and reachability scores.
+  - **Dynamic Knowledge Base Indexing (RAG)**: Full-text indexing and semantic search over the entire `docs/` compendium for intelligent runtime prompt augmentation.
+  - Context-safe connection management with automatic cleanup.
+
+### ⚡ Native Multi-Provider Tool Calling
+- Implemented `_tools_to_gemini_schema()` for native Google Gemini `functionDeclarations` tool execution in `_chat_gemini()`.
+- Implemented `_tools_to_anthropic_schema()` for native Anthropic Claude `input_schema` / `tool_use` execution in `_chat_anthropic()`.
+- Integrated dynamic `MemoryEngine` context augmentation directly into system prompts across all LLM providers.
+
+### 🧪 Comprehensive Verification Suite Expansion
+- Added `TestMemoryEngine` and `TestLLMNativeToolFormatters` to `test_harness.py`, bringing the automated test suite to **97 passing tests** with 100% success rate.
+
 ## [v2.16.2] - 2026-08-24: UT2004 FPathBuilder AIController Crash Resolution, LevelInfo Root Actor Integration, Async PostMessage Command Dispatch, and Complete Nav Lattice Densification
 
 ### 🛡️ Critical Bugfix: UT2004 `FPathBuilder::buildPaths` AIController Crash Resolution

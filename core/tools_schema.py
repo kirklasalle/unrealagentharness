@@ -359,5 +359,109 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "synthesize_mind_level",
+            "description": "SOTA Mind-to-World Synthesizer: Compiles a free-form human conceptual idea into a watertight, illuminated, and fully pathed UnrealEd level within 75% engine budget limits.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "type": "string",
+                        "description": "Natural language creative prompt describing desired level theme, lore, combat topology, and mood.",
+                    },
+                },
+                "required": ["prompt"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_procedural_compound",
+            "description": "Synthesizes an interconnected multi-chamber compound with central hub, connecting corridors, airlocks, and vistas.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "room_count": {
+                        "type": "integer",
+                        "description": "Number of interconnected rooms to carve (e.g. 3, 5).",
+                    },
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "distill_and_register_skill",
+            "description": "Formalizes a novel architectural design pattern or CSG formula into a reusable, persistent .uah_skill stored in lifelong memory.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "skill_name": {"type": "string", "description": "Unique descriptive name for the learned skill."},
+                    "category": {"type": "string", "description": "Skill category (e.g. geometry, lighting, pathing, gametype)."},
+                    "description": {"type": "string", "description": "Detailed explanation of what the skill constructs."},
+                    "parameters": {"type": "object", "description": "Parametric inputs used by the skill."},
+                },
+                "required": ["skill_name", "category", "description"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "wizard_build_level",
+            "description": "Unreal Architect Wizard: Generates an expansive clean-slate level (Unreal 1 SP RPG Campaign, UT99 Arena/CTF, UTron, UT2004) with TranslatorEvents, Nali NPCs, Skaarj enemies, and full lighting/pathing.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "preset_key": {
+                        "type": "string",
+                        "enum": ["chizra_temple", "skaarj_mothership", "bluff_eversmoking"],
+                        "description": "Campaign narrative preset.",
+                    },
+                    "include_secret_crypt": {
+                        "type": "boolean",
+                        "description": "Whether to carve a hidden subterranean crypt wing with monster guard and reward.",
+                    },
+                    "detail_level": {
+                        "type": "string",
+                        "enum": ["standard", "high", "ultra"],
+                        "description": "Architectural detail level (75% budget optimization).",
+                    },
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "wizard_inject_extension",
+            "description": "Unreal Architect Wizard (In-Situ Mode): Injects a non-destructive wing, crypt, or tower into the currently open active map in UnrealEd without resetting existing geometry.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "anchor_location": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "Anchor [X, Y, Z] coordinate in current map where the new wing will connect.",
+                    },
+                    "wing_type": {
+                        "type": "string",
+                        "enum": ["secret_crypt", "sniper_overlook", "armory_hall", "powernode_substation"],
+                        "description": "Type of wing/room to inject.",
+                    },
+                    "direction": {
+                        "type": "string",
+                        "enum": ["North", "South", "East", "West"],
+                        "description": "Direction relative to anchor where the new wing should extend.",
+                    },
+                },
+            },
+        },
+    },
 ]
+
 
