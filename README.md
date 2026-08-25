@@ -59,9 +59,10 @@ Connects human intuitive intent directly to the live visual interactive viewport
 * **🕹️ UTron Discs of Tron & Light Cycle Grids**: Neon cylindrical platforms, diffuser bus lines, and wirenode trigger matrices.
 
 <p align="center">
-  <img src="assets/unrealed_temple_arena.png" alt="UnrealEd Live Dynamic Lighting and CSG Arena Synthesis" width="48%">
-  <img src="assets/unrealed_ctf_red.png" alt="UnrealEd Live Symmetrical Base Synthesis" width="48%"><br>
-  <sub>🖥️ <em>Live In-Editor Procedural CSG Brush Carving, Dynamic Lighting & Botpack AI Navigation Lattice in UnrealEd</em></sub>
+  <img src="assets/unrealed_temple_arena.png" alt="UnrealEd Live Dynamic Lighting and CSG Arena Synthesis" width="32%">
+  <img src="assets/unrealed_ctf_red.png" alt="UnrealEd Live Symmetrical Red Base Synthesis" width="32%">
+  <img src="assets/unrealed_ctf_blue.png" alt="UnrealEd Live Symmetrical Blue Base Synthesis" width="32%"><br>
+  <sub>🖥️ <em>Live In-Editor Procedural CSG Brush Carving, Dynamic Lighting & Botpack AI Navigation Lattice in UnrealEd (Unreal Tournament 99 GOTY / 469e)</em></sub>
 </p>
 
 ### 3. 🧠 Persistent SQLite Memory & Autonomous Skill Genesis
@@ -269,6 +270,25 @@ OK (100% Pass Rate)
 
 ---
 
+## 🖼️ Visual Assets & Illustration Integrity Manifesto
+
+To maintain complete transparency and technical accuracy, all visual assets in this repository are categorized into two explicit tiers:
+
+### 1. 🖥️ Live In-Editor Viewport Captures (100% Authentic Procedural Output)
+These images represent real-time, in-situ captures directly from the active UnrealEd 2.0 / 3.0 viewports executing UAH procedural formulas without post-processing:
+* **`assets/unrealed_temple_arena.png`**: Authentic 3072x3072 Nali Temple deathmatch arena with subtractive hull, semi-solid fluted columns, alcove torchlight, and Botpack path lattice.
+* **`assets/unrealed_ctf_red.png`**: Authentic Red Base CTF Outpost with flag dais, sniper balcony, weapon spawns, and team defense path nodes.
+* **`assets/unrealed_ctf_blue.png`**: Authentic Blue Base CTF Outpost demonstrating symmetrical layout synthesis and dynamic blue key/accent lighting.
+
+### 2. 🎨 Thematic Concept Art & Architectural Vision (Target Inspirations)
+These illustrations serve as high-level artistic targets, mood boards, and aesthetic benchmarks that guide the procedural geometry and lighting algorithms:
+* **`assets/hero_banner.jpg`**: Brand concept illustrating the neuro-symbolic bridge between human creative intuition and Unreal 3D world space.
+* **`assets/architecture_matrix.jpg`**: High-level multi-engine interoperability and IPC communication topology diagram.
+* **`assets/outdoor_worlds_showcase.jpg`**: Target aesthetic inspirations for procedural mountain valley, desert ruins, and asteroid outpost archetypes.
+
+---
+
 ## 📜 License
 
 Distributed under the **MIT License**. Created by **Kirk LaSalle** for the Unreal Engine and Unreal Tournament community.
+
