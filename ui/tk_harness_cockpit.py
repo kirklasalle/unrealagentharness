@@ -115,6 +115,7 @@ class StandaloneHarnessCockpit(tk.Tk):
         act_box.pack(side=tk.RIGHT)
 
         tk.Button(act_box, text="🧙 WIZARD", font=("Segoe UI", 8, "bold"), bg="#8b5cf6", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_wizard_builder).pack(side=tk.LEFT, padx=3)
+        tk.Button(act_box, text="🎓 ACADEMY", font=("Segoe UI", 8, "bold"), bg="#059669", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_academy).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="🔍 SCAN ENGINES", font=("Segoe UI", 8, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_engine_scanner).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="🎮 LAUNCH EDITOR", font=("Segoe UI", 8, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._launch_editor).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="🔄 REBUILD", font=("Segoe UI", 8, "bold"), bg="#38bdf8", fg="#0f172a", relief=tk.FLAT, padx=8, pady=3, command=self._quick_rebuild).pack(side=tk.LEFT, padx=3)
@@ -462,6 +463,14 @@ class StandaloneHarnessCockpit(tk.Tk):
 
     def _on_wizard_complete(self, message: str):
         self._append_chat("System", f"🧙 **Wizard Builder**: {message}")
+
+    def _open_academy(self):
+        """Opens the interactive Unreal Academy & Research Lab dialog."""
+        from ui.academy_dialog import AcademyDialog
+        AcademyDialog(self, self.controller, on_action_complete=self._on_academy_action)
+
+    def _on_academy_action(self, message: str):
+        self._append_chat("System", f"🎓 **Unreal Academy**: {message}")
 
     def _open_settings(self):
         SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)

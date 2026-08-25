@@ -2,6 +2,29 @@
 
 All notable changes, architectural enhancements, and procedural world-building procedures are documented in this file.
 
+## [v2.19.0] - 2026-08-25: Unreal Academy of Master Design — Autonomous Research & Training Engine, 3D Optical Illusions & FX Secrets, and Classic Map Deconstructions
+
+### 🎓 Unreal Academy & Research Engine (`core/learning_engine.py`)
+- **Multi-Pillar Knowledge Ingestion Algorithm**: Systematically ingests, categorizes, and indexes master level design wisdom across:
+  - 📚 **Master Tutorials & CSG Math**: Fundamental geometry compilation, BSP solid tree hierarchies, and UnrealScript AI controller integration.
+  - 💡 **Tips, Tricks & Suggestions**: Z-fighting avoidance, lightmap optimizations, Sheet glass, Zone portals, and 650 UU pathing laws.
+  - 🕵️ **Little-Known Facts & Engine Quirks**: UT2004 LevelInfo AIController crash mechanics, Fake Backdrop clipping boundaries, and BSP cut order.
+  - 🎭 **3D Optical Illusions & FX Secrets**: Forced-perspective planetary skyboxes (1:16 scale), WarpZone infinite mirror portals, and volumetric god-ray sheets.
+  - 🏆 **Classic Map Deconstructions**: Complete tactical architectural breakdowns of *Facing Worlds (CTF-Face)*, *Deck 16 ][ (DM-Deck16][)*, *Temple of Chizra*, and *ONS-Torlan*.
+- **Lifelong SQLite Academy Indexing**: Pre-seeded with over 30+ foundational lessons and tricks from legendary Unreal mappers.
+- **Autonomous Training & Study**: Allows the agent to study, parameterize, and record new tricks and reviews into lifelong memory on the fly.
+
+### 🪟 Interactive Academy & Research Lab UI (`ui/academy_dialog.py`)
+- Interactive curriculum explorer launched via the emerald **`🎓 ACADEMY`** button in the Cockpit header.
+- Category filtering, live search bar, recipe inspector, and **1-Click Trick Command Injection into active UnrealEd**.
+- Ingestion modal allowing mappers and agents to record custom tricks and research findings into the lifelong database.
+
+### 📚 Master Documentation Compendium
+- Created `docs/UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md`: Exhaustive 3D optical illusion, FX trick, and classic map deconstruction compendium.
+
+### 🧪 Test Suite Expansion (106 Tests Passing)
+- Added `TestLearningEngine` verifying curriculum seeding, custom trick ingestion, and category queries (106 unit tests passing in ~5.8s).
+
 ## [v2.18.0] - 2026-08-25: "Connecting the Human Mind to the Visual Interactive" — SOTA Mind-to-World Synthesizer, Skill Genesis, and Dual-Mode Unreal Architect Wizard
 
 ### 🧠 SOTA Mind-to-World Neuro-Symbolic Synthesizer (`core/mind_synthesizer.py`)

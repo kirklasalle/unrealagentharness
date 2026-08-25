@@ -174,23 +174,32 @@ class MemoryEngine:
             logger.error(f"Failed to record wisdom '{title}': {e}")
             return False
 
-    def query_wisdom(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    def query_wisdom(
+        self,
+        query: str,
+        limit: int = 5,
+        category: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """Queries stored wisdom insights matching keywords or categories."""
         tokens = [t.lower().strip() for t in re.split(r"\W+", query) if len(t) > 2]
-        if not tokens:
-            with self._connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM wisdom_insights ORDER BY updated_at DESC LIMIT ?", (limit,))
-                return [dict(row) for row in cursor.fetchall()]
-
+        
         conditions = []
         params: List[Any] = []
-        for t in tokens[:4]:
-            conditions.append("(LOWER(title) LIKE ? OR LOWER(content) LIKE ? OR LOWER(tags) LIKE ? OR LOWER(category) LIKE ?)")
-            p = f"%{t}%"
-            params.extend([p, p, p, p])
 
-        sql = f"SELECT * FROM wisdom_insights WHERE {' OR '.join(conditions)} ORDER BY confidence DESC, updated_at DESC LIMIT ?"
+        if tokens:
+            token_conds = []
+            for t in tokens[:4]:
+                token_conds.append("(LOWER(title) LIKE ? OR LOWER(content) LIKE ? OR LOWER(tags) LIKE ? OR LOWER(category) LIKE ?)")
+                p = f"%{t}%"
+                params.extend([p, p, p, p])
+            conditions.append(f"({' OR '.join(token_conds)})")
+
+        if category:
+            conditions.append("category LIKE ?")
+            params.append(f"%{category}%")
+
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        sql = f"SELECT * FROM wisdom_insights {where_clause} ORDER BY confidence DESC, updated_at DESC LIMIT ?"
         params.append(limit)
 
         try:

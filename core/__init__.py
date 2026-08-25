@@ -26,6 +26,7 @@ from .memory_engine import MemoryEngine
 from .mind_synthesizer import MindSynthesizer
 from .skill_genesis import SkillGenesis
 from .wizard_builder import UnrealWizardBuilder
+from .learning_engine import LearningEngine
 
 __all__ = [
     "get_logger",
@@ -48,4 +49,5 @@ __all__ = [
     "MindSynthesizer",
     "SkillGenesis",
     "UnrealWizardBuilder",
+    "LearningEngine",
 ]

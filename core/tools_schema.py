@@ -462,6 +462,54 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "query_unreal_academy",
+            "description": "Unreal Academy Knowledge Engine: Searches master tutorials, 3D optical illusions, FX tricks, little-known engine quirks, and classic U1-U5 map deconstructions.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search keyword or topic (e.g. 'forced perspective skybox', 'warpzone portal', 'Deck16 slime vat', '75 percent rule').",
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": ["tutorials", "tips_and_tricks", "little_known_facts", "artistic_illusions_fx", "classic_map_deconstructions", "engine_secrets"],
+                        "description": "Optional category filter.",
+                    },
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "ingest_master_insight",
+            "description": "Autonomous Training & Ingestion: Records a new master level design technique, 3D illusion, engine quirk fix, or map review into lifelong SQLite memory.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Descriptive title of the technique or trick."},
+                    "category": {
+                        "type": "string",
+                        "enum": ["tutorials", "tips_and_tricks", "little_known_facts", "artistic_illusions_fx", "classic_map_deconstructions", "engine_secrets"],
+                        "description": "Category.",
+                    },
+                    "summary": {"type": "string", "description": "Conceptual summary and rationale."},
+                    "step_by_step": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Step-by-step implementation instructions.",
+                    },
+                    "technical_trick": {"type": "string", "description": "The key technical secret or gotcha."},
+                },
+                "required": ["title", "category", "summary"],
+            },
+        },
+    },
 ]
 
 

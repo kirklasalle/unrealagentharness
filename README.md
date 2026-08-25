@@ -70,11 +70,17 @@ Connects human intuitive intent directly to the live visual interactive viewport
 - **Dynamic Knowledge Retrieval (RAG)**: Full-text indexing and semantic search over the entire `docs/` compendium for intelligent runtime prompt augmentation.
 - **Build Telemetry Recorder**: Logs build history, engine targets, command counts, and reachability scores.
 
-### 4. 🎨 Dynamic In-Memory Texture Package Loading (`OBJ LOAD`)
+### 4. 🎓 Unreal Academy & Research Engine (3D Illusions, FX Secrets & Classic Map Deconstructions)
+- **Multi-Pillar Knowledge Ingestion**: Pre-seeded with 30+ master lessons, 3D optical illusions, and classic map recipes.
+- **3D Optical Illusions & FX**: Forced-perspective 1:16 scale planetary skyboxes, WarpZone infinite mirror corridors, and volumetric light god-ray sheets.
+- **Hall of Fame Map Deconstructions**: Reverse-engineered spatial architectures for *Facing Worlds (CTF-Face)*, *Deck 16 ][ (DM-Deck16][)*, *Temple of Chizra*, and *ONS-Torlan*.
+- **Interactive Academy UI**: 1-Click trick execution and autonomous research ingestion directly from the Cockpit.
+
+### 5. 🎨 Dynamic In-Memory Texture Package Loading (`OBJ LOAD`)
 - Automatically resolves and preloads stock `.utx` texture packages (`GenEarth.utx`, `NaliCast.utx`, `ShaneSky.utx`, `Ancient.utx`, `SkyBox.utx`, `SpaceFX.utx`, `UTtech1.utx`, `UTtech2.utx`, `Coret_FX.utx`) via `OBJ LOAD FILE="..\Textures\<pkg>.utx" PACKAGE=<pkg>`.
 - Guarantees that every imported brush polygon immediately binds to high-resolution textures without falling back to flat gray or `DefaultTexture`.
 
-### 5. 🧠 Multi-Provider LLM Intelligence Matrix
+### 6. 🧠 Multi-Provider LLM Intelligence Matrix
 Connects to both cutting-edge cloud models and local offline neural networks (evaluated across our **Top 20 LLM Benchmark Suite**):
 
 | Model | Provider | Recommended Use Case | Speed | Cost Tier |
@@ -87,7 +93,7 @@ Connects to both cutting-edge cloud models and local offline neural networks (ev
 
 *Explore the full evaluated ranking in the **[Top 20 LLM Setup & Evaluation Guide](docs/LLM_PROVIDER_SETUP.md)**.*
 
-### 6. 🌐 .nexus AMTP v3.0 Protocol & Chirpy Interoperability
+### 7. 🌐 .nexus AMTP v3.0 Protocol & Chirpy Interoperability
 - Seamlessly bridges telemetry and level blueprints to Kirk LaSalle's **.nexus Agent Post Office** (`d:\projects\.nexus`) using Agent Mail Transfer Protocol (**AMTP/3.0**).
 - Dispatches autonomous micro-broadcasts to the Chirpy network (`chirpyagent.com`) with level metrics, compilation summaries, and reachability reports.
 
@@ -183,6 +189,7 @@ AgentHarness/
 │   ├── engine_controller.py         # Win32 window discovery and command injection
 │   ├── formula_engine.py            # Procedural level formulas and CSG synthesizers
 │   ├── memory_engine.py             # Persistent SQLite memory, RAG indexer & wisdom store
+│   ├── learning_engine.py           # Unreal Academy autonomous research & training engine
 │   ├── mind_synthesizer.py          # SOTA Mind-to-World neuro-symbolic level architect
 │   ├── skill_genesis.py             # Lifelong autonomous skill formalizer
 │   ├── wizard_builder.py            # Dual-mode Unreal Architect Wizard builder
@@ -194,6 +201,7 @@ AgentHarness/
 │   └── tools_schema.py              # Function calling schemas for LLMs
 ├── ui/                              # Native Win32 UI Cockpit
 │   ├── tk_harness_cockpit.py        # Dockable agent cockpit
+│   ├── academy_dialog.py            # Interactive Unreal Academy & Research Lab UI
 │   ├── wizard_builder_dialog.py     # Interactive multi-step Architect Wizard UI
 │   ├── palette_ut99_goty.py         # UT99 GOTY quick action palette
 │   ├── palette_ut99_utron.py        # UTron TC quick action palette
@@ -203,6 +211,7 @@ AgentHarness/
 │   └── api_server.py                # FastAPI server (Port 9090)
 ├── docs/                            # 25+ Master guides, architectural audits & specifications
 │   ├── 00_MASTER_DOCUMENTATION_INDEX_AND_SYSTEM_MAP.md
+│   ├── UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md
 │   ├── UNREAL_ARCHITECT_WIZARD_GUIDE.md
 │   ├── UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md
 │   ├── 07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md
@@ -222,7 +231,7 @@ AgentHarness/
 ├── ROADMAP.md                       # Official 2026-2027 Engineering & Product Roadmap
 ├── CHANGELOG.md                     # Full release and architectural changelog
 ├── requirements.txt                 # Python dependencies
-├── test_harness.py                  # Automated 103-test verification suite
+├── test_harness.py                  # Automated 106-test verification suite
 └── launch_harness_*.bat             # Standalone Windows launchers
 ```
 
@@ -232,6 +241,7 @@ AgentHarness/
 
 For in-depth technical documentation, refer to the **[Master Documentation Index](docs/00_MASTER_DOCUMENTATION_INDEX_AND_SYSTEM_MAP.md)**:
 
+* **[Unreal Academy & Illusion Tricks Compendium](docs/UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md)**
 * **[Unreal Architect Wizard Builder Guide](docs/UNREAL_ARCHITECT_WIZARD_GUIDE.md)**
 * **[Mind-to-World SOTA Specification (75% Budget Law)](docs/UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md)**
 * **[Top 20 LLM Setup & Evaluation Guide](docs/LLM_PROVIDER_SETUP.md)**
@@ -253,7 +263,7 @@ For in-depth technical documentation, refer to the **[Master Documentation Index
 
 ## 🧪 Testing & Verification
 
-The repository includes a comprehensive 103-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, and .nexus AMTP bridge connections.
+The repository includes a comprehensive 106-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, Unreal Academy research engines, and .nexus AMTP bridge connections.
 
 To run the full test suite:
 
@@ -263,7 +273,7 @@ python test_harness.py
 
 ```
 ----------------------------------------------------------------------
-Ran 103 tests in 6.299s
+Ran 106 tests in 5.875s
 
 OK (100% Pass Rate)
 ```

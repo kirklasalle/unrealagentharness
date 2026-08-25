@@ -431,6 +431,32 @@ ACTIVE ENGINE SPECIFIC GUIDELINES:
                 self.memory_engine.record_build_event(active_engine, f"Injected Wing: {wing}", len(cmds))
                 return {"status": "success", "wing_type": wing, "direction": direction, "commands": len(cmds)}
 
+            elif tool_name == "query_unreal_academy":
+                q = arguments.get("query", "")
+                cat = arguments.get("category")
+                from .learning_engine import LearningEngine
+                academy = LearningEngine(self.memory_engine)
+                entries = academy.query_academy(query=q, category=cat, limit=8)
+                return {"status": "success", "query": q, "count": len(entries), "results": entries}
+
+            elif tool_name == "ingest_master_insight":
+                title = arguments.get("title", "")
+                cat = arguments.get("category", "tips_and_tricks")
+                summary = arguments.get("summary", "")
+                steps = arguments.get("step_by_step", [])
+                trick = arguments.get("technical_trick", "")
+                from .learning_engine import LearningEngine
+                academy = LearningEngine(self.memory_engine)
+                ok = academy.ingest_knowledge_entry(
+                    category=cat,
+                    title=title,
+                    summary=summary,
+                    step_by_step=steps,
+                    technical_trick=trick,
+                    author_reference="Autonomous Agent Study",
+                )
+                return {"status": "success" if ok else "failed", "title": title}
+
             else:
                 return {"status": "error", "error": f"Unknown tool '{tool_name}'"}
 

@@ -1174,6 +1174,57 @@ class TestUnrealWizardBuilder(unittest.TestCase):
         self.assertIn("MAP REBUILD", cmd_str)
 
 
+class TestLearningEngine(unittest.TestCase):
+    """Tests for the Unreal Academy research and learning ingestion engine."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_db = Path(self.tmp_dir.name) / "test_academy.db"
+        from core.memory_engine import MemoryEngine
+        from core.learning_engine import LearningEngine
+        self.memory = MemoryEngine(db_path=str(self.tmp_db))
+        self.academy = LearningEngine(self.memory)
+
+    def tearDown(self):
+        self.memory = None
+        self.academy = None
+        import gc
+        gc.collect()
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
+
+    def test_academy_seeding_and_categories(self):
+        entries = self.academy.get_all_entries_by_category("artistic_illusions_fx")
+        self.assertGreaterEqual(len(entries), 2)
+        titles = [e["title"] for e in entries]
+        self.assertTrue(any("Skybox" in t or "Mirror" in t or "Light" in t for t in titles))
+
+    def test_ingest_knowledge_entry(self):
+        ok = self.academy.ingest_knowledge_entry(
+            category="tips_and_tricks",
+            title="Custom Lens Flare Trigger",
+            summary="Attaching LensFlare sprites to ceiling light actors for dramatic bloom.",
+            engine_target="UE1 / UT99",
+            step_by_step=["1. Spawn Engine.Light", "2. Set bSpecialLit=True", "3. Add LensFlare sprite"],
+            technical_trick="Ensure actor is within player FOV to avoid rendering overhead.",
+            tags="lighting,bloom,lensflare",
+        )
+        self.assertTrue(ok)
+
+        results = self.academy.query_academy("Lens Flare")
+        self.assertGreaterEqual(len(results), 1)
+        self.assertEqual(results[0]["title"], "Custom Lens Flare Trigger")
+
+    def test_classic_map_deconstructions_available(self):
+        maps = self.academy.get_all_entries_by_category("classic_map_deconstructions")
+        self.assertGreaterEqual(len(maps), 2)
+        titles = [m["title"] for m in maps]
+        self.assertTrue(any("Face" in t or "Deck" in t for t in titles))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 
