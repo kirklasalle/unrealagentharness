@@ -1,11 +1,14 @@
-# Unreal Agent Harness
+# Unreal Agent Harness (UAH)
 ### Autonomous Level Designer, In-Editor Copilot & Multi-Engine Automation Suite
+**Author & Lead Architect:** Kirk LaSalle  
+**Official Repository:** [https://github.com/kirklasalle/unrealagentharness](https://github.com/kirklasalle/unrealagentharness)
 
 <p align="center">
-  <img src="assets/hero_banner.jpg" alt="Unreal Agent Harness Hero Banner" width="100%">
+  <img src="assets/uah_titlebar_crest.jpg" alt="Unreal Agent Harness Official Standard Crest & Titlebar" width="100%">
 </p>
 
 <p align="center">
+  <a href="https://github.com/kirklasalle/unrealagentharness"><img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repo"></a>
   <img src="https://img.shields.io/badge/Audit%20Score-96.25%20%2F%20100%20(World--Class)-brightgreen?style=for-the-badge&logo=checkmarx" alt="Audit Score">
   <img src="https://img.shields.io/badge/Standard-UAH%20v1.0.0-gold?style=for-the-badge&logo=openaccess" alt="UAH Standard">
   <img src="https://img.shields.io/badge/Engines-UE1%20%7C%20UE2.0%20%7C%20UE2.5%20%7C%20UE5.x-blue?style=for-the-badge&logo=unrealengine" alt="Supported Engines">
@@ -18,11 +21,17 @@
 
 ## 🌟 Executive Summary
 
-The **Unreal Agent Harness (UAH)** is the official reference implementation of the **[UAH Open Standard (v1.0.0)](docs/UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md)** — a portable, zero-dependency autonomous level design, CSG geometry compilation, bot pathing, multi-modal perception, and multi-agent coordination standard for the Unreal Engine ecosystem (UE1 through UE5).
+<p align="center">
+  <img src="assets/uah_seal_circular.jpg" alt="UAH Official Certified Standard Seal" width="220px">
+</p>
 
-UAH is officially certified with a **96.25 / 100 World-Class Health Score** in our **[Comprehensive Software Application Audit (v2.14.0)](docs/07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o) and 100% private, air-gapped offline runtimes (Ollama Qwen 2.5 Coder 32B).
+The **Unreal Agent Harness (UAH)** is the official reference implementation of the **[UAH Open Standard (v1.0.0)](docs/UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md)** — a portable, zero-dependency autonomous level design, CSG geometry compilation, bot pathing, multi-modal perception, and multi-agent coordination standard for the Unreal Engine ecosystem spanning **28 years of gaming history (1998 namesake through modern UE5.x)**.
 
-For future milestones and development trajectory, explore the **[Official Engineering & Product Roadmap (2026–2027)](ROADMAP.md)**.
+UAH is officially certified with a **96.25 / 100 World-Class Health Score** in our **[Comprehensive Software Application Audit (v2.14.0)](docs/07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)** with **106 / 106 unit tests passing (100%)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o) and 100% private, air-gapped offline runtimes (Ollama Qwen 2.5 Coder 32B).
+
+The project is strictly governed by the **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](AGENTIC_SACRED_COVENANT.md)**, ensuring that AI autonomy and human creative authority remain in unbreakable harmony.
+
+For future milestones, review the **[Official Engineering & Product Roadmap (2026–2027)](ROADMAP.md)**. Explore our standalone interactive web suite in [`public_html/`](public_html/index.html).
 
 <p align="center">
   <img src="assets/architecture_matrix.jpg" alt="System Architecture & Multi-Engine Matrix" width="100%">
@@ -55,7 +64,7 @@ Connects human intuitive intent directly to the live visual interactive viewport
 * **🌌 Orbital Asteroid Outpost (`4096 x 4096 x 1536`)**: Low-gravity asteroid crater (`ZoneGravity.Z = -350`), pressurized command hab module, airlock entryway, landing pad, comm relay mast, meteorite boulders, cargo containers, beacons, and cosmic starfield.
 * **🏟️ Classic Tournament Arena (`3072 x 3072 x 1024`)**: Multi-tier deathmatch arena with central combat dais, semi-solid fluted pillars, perimeter trim moldings, crown cornices, recessed lighting alcoves, jump pad, mezzanine balcony, and authentic thematic textures.
 * **🚩 Symmetrical CTF Fortresses (Red & Blue Bases)**: Flag daises, sniper perches, team defense points, and connecting midfield hallways.
-* **🕹️ UTron Discs of Tron & Light Cycle Grids**: Neon cylindrical platforms, diffuser bus lines, and wirenode trigger matrices.
+* **🎮 Universal Community Mod Support**: First-class support for total conversions, mutators, and custom weapon packs (*ChaosUT*, *Tactical Ops*, *Infiltration*, *Monster Hunt*, *Jailbreak*, *Rocket Arena*).
 
 <p align="center">
   <img src="assets/unrealed_temple_arena.png" alt="UnrealEd Live Dynamic Lighting and CSG Arena Synthesis" width="32%">
@@ -99,8 +108,7 @@ Connects to both cutting-edge cloud models and local offline neural networks (ev
 | Profile ID | Target Engine & Version | Default System Directory | Target Executable | Primary Features |
 | :--- | :--- | :--- | :--- | :--- |
 | `ut99_goty` | Unreal Tournament 99 GOTY (UE1 / 469e) | `G:\UnrealTournament\System` | `UnrealEd.exe` | Botpack weapons, ZoneInfo, 3D foliage, radiosity lighting, AI paths |
-| `ut99_utron` | UTron Total Conversion (UE1) | `G:\UnrealTournament\System` | `UnrealEd.exe` | Identity Discs, diffusers, wirenodes, light cycle grids |
-| `ut99_chaosut` | ChaosUT: Evolution Mod (UE1) | `G:\UnrealTournament\System` | `UnrealEd.exe` | Crossbow, Proxy mines, Vortex cannons, Gravity belts, Turrets |
+| `ut99_chaosut` | ChaosUT: Evolution Mod (UE1 / 469e) | `G:\UnrealTournament\System` | `UnrealEd.exe` | Crossbow, Proxy mines, Vortex cannons, Gravity belts, Turrets |
 | `ut99_tacticalops` | Tactical Ops: Assault on Terror (UE1) | `G:\UnrealTournament\System` | `UnrealEd.exe` | Buy zones, Hostage rescue points, Terrorist/Special Forces spawns |
 | `ut2003` | Unreal Tournament 2003 (UE2.0) | `G:\UT2003\System` | `UnrealEd.exe` | Early static mesh brushes, xWeapons, terrain actors |
 | `ut2004` | Unreal Tournament 2004 (UE2.5) | `G:\UnrealTournament2004\System` | `UnrealEd.exe` | Onslaught PowerNodes, Karma physics, vehicle bays, Assault turrets |
@@ -115,11 +123,11 @@ Connects to both cutting-edge cloud models and local offline neural networks (ev
 - Unreal Tournament 99 (v436 or OldUnreal 469e) / Unreal Tournament 2004 (v3369+)
 
 ### Installation
-Clone the repository into your Unreal Tournament root or preferred tools directory:
+Clone the repository:
 
 ```bash
-git clone https://github.com/kirklasalle/unrealagentharness.git AgentHarness
-cd AgentHarness
+git clone https://github.com/kirklasalle/unrealagentharness.git
+cd unrealagentharness
 pip install -r requirements.txt
 ```
 
@@ -133,9 +141,6 @@ launch_harness_universal.bat
 
 :: Unreal Tournament 99 GOTY
 launch_harness_ut99_goty.bat
-
-:: UTron Total Conversion Mod
-launch_harness_ut99_utron.bat
 
 :: Unreal Tournament 2004
 launch_harness_ut2004.bat
@@ -170,10 +175,25 @@ graph TD
 
 ---
 
+## 🌐 Standalone Public Web Suite (`public_html/`)
+
+The repository includes a modern, zero-dependency public website located in [`public_html/`](public_html/):
+- **Live Multi-Theme Switcher**: Instant switching between 5 Unreal eras:
+  - 🏆 **Liandri Tournament Gold** (Default: Obsidian Void, Amber-Gold & Plasma Cyan)
+  - 🌿 **Na Pali Mystic Sanctuary** (1998 Unreal Emerald & Temple Moss Gold)
+  - 🌌 **UE5 Nanite & Lumen Frontier** (Monochromatic Titanium White & Pure Bloom)
+  - 📟 **1998 UnrealEd Retro Terminal** (Phosphor Amber CRT & Wireframe Matrix)
+  - 🛸 **Deep Space Skaarj Orbital** (Cosmic Deep Navy & Alert Crimson)
+- **Interactive 60fps Vector Constellation Canvas**: Visualizing Unreal ReachSpec navigation graphs.
+- **Dynamic Cursor Spotlight Tracking**: Cards calculate `--mouse-x` and `--mouse-y` for a clean ambient bloom.
+- **Interactive CSG Synthesizer Demo**: Live T3D procedural room generator.
+
+---
+
 ## 📁 Repository Structure
 
 ```
-AgentHarness/
+unrealagentharness/
 ├── assets/                          # Illustrations, hero banners & in-editor screenshots
 ├── config/                          # Dynamic engine, LLM provider & persona profiles
 │   ├── engine_profiles.json
@@ -199,29 +219,25 @@ AgentHarness/
 │   ├── academy_dialog.py            # Interactive Unreal Academy & Research Lab UI
 │   ├── wizard_builder_dialog.py     # Interactive multi-step Architect Wizard UI
 │   ├── palette_ut99_goty.py         # UT99 GOTY quick action palette
-│   ├── palette_ut99_utron.py        # UTron TC quick action palette
 │   ├── palette_ut2004.py            # UT2004 quick action palette
 │   └── settings_dialog.py           # Provider setup and diagnostics dialog
 ├── server/                          # REST & WebSocket Automation Server
 │   └── api_server.py                # FastAPI server (Port 9090)
-├── docs/                            # 25+ Master guides, architectural audits & specifications
-│   ├── 00_MASTER_DOCUMENTATION_INDEX_AND_SYSTEM_MAP.md
-│   ├── UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md
-│   ├── UNREAL_ARCHITECT_WIZARD_GUIDE.md
-│   ├── UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md
-│   ├── 07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md
-│   ├── LLM_PROVIDER_SETUP.md
-│   ├── ROADMAP.md
-│   ├── MARKET_LANDSCAPE_AND_COMPETITIVE_ANALYSIS.md
-│   ├── UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md
-│   ├── UNREAL_ENGINE_U1_TO_U5_MASTER_TUTORIAL_KNOWLEDGEBASE.md
-│   └── ARCHITECTURE.md ...
+├── public_html/                     # World-class public web suite & multi-theme engine
+│   ├── index.html                   # Main portal & procedural demo
+│   ├── timeline.html                # 28-year interactive timeline
+│   ├── mods.html                    # Universal modding & total conversions
+│   ├── architecture.html            # 5-tier architecture & telemetry
+│   ├── academy.html                 # Unreal Academy & 3D optical illusions
+│   ├── docs.html                    # Searchable documentation library
+│   ├── covenant.html                # Agentic Sacred Covenant & 10 Laws
+│   ├── css/style.css                # Multi-theme stylesheet v3.1.0
+│   └── js/main.js                   # Interactive JavaScript & cyber canvas
+├── docs/                            # 28+ Master guides, architectural audits & specifications
 ├── tools/                           # UnrealScript compilation & extraction tools
-│   ├── Compile-UnrealScript.ps1     # Automated UCC make compiler with backups
-│   ├── Extract-UnrealScript.ps1     # Automated UCC batchexport script extractor
-│   ├── Extract_All_Scripts.bat
-│   └── Build_UTron.bat
 ├── logs/                            # Diagnostic runtime traces
+├── AGENTIC_SACRED_COVENANT.md       # Kirk LaSalle's 10 Laws of AI Supremacy
+├── AGENTIC_PRIME_DIRECTIVE.md       # Autonomous governance plane specification
 ├── LICENSE                          # Official MIT License (Kirk LaSalle 2026)
 ├── ROADMAP.md                       # Official 2026-2027 Engineering & Product Roadmap
 ├── CHANGELOG.md                     # Full release and architectural changelog
@@ -236,6 +252,8 @@ AgentHarness/
 
 For in-depth technical documentation, refer to the **[Master Documentation Index](docs/00_MASTER_DOCUMENTATION_INDEX_AND_SYSTEM_MAP.md)**:
 
+* **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](AGENTIC_SACRED_COVENANT.md)**
+* **[Agentic Prime Directive Specification](AGENTIC_PRIME_DIRECTIVE.md)**
 * **[Unreal Academy & Illusion Tricks Compendium](docs/UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md)**
 * **[Unreal Architect Wizard Builder Guide](docs/UNREAL_ARCHITECT_WIZARD_GUIDE.md)**
 * **[Mind-to-World SOTA Specification (75% Budget Law)](docs/UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md)**
@@ -245,13 +263,12 @@ For in-depth technical documentation, refer to the **[Master Documentation Index
 * **[Market Landscape & Competitive Intelligence Audit](docs/MARKET_LANDSCAPE_AND_COMPETITIVE_ANALYSIS.md)**
 * **[UAH Standard Specification (v1.0.0)](docs/UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md)**
 * **[Unreal Engine U1 to U5 Master Tutorial Knowledgebase](docs/UNREAL_ENGINE_U1_TO_U5_MASTER_TUTORIAL_KNOWLEDGEBASE.md)**
+* **[Universal Game Mods & Total Conversions Guide](docs/GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md)**
 * **[System Architecture & Telemetry Specification](docs/ARCHITECTURE.md)**
 * **[World-Class Unreal Level Design Guide](docs/WORLD_CLASS_UNREAL_LEVEL_DESIGN_GUIDE.md)**
 * **[UnrealEd Skybox & Exterior World Guide](docs/UNREALED_SKYBOX_AND_EXTERIOR_WORLD_GUIDE.md)**
 * **[UnrealScript Language Reference & Syntax](docs/02_UNREALSCRIPT_LANGUAGE_REFERENCE.md)**
 * **[Package Extraction & Compilation Guide](docs/03_EXTRACTION_AND_COMPILATION_GUIDE.md)**
-* **[UTron Project Audit & Modding Manual](docs/04_UTRON_PROJECT_AUDIT_AND_DEV_GUIDE.md)**
-* **[UTron UT2004 Porting & Compatibility Guide](docs/06_UTRON_UT2004_PORTING_AND_COMPATIBILITY_GUIDE.md)**
 * **[UnrealEd Command Reference](docs/UNREALED_COMMAND_REFERENCE.md)**
 
 ---
@@ -268,32 +285,14 @@ python test_harness.py
 
 ```
 ----------------------------------------------------------------------
-Ran 106 tests in 5.875s
+Ran 106 tests in 5.405s
 
 OK (100% Pass Rate)
 ```
 
 ---
 
-## 🖼️ Visual Assets & Illustration Integrity Manifesto
-
-To maintain complete transparency and technical accuracy, all visual assets in this repository are categorized into two explicit tiers:
-
-### 1. 🖥️ Live In-Editor Viewport Captures (100% Authentic Procedural Output)
-These images represent real-time, in-situ captures directly from the active UnrealEd 2.0 / 3.0 viewports executing UAH procedural formulas without post-processing:
-* **`assets/unrealed_temple_arena.png`**: Authentic 3072x3072 Nali Temple deathmatch arena with subtractive hull, semi-solid fluted columns, alcove torchlight, and Botpack path lattice.
-* **`assets/unrealed_ctf_red.png`**: Authentic Red Base CTF Outpost with flag dais, sniper balcony, weapon spawns, and team defense path nodes.
-* **`assets/unrealed_ctf_blue.png`**: Authentic Blue Base CTF Outpost demonstrating symmetrical layout synthesis and dynamic blue key/accent lighting.
-
-### 2. 🎨 Thematic Concept Art & Architectural Vision (Target Inspirations)
-These illustrations serve as high-level artistic targets, mood boards, and aesthetic benchmarks that guide the procedural geometry and lighting algorithms:
-* **`assets/hero_banner.jpg`**: Brand concept illustrating the neuro-symbolic bridge between human creative intuition and Unreal 3D world space.
-* **`assets/architecture_matrix.jpg`**: High-level multi-engine interoperability and IPC communication topology diagram.
-* **`assets/outdoor_worlds_showcase.jpg`**: Target aesthetic inspirations for procedural mountain valley, desert ruins, and asteroid outpost archetypes.
-
----
-
-## 📜 License
+## 📜 License & Attribution
 
 Distributed under the **MIT License**. Created by **Kirk LaSalle** for the Unreal Engine and Unreal Tournament community.
-
+Official Repository: [https://github.com/kirklasalle/unrealagentharness](https://github.com/kirklasalle/unrealagentharness)

@@ -12,7 +12,7 @@ The **Unreal Engine Master Knowledge Base** is an authoritative reference archit
 
 | Metric | Unreal Engine 1 (UE1) | Unreal Engine 2 / 2.5 (UE2.5) | Unreal Engine 3 (UE3) | Unreal Engine 4 (UE4) | Unreal Engine 5 (UE5) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Flagship Titles** | UT99 GOTY, Unreal, Deus Ex, UTron | UT2004, UT2003, Postal 2, SWAT 4 | UT3, Gears of War, Bioshock | UT4, Fortnite, Robo Recall | Fortnite Chapter 4+, Matrix Awakens |
+| **Flagship Titles** | Unreal (1998), UT99 GOTY, Deus Ex, ChaosUT, Tactical Ops | UT2004, UT2003, Postal 2, SWAT 4 | UT3, Gears of War, Bioshock | UT4, Fortnite, Robo Recall | Fortnite Chapter 4+, Matrix Awakens |
 | **Geometry Core** | Pure CSG BSP (Subtractive) | Hybrid CSG + Static Meshes (.usx) | Dominant Static Meshes + Modular CSG | Full Modular Static Meshes + Volumes | Nanite Virtualized Micro-Polygons |
 | **Physics Engine** | Native Tick-based Physics (PHYS_Falling, PHYS_Walking) | Karma Physics Engine (MathEngine) + SVehicles | PhysX 2.x / 3.x Rigid Body Physics | PhysX / Chaos Physics | Chaos Physics & Chaos Destruction |
 | **Scripting / Logic** | UnrealScript (Bytecode VM, .u packages) | UnrealScript v2 (State machines, dynamic arrays) | UnrealScript + Kismet Visual Scripting | C++ & Blueprint Visual Scripting | C++ & Enhanced Blueprints + Verse |

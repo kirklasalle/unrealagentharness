@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The 28-Year Unreal Continuum (1998–2026+) — Unreal Agent Harness</title>
+  <meta name="description" content="Chronological history, architectural evolution, and technical deep-dive of Unreal Engine technology from the 1998 namesake Unreal to Unreal Engine 5 & 6.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/uah_seal_circular.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="images/uah_seal_circular.jpg" alt="UAH Official Certified Seal" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">UNREAL AGENT HARNESS</span>
+          <span class="brand-tagline">STANDARD v1.0.0 • OPEN ARCHITECTURE</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Overview</a></li>
+          <li><a href="timeline.html" class="nav-link active">28-Yr Timeline</a></li>
+          <li><a href="mods.html" class="nav-link">Mod Support</a></li>
+          <li><a href="architecture.html" class="nav-link">Architecture</a></li>
+          <li><a href="academy.html" class="nav-link">Academy & FX</a></li>
+          <li><a href="docs.html" class="nav-link">Docs & Citations</a></li>
+          <li><a href="covenant.html" class="nav-link">Sacred Covenant</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta-group">
+        <div class="theme-selector-wrap" title="Switch Unreal Era Visual Style">
+          <span style="font-size: 0.95rem;">🎨</span>
+          <select class="theme-select-input" aria-label="Visual Style Theme Selector">
+            <option value="liandri">🏆 Liandri Gold</option>
+            <option value="napali">🌿 Na Pali 1998</option>
+            <option value="ue5">🌌 UE5 Nanite</option>
+            <option value="retro">📟 1998 Retro</option>
+            <option value="skaarj">🛸 Skaarj Orbital</option>
+          </select>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn-gh" title="Official GitHub Repository">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <div class="badge-audit">
+          <span class="badge-audit-dot"></span>
+          <span>AUDIT: 96.25 / 100</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       TIMELINE HERO
+       ========================================================================== -->
+  <section class="hero" style="padding-bottom: 3rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badges-strip">
+          <span class="badge badge-gold">⏳ 1998 TO 2026+ CHRONICLE</span>
+          <span class="badge badge-cyan">🏛️ CSG • STATIC MESHES • NANITE</span>
+          <span class="badge badge-purple">📜 TIM SWEENEY & EPIC MEGAGAMES LEGACY</span>
+        </div>
+
+        <h1 class="hero-title">The 28-Year Unreal Engine Continuum</h1>
+        <p class="hero-lead">
+          From the mystical skies of <strong>Planet Na Pali in the 1998 namesake <em>Unreal</em></strong> to the virtualized micro-polygons of <strong>Unreal Engine 5</strong>—explore how 28 years of 3D gaming innovation and procedural architecture are unified under the <strong>Unreal Agent Harness</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ARCHITECTURAL COMPARISON MATRIX
+       ========================================================================== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">📊 Five Generations of Unreal</span>
+        <h2 class="section-title">Comparative Architectural Matrix</h2>
+        <p class="section-subtitle">
+          How world geometry, physics, scripting, lighting, and AI pathing evolved across Epic Games' legendary engine series.
+        </p>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Engine Generation</th>
+              <th>Flagship Titles</th>
+              <th>Geometry Core</th>
+              <th>Physics System</th>
+              <th>Scripting & Logic</th>
+              <th>Global Illumination</th>
+              <th>Bot / AI Navigation</th>
+              <th>Coordinate Scale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color: var(--gold-light);">Unreal Engine 1 (UE1)</strong><br><span style="font-size: 0.8rem; color: var(--text-dim);">1998 – 2001</span></td>
+              <td><em>Unreal (1998)</em>, <em>UT99 GOTY</em>, <em>Deus Ex</em>, <em>ChaosUT</em>, <em>TacOps</em></td>
+              <td>Pure Subtractive CSG BSP (Red Builder Brush)</td>
+              <td>Native Tick Physics (`PHYS_Walking`, `PHYS_Falling`)</td>
+              <td>UnrealScript (Bytecode VM, `.u` packages)</td>
+              <td>Precomputed Raytraced Lightmaps + HSV</td>
+              <td>`PathNode` ReachSpec Directed Lattice</td>
+              <td>1 UU = 0.75 in (~16 UU = 1 ft)</td>
+            </tr>
+            <tr>
+              <td><strong style="color: var(--cyan-accent);">Unreal Engine 2 / 2.5</strong><br><span style="font-size: 0.8rem; color: var(--text-dim);">2002 – 2005</span></td>
+              <td><em>UT2003</em>, <em>UT2004</em>, <em>Postal 2</em>, <em>SWAT 4</em></td>
+              <td>Hybrid CSG BSP + Static Meshes (`.usx`)</td>
+              <td>Karma Physics Engine (MathEngine) + `SVehicles`</td>
+              <td>UnrealScript v2 (State machines, dynamic arrays)</td>
+              <td>Precomputed Lightmaps + ZoneLight</td>
+              <td>`PathNode` + `RoadPathNode` + `FlyingPathNode`</td>
+              <td>1 UU = 0.75 in (~50 UU = 1 m)</td>
+            </tr>
+            <tr>
+              <td><strong style="color: #c084fc);">Unreal Engine 3 (UE3)</strong><br><span style="font-size: 0.8rem; color: var(--text-dim);">2006 – 2013</span></td>
+              <td><em>UT3</em>, <em>Gears of War</em>, <em>BioShock</em>, <em>Mass Effect</em></td>
+              <td>Modular Static Meshes + Modular CSG Volumes</td>
+              <td>PhysX 2.x / 3.x Rigid Body Physics</td>
+              <td>UnrealScript + Kismet Visual Scripting</td>
+              <td>Lightmass Global Illumination</td>
+              <td>Pylon-based NavMesh Generation</td>
+              <td>1 UU = 1 cm (Metric Scale)</td>
+            </tr>
+            <tr>
+              <td><strong style="color: #38bdf8);">Unreal Engine 4 (UE4)</strong><br><span style="font-size: 0.8rem; color: var(--text-dim);">2014 – 2021</span></td>
+              <td><em>UT4 (Pre-Alpha)</em>, <em>Fortnite</em>, <em>Robo Recall</em></td>
+              <td>Full Modular Meshes + World Partition</td>
+              <td>PhysX / Chaos Physics</td>
+              <td>C++ & Blueprint Visual Scripting</td>
+              <td>Lightmass + DFAO / Distance Fields</td>
+              <td>Recast / Detour Dynamic NavMesh</td>
+              <td>1 UU = 1 cm (Metric Scale)</td>
+            </tr>
+            <tr>
+              <td><strong style="color: #34d399);">Unreal Engine 5 (UE5)</strong><br><span style="font-size: 0.8rem; color: var(--text-dim);">2022 – 2026+</span></td>
+              <td><em>Fortnite Ch4+</em>, <em>Matrix Awakens</em>, Next-Gen</td>
+              <td>Nanite Virtualized Micro-Polygons</td>
+              <td>Chaos Physics & Chaos Destruction</td>
+              <td>C++, Enhanced Blueprints + Verse + Python</td>
+              <td>Lumen Dynamic GI & Hardware Raytracing</td>
+              <td>Recast NavMesh + Mass Entity + StateTree</td>
+              <td>1 UU = 1 cm (Metric Scale)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THE 28-YEAR TIMELINE CHRONICLE
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">📜 Historical Chronicle</span>
+        <h2 class="section-title">The Milestones That Defined 3D Gaming</h2>
+        <p class="section-subtitle">
+          How each generation forged the tools, algorithms, and modding cultures we empower today.
+        </p>
+      </div>
+
+      <div class="timeline">
+        <!-- 1998: Unreal -->
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="timeline-year">1998</div>
+            <h3>Unreal: The Original Namesake & 3D Revolution</h3>
+            <p>
+              Developed by <strong>Epic MegaGames</strong> and coded by <strong>Tim Sweeney</strong>, <em>Unreal</em> stunned the gaming world in May 1998. It introduced real-time 16-bit colored lighting, 3D volumetric fog, procedural water surfaces, 60 FPS Glide/Direct3D rasterization, and the object-oriented <strong>UnrealScript</strong> programming language.
+            </p>
+            <p>
+              Players stepped out of the crashed prison ship <em>Vortex Rikers</em> onto the alien beauty of Planet Na Pali—discovering peaceful four-armed Nali monks, terrifying Skaarj warriors, and deep environmental storytelling via the digital <em>Translator</em> tablet.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+              <span class="badge badge-gold">Tim Sweeney</span>
+              <span class="badge">Vortex Rikers</span>
+              <span class="badge">Planet Na Pali</span>
+              <span class="badge">UnrealScript VM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1999: UT99 GOTY -->
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="timeline-year">1999</div>
+            <h3>Unreal Tournament: The Golden Age of Arena Combat</h3>
+            <p>
+              Released in November 1999, <em>Unreal Tournament (UT99 / GOTY)</em> revolutionized competitive multiplayer esports. Introducing the <strong>Botpack AI system</strong> (with lifelike pathfinding over ReachSpec lattices), iconic weaponry (Flak Cannon, Shock Rifle, Redeemer), and legendary maps like <em>CTF-Facing Worlds</em> and <em>DM-Deck16][</em>.
+            </p>
+            <p>
+              The built-in level editor, <strong>UnrealEd</strong>, enabled a legendary modding renaissance—giving birth to total conversions like <em>ChaosUT</em>, <em>Tactical Ops</em>, and <em>Infiltration</em>. In recent years, the <strong>OldUnreal v469 patch series</strong> has maintained and modernized the engine for 64-bit systems and Vulkan/D3D11 graphics.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+              <span class="badge badge-gold">UT99 GOTY</span>
+              <span class="badge">OldUnreal v469</span>
+              <span class="badge">Facing Worlds</span>
+              <span class="badge">Botpack AI</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2002-2004: UT2004 -->
+        <div class="timeline-item">
+          <div class="timeline-dot cyan"></div>
+          <div class="timeline-card">
+            <div class="timeline-year">2002 – 2004</div>
+            <h3>UT2003 / UT2004: Karma Physics & Vehicle Warfare</h3>
+            <p>
+              With <strong>Unreal Engine 2 and 2.5</strong>, Epic Games partnered with Digital Extremes to introduce hardware-accelerated <strong>Static Meshes (`.usx`)</strong>, MathEngine's <strong>Karma Physics</strong> (ragdolls, rigid bodies), and the massive <strong>Onslaught</strong> vehicle combat mode (featuring the Manta, Scorpion, Hellbender, and Leviathan).
+            </p>
+            <p>
+              Level design transitioned to hybrid CSG hulls housing rich static mesh geometry and terrain actors, while UnrealScript expanded to support dynamic arrays and complex state machines.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+              <span class="badge badge-cyan">UE2.5</span>
+              <span class="badge">Karma Physics</span>
+              <span class="badge">Onslaught Vehicles</span>
+              <span class="badge">Static Meshes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2006-2014: UE3 & UE4 -->
+        <div class="timeline-item">
+          <div class="timeline-dot purple"></div>
+          <div class="timeline-card">
+            <div class="timeline-year">2006 – 2014</div>
+            <h3>Unreal Engine 3 & 4: Industry Dominance & Visual Scripting</h3>
+            <p>
+              UE3 became the ubiquitous foundation of seventh-generation console gaming (<em>Gears of War</em>, <em>Mass Effect</em>, <em>BioShock</em>), debuting <strong>Lightmass GI</strong> and Kismet visual scripting. 
+            </p>
+            <p>
+              In 2014, <strong>Unreal Engine 4</strong> adopted a subscription-free model with 100% C++ source access on GitHub, introducing <strong>Blueprint Visual Scripting</strong> and modern Physically Based Rendering (PBR).
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+              <span class="badge badge-purple">UE3 / UE4</span>
+              <span class="badge">Lightmass</span>
+              <span class="badge">Blueprints</span>
+              <span class="badge">PhysX</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2022-2026+: UE5 & Autonomous Agents -->
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color: #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.3);"></div>
+          <div class="timeline-card">
+            <div class="timeline-year" style="color: #34d399;">2022 – 2026+</div>
+            <h3>Unreal Engine 5 & The Era of Autonomous AI Copilots</h3>
+            <p>
+              <strong>Unreal Engine 5</strong> unlocked infinite geometric detail with <strong>Nanite</strong> virtualized micro-polygons and fully dynamic global illumination via <strong>Lumen</strong>. 
+            </p>
+            <p>
+              In 2026, <strong>Unreal Agent Harness (UAH)</strong> was created to bridge this entire 28-year continuum—allowing creators to command low-level Win32 UnrealEd 2.0/3.0 viewports and modern UE5 Python Remote Execution environments with cutting-edge frontier AI reasoning (Gemini 2.5 Flash, Claude 3.7 Sonnet, GPT-4o, and private offline Ollama models).
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+              <span class="badge" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399;">UE5.x / Nanite & Lumen</span>
+              <span class="badge badge-gold">UAH Standard v1.0.0</span>
+              <span class="badge badge-cyan">Autonomous Copilots</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THE PARADIGM SHIFT EXPLAINED
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">📐 Spatial Philosophy</span>
+        <h2 class="section-title">The Subtractive vs. Additive Paradigm Shift</h2>
+        <p class="section-subtitle">
+          Understanding the philosophical difference in how 3D virtual space is conceived and constructed.
+        </p>
+      </div>
+
+      <div class="card-grid-2">
+        <div class="feature-card">
+          <div class="feature-icon-box">🪓</div>
+          <h3>Subtractive Space (UE1 & UE2.5)</h3>
+          <p>
+            In classic Unreal, the default universe is a <strong>solid, infinitely dense mass of rock and matter</strong>. 
+          </p>
+          <p>
+            Level designers act as digital sculptors, <strong>carving voids out of the solid rock</strong> using the Red Builder Brush with <code>BRUSH SUBTRACT</code>. Additive brushes are then placed inside the void to construct pillars, stairs, walkways, and sniper bridges.
+          </p>
+          <div class="callout callout-tip" style="margin-top: auto;">
+            <div class="callout-title">💡 Why CSG Is Superior for Fast Layouts</div>
+            <p style="margin: 0; font-size: 0.9rem;">Subtractive CSG creates perfectly watertight rooms with zero light leaks, instant collision hulls, and rapid iteration times.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🌌</div>
+          <h3>Additive Space (UE3, UE4 & UE5)</h3>
+          <p>
+            In modern engines, the default universe is an <strong>infinite empty vacuum</strong>.
+          </p>
+          <p>
+            Level designers place positive geometry (Static Meshes, Nanite clusters, Landscapes) into empty space. While allowing cinematic modularity, it requires manual collision hulls, blocking volumes, and complex light baking.
+          </p>
+          <div class="callout callout-tip" style="margin-top: auto;">
+            <div class="callout-title">💡 How UAH Bridges Both Worlds</div>
+            <p style="margin: 0; font-size: 0.9rem;">UAH provides unified mental models—generating CSG PolyLists for classic engines and actor transforms / Python remote execution for modern UE5.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="images/uah_seal_circular.jpg" alt="UAH Official Seal" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-primary);">
+            <span style="font-family: var(--font-cyber); font-weight: 800; font-size: 1.1rem; color: #fff;">UNREAL AGENT HARNESS</span>
+          </div>
+          <p>The official standard and open reference architecture for multi-engine autonomous world design and editor automation (UE1 through UE5).</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Overview & Portal</a></li>
+            <li><a href="timeline.html" class="footer-link">28-Year Timeline</a></li>
+            <li><a href="mods.html" class="footer-link">Mod Support</a></li>
+            <li><a href="architecture.html" class="footer-link">5-Tier Architecture</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">GitHub & Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="footer-link">Discussions & Q&A ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="footer-link">Issue Tracker ↗</a></li>
+            <li><a href="docs.html" class="footer-link">Master Documentation</a></li>
+            <li><a href="covenant.html" class="footer-link">Sacred Covenant (10 Laws)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Author & Authority</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Created & Maintained by<br>
+            <strong style="color: var(--gold-light);">Kirk LaSalle & Antigravity AI Engineering</strong>.
+          </p>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="font-size: 0.8rem; text-decoration: none;">
+            ⭐ github.com/kirklasalle/unrealagentharness
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Kirk LaSalle & The Unreal Tournament / Unreal Engine Community.</div>
+        <button id="backToTopBtn" style="background: rgba(245,166,35,0.15); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: var(--font-tech); font-weight: 700; opacity: 0; pointer-events: none; transition: all 0.3s;">▲ BACK TO TOP</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

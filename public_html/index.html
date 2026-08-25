@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unreal Agent Harness (UAH) — Multi-Engine Autonomous Level Designer & In-Editor Copilot</title>
+  <meta name="description" content="Official Portal for Unreal Agent Harness (UAH). World-class autonomous level architect, CSG geometry synthesizer, and in-editor copilot bridging Unreal 1 (1998) through Unreal Engine 5.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/uah_seal_circular.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="images/uah_seal_circular.jpg" alt="UAH Official Certified Seal" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">UNREAL AGENT HARNESS</span>
+          <span class="brand-tagline">STANDARD v1.0.0 • OPEN ARCHITECTURE</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link active">Overview</a></li>
+          <li><a href="timeline.html" class="nav-link">28-Yr Timeline</a></li>
+          <li><a href="mods.html" class="nav-link">Mod Support</a></li>
+          <li><a href="architecture.html" class="nav-link">Architecture</a></li>
+          <li><a href="academy.html" class="nav-link">Academy & FX</a></li>
+          <li><a href="docs.html" class="nav-link">Docs & Citations</a></li>
+          <li><a href="covenant.html" class="nav-link">Sacred Covenant</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta-group">
+        <div class="theme-selector-wrap" title="Switch Unreal Era Visual Style">
+          <span style="font-size: 0.95rem;">🎨</span>
+          <select class="theme-select-input" aria-label="Visual Style Theme Selector">
+            <option value="liandri">🏆 Liandri Gold</option>
+            <option value="napali">🌿 Na Pali 1998</option>
+            <option value="ue5">🌌 UE5 Nanite</option>
+            <option value="retro">📟 1998 Retro</option>
+            <option value="skaarj">🛸 Skaarj Orbital</option>
+          </select>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn-gh" title="Official GitHub Repository">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <div class="badge-audit" title="Official Audit Certification Score">
+          <span class="badge-audit-dot"></span>
+          <span>AUDIT: 96.25 / 100</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-crest-wrapper">
+        <img src="images/uah_titlebar_crest.jpg" alt="Unreal Agent Harness Titlebar Crest" class="hero-crest-img">
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-badges-strip">
+          <span class="badge badge-gold">🏆 WORLD-CLASS HEALTH SCORE (96.25/100)</span>
+          <span class="badge badge-cyan">⚡ UE1 | UE2.0 | UE2.5 | UE5.x</span>
+          <span class="badge badge-purple">🧠 GEMINI 2.5 • CLAUDE 3.7 • GPT-4o • OLLAMA</span>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="text-decoration: none;">🐙 GITHUB: KIRKLASALLE/UNREALAGENTHARNESS</a>
+        </div>
+
+        <h1 class="hero-title">From Old-School Unreal (1998) to Modern-Day UE5!</h1>
+        <p class="hero-lead">
+          <strong>The Unreal Agent Harness (UAH)</strong> is the world’s premier portable, zero-overhead autonomous level designer, in-editor copilot, and neuro-symbolic geometry synthesizer. We give <strong>new generations of creators and players</strong> direct, intuitive access to classic legendary games, UnrealEd, and legendary mod systems—bridging 28 years of gaming history with 2026 frontier AI autonomy.
+        </p>
+
+        <div class="hero-actions">
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn btn-primary">⭐ Star on GitHub</a>
+          <a href="#quickstart" class="btn btn-secondary">🚀 Launch Quick Start</a>
+          <a href="timeline.html" class="btn btn-cyan">⏳ 28-Year Unreal Journey</a>
+          <a href="mods.html" class="btn btn-secondary">📦 Mod Support</a>
+        </div>
+
+        <div class="hero-stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">28 Yrs</div>
+            <div class="stat-label">Unreal Continuum (1998–2026+)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">106 / 106</div>
+            <div class="stat-label">Tests Passed (100% Reliability)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">&lt; 35 MB</div>
+            <div class="stat-label">Zero Chromium Win32 RAM Footprint</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">96.25</div>
+            <div class="stat-label">Certified World-Class Audit Score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THE CORE MISSION & VISION: EMPOWERING THE PLAYER & CREATOR
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🌟 Our Sacred Mission</span>
+        <h2 class="section-title">The Game, The Editor, The Legacy — In the Hands of the Player</h2>
+        <p class="section-subtitle">
+          Whether you are exploring the mysterious skies of Na Pali in the 1998 namesake <em>Unreal</em>, dominating Facing Worlds in <em>UT99</em>, piloting Scorpions in <em>UT2004</em>, or commanding Nanite micro-polygons in <em>UE5</em>—UAH places total architectural mastery in your hands.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">🎮</div>
+          <h3>Heritage Preservation</h3>
+          <p>Restoring access to classic Unreal technology, UnrealScript, and 3D CSG level construction for a brand-new generation of game designers, retro gamers, and AI researchers.</p>
+          <div style="margin-top: auto; padding-top: 1rem;"><a href="timeline.html" class="badge badge-gold">Read Evolution Timeline &rarr;</a></div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🧙</div>
+          <h3>Mind-to-World Synthesis</h3>
+          <p>Transforming pure human creative intent into watertight Constructive Solid Geometry (CSG), raytraced dynamic lighting rigs, and 52-node bot navigation graphs in milliseconds.</p>
+          <div style="margin-top: auto; padding-top: 1rem;"><a href="architecture.html" class="badge badge-cyan">Explore 5-Tier Architecture &rarr;</a></div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">📦</div>
+          <h3>Total Conversion Support</h3>
+          <p>First-class community mod support featuring <em>ChaosUT</em>, <em>Tactical Ops</em>, <em>Infiltration</em>, <em>Monster Hunt</em>, and custom user-registered total conversions.</p>
+          <div style="margin-top: auto; padding-top: 1rem;"><a href="mods.html" class="badge badge-purple">Explore Modding Suite &rarr;</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PROCEDURAL LEVEL ARCHETYPE SHOWCASE
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🏔️ Level Architect Catalog</span>
+        <h2 class="section-title">Procedural Worlds & Thematic Archetypes</h2>
+        <p class="section-subtitle">
+          Constructed with mathematical precision adhering to the <strong>75% Engine Budget Law</strong> to prevent BSP holes, polygon cuts, and 65k node GPF crashes.
+        </p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="showcase-card">
+          <div class="showcase-img-wrap">
+            <img src="images/Builderbutton_valley_01.jpg" alt="Verdant Mountain Valley Archetype">
+            <span class="showcase-tag">4608 x 4608 x 1536</span>
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">Verdant Mountain Valley</h3>
+            <p>Alpine mountain gorge with fortified stone stronghold, dual-ramp arched bridge, octagonal sniper watchtower, 3D pine forests (`Tree1`–`Tree6`), mountain ferns, and a 52-node Botpack AI reachability network.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-gold">52 AI Nodes</span>
+              <span class="badge">River Gorge</span>
+              <span class="badge">Stone Fortress</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <div class="showcase-img-wrap">
+            <img src="images/Builderbutton_desert_01.jpg" alt="Arid Desert Canyon Archetype">
+            <span class="showcase-tag">4608 x 4608 x 1792</span>
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">Arid Desert Canyon & Ruins</h3>
+            <p>Sun-drenched sandstone canyon featuring an ancient Nali sanctuary, hypostyle colonnade columns, elevated sand plateau ramps, oasis basin, desert cacti, ceremonial urns, and full bot combat pathing.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-gold">Colonnade Pillars</span>
+              <span class="badge">Sandstone Cliffs</span>
+              <span class="badge">Oasis Basin</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <div class="showcase-img-wrap">
+            <img src="images/Builderbutton_moonbase_01.jpg" alt="Orbital Asteroid Outpost Archetype">
+            <span class="showcase-tag">4096 x 4096 x 1536</span>
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">Orbital Asteroid Outpost</h3>
+            <p>Low-gravity deep space crater (`ZoneGravity.Z = -350`), pressurized command hab module, airlock entryway, landing pad, comm relay mast, meteorite boulders, cargo containers, and a cosmic starfield skybox.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-cyan">Low-Gravity (-350)</span>
+              <span class="badge">Starfield 1:16</span>
+              <span class="badge">Airlock Hab</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem; text-align: center;">
+        <img src="images/outdoor_worlds_showcase.jpg" alt="Outdoor World Environments Thematic Concept Art" style="border-radius: 12px; border: 1px solid var(--border-gold); box-shadow: var(--shadow-gold); margin: 0 auto; max-width: 1000px;">
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim); font-style: italic;">
+          🎨 Thematic Architectural Concept Art & Creative Vision (Target Benchmarks for Procedural Level Archetypes)
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       LIVE IN-EDITOR VIEWPORT EVIDENCE (AUTHENTIC REALITY)
+       ========================================================================== -->
+  <section class="section" style="background: rgba(11, 15, 25, 0.7); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🖥️ Authentic In-Editor Verification</span>
+        <h2 class="section-title">Live Procedural CSG & Dynamic Lighting Output</h2>
+        <p class="section-subtitle">
+          Direct, unretouched in-situ screen captures from live UnrealEd 2.0 / 3.0 viewports executing UAH procedural formulas in real time.
+        </p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="showcase-card">
+          <div class="showcase-img-wrap" style="height: 240px;">
+            <img src="images/unrealed_temple_arena.png" alt="UnrealEd Temple Arena Synthesis">
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">Nali Temple Combat Arena</h3>
+            <p>Authentic 3072x3072 deathmatch arena with subtractive hull, semi-solid fluted columns, alcove torchlight, and Botpack path lattice.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-gold">UnrealEd 2.0 / 469e</span>
+              <span class="badge">Real-Time BSP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <div class="showcase-img-wrap" style="height: 240px;">
+            <img src="images/unrealed_ctf_red.png" alt="UnrealEd CTF Red Base">
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">CTF Symmetrical Red Base</h3>
+            <p>Authentic Red Base Outpost featuring flag dais, sniper overlook balcony, weapon spawn hierarchy, and team defense path nodes.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-gold">CTF Gametype</span>
+              <span class="badge">Red Key Lighting</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <div class="showcase-img-wrap" style="height: 240px;">
+            <img src="images/unrealed_ctf_blue.png" alt="UnrealEd CTF Blue Base">
+          </div>
+          <div class="showcase-body">
+            <h3 class="showcase-title">CTF Symmetrical Blue Base</h3>
+            <p>Demonstrating flawless mathematical symmetry, plasma blue accent radiosity, and seamless bot reachability routes.</p>
+            <div class="showcase-specs">
+              <span class="badge badge-cyan">Symmetrical Matrix</span>
+              <span class="badge">Blue Radiosity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE CSG ROOM SYNTHESIZER DEMO
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">⚡ Interactive Lab</span>
+        <h2 class="section-title">Test the UAH Procedural CSG Engine Live</h2>
+        <p class="section-subtitle">
+          Select architectural dimensions and spatial parameters to generate watertight Unreal Text 3D (`.t3d`) code in real time.
+        </p>
+      </div>
+
+      <div class="interactive-box">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+          <div>
+            <label style="display: block; font-family: var(--font-tech); font-weight: 700; color: var(--gold-light); margin-bottom: 0.4rem; text-transform: uppercase;">Room Archetype</label>
+            <select id="csgRoomType" style="width: 100%; background: #090d16; border: 1px solid var(--border-subtle); color: #fff; padding: 0.6rem; border-radius: 6px; font-family: var(--font-body);">
+              <option value="arena_subtractive">Tournament Arena (Subtractive CSG)</option>
+              <option value="valley_subtractive">Mountain Valley (Subtractive Gorge)</option>
+              <option value="orbital_subtractive">Orbital Asteroid Hab Module</option>
+              <option value="scifi_subtractive">Sci-Fi Industrial Arena</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-family: var(--font-tech); font-weight: 700; color: var(--gold-light); margin-bottom: 0.4rem; text-transform: uppercase;">Width (Unreal Units)</label>
+            <input type="number" id="csgWidth" value="3072" step="256" style="width: 100%; background: #090d16; border: 1px solid var(--border-subtle); color: #fff; padding: 0.6rem; border-radius: 6px; font-family: var(--font-mono);">
+          </div>
+
+          <div>
+            <label style="display: block; font-family: var(--font-tech); font-weight: 700; color: var(--gold-light); margin-bottom: 0.4rem; text-transform: uppercase;">Depth (Unreal Units)</label>
+            <input type="number" id="csgDepth" value="3072" step="256" style="width: 100%; background: #090d16; border: 1px solid var(--border-subtle); color: #fff; padding: 0.6rem; border-radius: 6px; font-family: var(--font-mono);">
+          </div>
+
+          <div>
+            <label style="display: block; font-family: var(--font-tech); font-weight: 700; color: var(--gold-light); margin-bottom: 0.4rem; text-transform: uppercase;">Height (Unreal Units)</label>
+            <input type="number" id="csgHeight" value="1024" step="128" style="width: 100%; background: #090d16; border: 1px solid var(--border-subtle); color: #fff; padding: 0.6rem; border-radius: 6px; font-family: var(--font-mono);">
+          </div>
+
+          <div>
+            <label style="display: block; font-family: var(--font-tech); font-weight: 700; color: var(--gold-light); margin-bottom: 0.4rem; text-transform: uppercase;">Stock Texture Package</label>
+            <select id="csgTexture" style="width: 100%; background: #090d16; border: 1px solid var(--border-subtle); color: #fff; padding: 0.6rem; border-radius: 6px; font-family: var(--font-body);">
+              <option value="Ancient.Wall.rock1">Ancient.Wall.rock1 (Nali Temple)</option>
+              <option value="UTtech1.Wall.metal1">UTtech1.Wall.metal1 (Tournament)</option>
+              <option value="GenEarth.Ground.dirt1">GenEarth.Ground.dirt1 (Valley)</option>
+              <option value="SpaceFX.Sky.starfield1">SpaceFX.Sky.starfield1 (Cosmic)</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="csgGenerateBtn" class="btn btn-primary" style="margin-bottom: 1.5rem;">⚡ Synthesize Watertight T3D Code</button>
+
+        <div class="code-header">
+          <span>GENERATED UNREAL TEXT 3D (T3D) SYNTHESIS STREAM</span>
+        </div>
+        <pre><code id="csgOutputPreview">// Click Synthesize to inspect generated T3D code...</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE ENGINE MATRIX SELECTOR
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🎮 Multi-Engine Matrix</span>
+        <h2 class="section-title">Supported Engine Profiles & Runtimes</h2>
+        <p class="section-subtitle">
+          UAH dynamically adapts its IPC controller, coordinate scales, and package loaders across 5 generations of Unreal technology.
+        </p>
+      </div>
+
+      <div style="max-width: 900px; margin: 0 auto;">
+        <label for="engineProfileSelect" style="display: block; font-family: var(--font-tech); font-size: 1.1rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.6rem; text-transform: uppercase;">
+          Select Engine Target:
+        </label>
+        <select id="engineProfileSelect" style="width: 100%; background: #090d16; border: 1px solid var(--border-gold); color: #fff; padding: 0.85rem 1rem; border-radius: 8px; font-family: var(--font-tech); font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+          <option value="ut99_goty">Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e)</option>
+          <option value="ut99_chaosut">ChaosUT: Evolution Mod (UE1 / Total Conversion)</option>
+          <option value="ut2004">Unreal Tournament 2004 (UE2.5 / Karma Physics & Onslaught)</option>
+          <option value="ue5">Unreal Engine 5.x (Modern UE5 / Nanite & Lumen Bridge)</option>
+        </select>
+
+        <div id="engineProfileDetails" style="margin-top: 1.5rem;">
+          <!-- Dynamically populated by main.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       GITHUB OPEN SOURCE & COMMUNITY SECTION
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🐙 Open Source & Community</span>
+        <h2 class="section-title">Full GitHub Integration & Community Support</h2>
+        <p class="section-subtitle">
+          Unreal Agent Harness is 100% open-source under the MIT License on GitHub. Join our community of creators, modders, and AI developers!
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">⭐</div>
+          <h3>Official Repository</h3>
+          <p>Access the latest source code, releases, automated unit tests, and full architectural documentation on GitHub.</p>
+          <div style="margin-top: auto; padding-top: 1rem;">
+            <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%;">GitHub Repo ↗</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">💬</div>
+          <h3>Discussions & Q&A</h3>
+          <p>Engage with the community, share procedural recipes, ask questions about UnrealScript, and request new features.</p>
+          <div style="margin-top: auto; padding-top: 1rem;">
+            <a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="btn btn-cyan" style="width: 100%;">Join Discussions ↗</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">🐛</div>
+          <h3>Issues & Support</h3>
+          <p>Report bugs, request engine profile extensions, submit pull requests, and track real-time resolution milestones.</p>
+          <div style="margin-top: auto; padding-top: 1rem;">
+            <a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">Issue Tracker ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       QUICK START GUIDE
+       ========================================================================== -->
+  <section class="section" id="quickstart" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🛠️ Quick Start</span>
+        <h2 class="section-title">Get Started in 3 Simple Steps</h2>
+        <p class="section-subtitle">
+          Zero bloat, zero heavy frameworks. Runs on standard Python 3.10+ on Windows 10/11 with zero Chromium overhead.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">1️⃣</div>
+          <h3>Clone Repository</h3>
+          <p>Clone the open-source repository directly to your workspace or Unreal directory:</p>
+          <div class="code-header"><span>BASH</span></div>
+          <pre><code>git clone https://github.com/kirklasalle/unrealagentharness.git
+cd unrealagentharness</code></pre>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">2️⃣</div>
+          <h3>Install Dependencies</h3>
+          <p>Install the lightweight Python requirements (standard Win32, FastAPI, and LLM drivers):</p>
+          <div class="code-header"><span>CMD / POWERSHELL</span></div>
+          <pre><code>pip install -r requirements.txt</code></pre>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">3️⃣</div>
+          <h3>Launch Dedicated Cockpit</h3>
+          <p>Start the standalone Win32 agent cockpit for your target game engine:</p>
+          <div class="code-header"><span>CMD</span></div>
+          <pre><code>:: Universal Engine Selector
+launch_harness_universal.bat
+
+:: UT99 GOTY / OldUnreal 469e
+launch_harness_ut99_goty.bat
+
+:: Unreal Tournament 2004
+launch_harness_ut2004.bat</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="images/uah_seal_circular.jpg" alt="UAH Official Seal" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-primary);">
+            <span style="font-family: var(--font-cyber); font-weight: 800; font-size: 1.1rem; color: #fff;">UNREAL AGENT HARNESS</span>
+          </div>
+          <p>The official standard and open reference architecture for multi-engine autonomous world design and editor automation (UE1 through UE5).</p>
+          <div style="margin-top: 1rem;">
+            <span class="badge badge-gold">HEALTH: 96.25 / 100</span>
+            <span class="badge badge-cyan">STANDARD v1.0.0</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Overview & Portal</a></li>
+            <li><a href="timeline.html" class="footer-link">28-Year Timeline</a></li>
+            <li><a href="mods.html" class="footer-link">Mod Support</a></li>
+            <li><a href="architecture.html" class="footer-link">5-Tier Architecture</a></li>
+            <li><a href="academy.html" class="footer-link">Unreal Academy & FX</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">GitHub & Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="footer-link">Discussions & Q&A ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="footer-link">Issue Tracker ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/pulls" target="_blank" rel="noopener" class="footer-link">Pull Requests ↗</a></li>
+            <li><a href="docs.html" class="footer-link">Documentation Hub</a></li>
+            <li><a href="covenant.html" class="footer-link">Sacred Covenant</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Author & Authority</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Created & Maintained by<br>
+            <strong style="color: var(--gold-light);">Kirk LaSalle & Antigravity AI Engineering</strong>.
+          </p>
+          <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.75rem;">
+            Governed under Kirk LaSalle's 10 Laws of AI Supremacy.
+          </p>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="font-size: 0.8rem; text-decoration: none;">
+            ⭐ github.com/kirklasalle/unrealagentharness
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Kirk LaSalle & The Unreal Tournament / Unreal Engine Community. Distributed under the MIT License.</div>
+        <div>
+          <button id="backToTopBtn" style="background: rgba(245,166,35,0.15); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: var(--font-tech); font-weight: 700; opacity: 0; pointer-events: none; transition: all 0.3s;">
+            ▲ BACK TO TOP
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

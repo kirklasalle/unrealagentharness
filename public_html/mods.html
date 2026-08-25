@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modding Heritage & Total Conversion Support — Unreal Agent Harness</title>
+  <meta name="description" content="Unreal Agent Harness provides world-class, first-class support for community mods, total conversions, custom UnrealScript packages, and weapon frameworks across Unreal Engine 1 through UE5.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/uah_seal_circular.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="images/uah_seal_circular.jpg" alt="UAH Official Certified Seal" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">UNREAL AGENT HARNESS</span>
+          <span class="brand-tagline">STANDARD v1.0.0 • OPEN ARCHITECTURE</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Overview</a></li>
+          <li><a href="timeline.html" class="nav-link">28-Yr Timeline</a></li>
+          <li><a href="mods.html" class="nav-link active">Mod Support</a></li>
+          <li><a href="architecture.html" class="nav-link">Architecture</a></li>
+          <li><a href="academy.html" class="nav-link">Academy & FX</a></li>
+          <li><a href="docs.html" class="nav-link">Docs & Citations</a></li>
+          <li><a href="covenant.html" class="nav-link">Sacred Covenant</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta-group">
+        <div class="theme-selector-wrap" title="Switch Unreal Era Visual Style">
+          <span style="font-size: 0.95rem;">🎨</span>
+          <select class="theme-select-input" aria-label="Visual Style Theme Selector">
+            <option value="liandri">🏆 Liandri Gold</option>
+            <option value="napali">🌿 Na Pali 1998</option>
+            <option value="ue5">🌌 UE5 Nanite</option>
+            <option value="retro">📟 1998 Retro</option>
+            <option value="skaarj">🛸 Skaarj Orbital</option>
+          </select>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn-gh" title="Official GitHub Repository">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <div class="badge-audit">
+          <span class="badge-audit-dot"></span>
+          <span>AUDIT: 96.25 / 100</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MODS HERO
+       ========================================================================== -->
+  <section class="hero" style="padding-bottom: 3rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badges-strip">
+          <span class="badge badge-gold">🎉 GREAT NEWS: FULL MOD SUPPORT IS HERE!</span>
+          <span class="badge badge-cyan">📦 TOTAL CONVERSIONS & MUTATORS</span>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="text-decoration: none;">🐙 GITHUB: KIRKLASALLE/UNREALAGENTHARNESS</a>
+        </div>
+
+        <h1 class="hero-title">Legendary Mod Support & Total Conversions</h1>
+        <p class="hero-lead">
+          The <strong>Unreal Agent Harness (UAH)</strong> delivers first-class, world-class support for community mods, total conversions, custom gametypes, and weapon packages across all generations of Unreal Engine. <strong>This gives the player and creator complete freedom to build, modify, and master any Unreal game.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THE GREAT NEWS: UNIVERSAL MOD SUPPORT
+       ========================================================================== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🌟 Complete Creative Freedom</span>
+        <h2 class="section-title">Built From the Ground Up for Modders & Creators</h2>
+        <p class="section-subtitle">
+          Unreal Engine was born as an open, modular ecosystem. UAH honors and amplifies that heritage by providing autonomous level design, CSG geometry compilation, and bot navigation for ANY mod or total conversion.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">⚡</div>
+          <h3>Custom Mod INI Isolation</h3>
+          <p>
+            Launch any total conversion with dedicated configuration isolation (<code>INI=Mod.ini USERINI=ModUser.ini</code>). Your base game files remain 100% pristine and untouched.
+          </p>
+          <div class="badge badge-gold">Configuration Isolation</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🎨</div>
+          <h3>Dynamic Texture & Package Loading</h3>
+          <p>
+            UAH automatically resolves and preloads custom mod texture packages (<code>.utx</code>), sound packages (<code>.uax</code>), and script packages (<code>.u</code>) directly into UnrealEd memory via <code>OBJ LOAD</code>.
+          </p>
+          <div class="badge badge-cyan">Automated OBJ LOAD</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">🤖</div>
+          <h3>AI Pathing for Custom Weapons</h3>
+          <p>
+            Whether your mod features medieval crossbows, grappling hooks, tactical assault rifles, or vehicle warfare, UAH’s 52-node ReachSpec lattice ensures bots navigate and fight intelligently.
+          </p>
+          <div class="badge badge-purple">Bot AI Navigation</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       HALL OF FAME COMMUNITY TOTAL CONVERSIONS
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🏆 Community Classics</span>
+        <h2 class="section-title">Hall of Fame Supported Total Conversions & Mods</h2>
+        <p class="section-subtitle">
+          From tactical counter-terrorist shooters to weapon-overhaul mutators, UAH supports the most celebrated mods in PC gaming history.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">⚔️</div>
+          <h3>ChaosUT: Evolution Mod</h3>
+          <p>
+            The legendary UT99 weapon and physics overhaul featuring Crossbows with explosive bolts, proxy mines, vortex cannons, bastard swords, anti-gravity belts, and grappling hooks.
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge badge-gold">Grappling Hook</span>
+            <span class="badge">Vortex Mines</span>
+            <span class="badge">Crossbow</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🎯</div>
+          <h3>Tactical Ops: Assault on Terror</h3>
+          <p>
+            The premier tactical close-quarters combat total conversion. Featuring round-based terrorist vs. special forces combat, buy zones, hostage rescue mechanics, and realistic ballistics.
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge badge-cyan">Tactical CQB</span>
+            <span class="badge">Buy Zones</span>
+            <span class="badge">Hostage Rescue</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">🪖</div>
+          <h3>Infiltration & Strike Force</h3>
+          <p>
+            High-realism tactical modifications introducing true iron sights, realistic weapon jamming, inventory weight systems, and authentic military ballistics into Unreal Engine.
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge badge-purple">Iron Sights</span>
+            <span class="badge">Weight Physics</span>
+            <span class="badge">Realism</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box green">👾</div>
+          <h3>Monster Hunt & Invasion</h3>
+          <p>
+            Cooperative multiplayer gametypes where teams of players fight through sprawling alien complexes against hordes of Skaarj, Brutes, Warlords, and Titans from the original 1998 <em>Unreal</em>.
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge" style="background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.4);">Co-Op PvE</span>
+            <span class="badge">Na Pali Creatures</span>
+            <span class="badge">Boss Arenas</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🔒</div>
+          <h3>Jailbreak (UT99 & UT2004)</h3>
+          <p>
+            The beloved tactical team gametype where fragged players are sent to the enemy team's prison cell. Teammates must execute daring jailbreak switch infiltration runs to release their captured squad!
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge badge-gold">Prison Cells</span>
+            <span class="badge">Release Switches</span>
+            <span class="badge">Teamplay</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🚀</div>
+          <h3>Rocket Arena & Custom Mutators</h3>
+          <p>
+            Pure arena duel combat featuring full weapon loads, zero self-damage, elimination rounds, and infinite customizable mutator combinations (LowGrav, InstaGib, FatBoy, Relics).
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge badge-cyan">1v1 Arenas</span>
+            <span class="badge">InstaGib</span>
+            <span class="badge">Relics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       HOW TO REGISTER & CREATE CUSTOM MODS
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🛠️ Creator Guide</span>
+        <h2 class="section-title">How to Register & Build Custom Mods with UAH</h2>
+        <p class="section-subtitle">
+          Adding your own custom total conversion or mod to Unreal Agent Harness is seamless.
+        </p>
+      </div>
+
+      <div class="card-grid-2">
+        <div class="feature-card">
+          <h3>Option 1: In-Editor Cockpit UI (Zero Config)</h3>
+          <ol style="margin-top: 1rem; margin-left: 1.25rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.75rem;">
+            <li>Open the UAH Cockpit and click <strong>⚙️ SETTINGS</strong> in the top menu bar.</li>
+            <li>Navigate to the <strong>🎮 Engine Profiles</strong> tab.</li>
+            <li>Scroll to <strong>📦 GAME MODS & TOTAL CONVERSIONS (TC)</strong>.</li>
+            <li>Click <strong>➕ Register New Mod</strong>.</li>
+            <li>Fill in your Mod ID, Name, Parent Engine (e.g. <code>ut99_goty</code> or <code>ut2004</code>), custom INI args, and save!</li>
+          </ol>
+          <div class="callout callout-tip" style="margin-top: 1.5rem; margin-bottom: 0;">
+            <div class="callout-title">💡 Instant Availability</div>
+            <p style="margin: 0; font-size: 0.9rem;">Your new mod immediately appears in the Target dropdown with its own dedicated action palette and texture loaders!</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <h3>Option 2: Declarative JSON Profile (`engine_profiles.json`)</h3>
+          <p>You can also define your mod profile declaratively in <code>config/engine_profiles.json</code>:</p>
+          <div class="code-header"><span>JSON</span></div>
+          <pre><code>"ut99_custom_tc": {
+  "id": "ut99_custom_tc",
+  "name": "My Custom Total Conversion",
+  "category": "Game Mod (Total Conversion)",
+  "parent_engine": "ut99_goty",
+  "generation": "UE1",
+  "icon": "📦",
+  "description": "Custom weapons, skins, and arenas.",
+  "root_dir": "G:\\UnrealTournament",
+  "system_dir": "G:\\UnrealTournament\\System",
+  "editor_exe": "UnrealEd.exe",
+  "editor_args": "INI=MyModEditor.ini",
+  "game_exe": "UnrealTournament.exe",
+  "game_args": "INI=MyMod.ini USERINI=MyModUser.ini"
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       UNREALSCRIPT COMPILATION & EXTRACTION TOOLS
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">⚡ Automated Toolchain</span>
+        <h2 class="section-title">Built-In UnrealScript Compilation & Extraction Suite</h2>
+        <p class="section-subtitle">
+          UAH includes automated PowerShell and Batch compiler scripts that streamline the UCC pipeline with automatic backups.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">🔨</div>
+          <h3>Automated UCC Make Compiler</h3>
+          <p>
+            <code>tools/Compile-UnrealScript.ps1</code> automates <code>UCC.exe make</code> compilation with automatic pre-compile timestamped backups of existing <code>.u</code> packages, warning suppression, and clean build logging.
+          </p>
+          <div class="badge badge-gold">Compile-UnrealScript.ps1</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">📂</div>
+          <h3>Automated Script Extractor</h3>
+          <p>
+            <code>tools/Extract-UnrealScript.ps1</code> uses <code>UCC.exe batchexport</code> to decompile and extract class source code (<code>.uc</code>) directly from compiled binary packages into organized class directory trees.
+          </p>
+          <div class="badge badge-cyan">Extract-UnrealScript.ps1</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">🧠</div>
+          <h3>AI UnrealScript Copilot</h3>
+          <p>
+            Pair with frontier AI reasoning models (Gemini 2.5 Flash, Claude 3.7 Sonnet, or local Ollama) to write new weapon classes, custom HUD overlays, state machines, and replication directives.
+          </p>
+          <div class="badge badge-purple">AI Script Copilot</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="images/uah_seal_circular.jpg" alt="UAH Official Seal" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-primary);">
+            <span style="font-family: var(--font-cyber); font-weight: 800; font-size: 1.1rem; color: #fff;">UNREAL AGENT HARNESS</span>
+          </div>
+          <p>The official standard and open reference architecture for multi-engine autonomous world design and editor automation (UE1 through UE5).</p>
+          <div style="margin-top: 1rem;">
+            <span class="badge badge-gold">HEALTH: 96.25 / 100</span>
+            <span class="badge badge-cyan">STANDARD v1.0.0</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Overview & Portal</a></li>
+            <li><a href="timeline.html" class="footer-link">28-Year Timeline</a></li>
+            <li><a href="mods.html" class="footer-link">Mod Support</a></li>
+            <li><a href="architecture.html" class="footer-link">5-Tier Architecture</a></li>
+            <li><a href="academy.html" class="footer-link">Unreal Academy & FX</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">GitHub & Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="footer-link">Discussions & Q&A ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="footer-link">Issue Tracker ↗</a></li>
+            <li><a href="docs.html" class="footer-link">Master Documentation</a></li>
+            <li><a href="covenant.html" class="footer-link">Sacred Covenant (10 Laws)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Author & Authority</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Created & Maintained by<br>
+            <strong style="color: var(--gold-light);">Kirk LaSalle & Antigravity AI Engineering</strong>.
+          </p>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="font-size: 0.8rem; text-decoration: none;">
+            ⭐ github.com/kirklasalle/unrealagentharness
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Kirk LaSalle & The Unreal Tournament / Unreal Engine Community. Distributed under the MIT License.</div>
+        <button id="backToTopBtn" style="background: rgba(245,166,35,0.15); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: var(--font-tech); font-weight: 700; opacity: 0; pointer-events: none; transition: all 0.3s;">▲ BACK TO TOP</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

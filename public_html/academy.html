@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unreal Academy & 3D Illusion Lab — Unreal Agent Harness</title>
+  <meta name="description" content="Master 3D optical illusions, forced-perspective skyboxes, WarpZone non-Euclidean portals, and Hall of Fame map deconstructions in UnrealEd.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/uah_seal_circular.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="images/uah_seal_circular.jpg" alt="UAH Official Certified Seal" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">UNREAL AGENT HARNESS</span>
+          <span class="brand-tagline">STANDARD v1.0.0 • OPEN ARCHITECTURE</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Overview</a></li>
+          <li><a href="timeline.html" class="nav-link">28-Yr Timeline</a></li>
+          <li><a href="mods.html" class="nav-link">Mod Support</a></li>
+          <li><a href="architecture.html" class="nav-link">Architecture</a></li>
+          <li><a href="academy.html" class="nav-link active">Academy & FX</a></li>
+          <li><a href="docs.html" class="nav-link">Docs & Citations</a></li>
+          <li><a href="covenant.html" class="nav-link">Sacred Covenant</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta-group">
+        <div class="theme-selector-wrap" title="Switch Unreal Era Visual Style">
+          <span style="font-size: 0.95rem;">🎨</span>
+          <select class="theme-select-input" aria-label="Visual Style Theme Selector">
+            <option value="liandri">🏆 Liandri Gold</option>
+            <option value="napali">🌿 Na Pali 1998</option>
+            <option value="ue5">🌌 UE5 Nanite</option>
+            <option value="retro">📟 1998 Retro</option>
+            <option value="skaarj">🛸 Skaarj Orbital</option>
+          </select>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn-gh" title="Official GitHub Repository">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <div class="badge-audit">
+          <span class="badge-audit-dot"></span>
+          <span>AUDIT: 96.25 / 100</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       ACADEMY HERO
+       ========================================================================== -->
+  <section class="hero" style="padding-bottom: 3rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badges-strip">
+          <span class="badge badge-gold">🎓 UNREAL ACADEMY & RESEARCH LAB</span>
+          <span class="badge badge-cyan">✨ 3D ILLUSIONS & OPTICAL SECRETS</span>
+          <span class="badge badge-purple">🏰 CLASSIC MAP DECONSTRUCTIONS</span>
+        </div>
+
+        <h1 class="hero-title">Unreal Academy & 3D Illusion Lab</h1>
+        <p class="hero-lead">
+          Pre-seeded with <strong>30+ master architectural lessons</strong>, optical illusion formulas, and reverse-engineered spatial blueprints from the greatest levels in gaming history.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3D OPTICAL ILLUSIONS & FX SECRETS
+       ========================================================================== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🔮 Master Level Illusions</span>
+        <h2 class="section-title">In-Editor 3D Illusions & Special FX</h2>
+        <p class="section-subtitle">
+          Techniques pioneered by Epic Games to transcend 1990s hardware constraints and build monumental virtual worlds.
+        </p>
+      </div>
+
+      <div class="card-grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">🪐</div>
+          <h3>Forced-Perspective 1:16 Skyboxes</h3>
+          <p>
+            By carving a tiny detached <code>SkyZoneInfo</code> room and scaling celestial bodies down to 1/16th size, the engine renders gigantic cosmic planets and moving cloud layers at infinite depth with zero polygon performance penalty.
+          </p>
+          <div class="callout callout-tip" style="margin-top: auto; padding: 0.75rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--gold-light);">SkyZoneInfo + SkyBox.utx</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">🌀</div>
+          <h3>WarpZone Infinite Corridors</h3>
+          <p>
+            Using paired <code>WarpZoneInfo</code> actors with matched <code>OtherSideURL</code> tags, architects build non-Euclidean spatial loops, infinite sniper hallways, and impossible 90-degree room-within-room portals.
+          </p>
+          <div class="callout callout-tip" style="margin-top: auto; padding: 0.75rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan-accent);">WarpZoneInfo Non-Euclidean</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box purple">☀️</div>
+          <h3>Volumetric Light God-Rays</h3>
+          <p>
+            Placing two-sided, non-solid sheet brushes with semi-transparent, modulated panning light textures to project realistic shafts of sunbeams through stained glass and subterranean cavern cracks.
+          </p>
+          <div class="callout callout-tip" style="margin-top: auto; padding: 0.75rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: #c084fc;">Non-Solid PolySheet + Modulated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       HALL OF FAME MAP DECONSTRUCTIONS
+       ========================================================================== -->
+  <section class="section" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🏆 Master Level Deconstructions</span>
+        <h2 class="section-title">Hall of Fame Map Blueprints</h2>
+        <p class="section-subtitle">
+          Reverse-engineered spatial metrics and gameplay loops codified into UAH procedural formulas.
+        </p>
+      </div>
+
+      <div class="card-grid-2">
+        <div class="feature-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h3>CTF-Facing Worlds (CTF-Face)</h3>
+            <span class="badge badge-gold">In Cedric 'Inoxx' Fiorentino</span>
+          </div>
+          <p><strong>Spatial Dimensions:</strong> Two symmetrical 4-tier sniper towers separated by a 4096 UU open asteroid bridge floating in orbit around planet Earth.</p>
+          <p><strong>Key Architectural Secrets:</strong> Low-gravity asteroid physics (`ZoneGravity.Z = -300`), 1:16 Earth planetary skybox, teleporter exit overlooking the enemy base, and sniper gantry perches.</p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge">Symmetrical CTF</span>
+            <span class="badge">Sniper Sightlines</span>
+            <span class="badge">Asteroid Gravity</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h3>DM-Deck16][ (Deck 16)</h3>
+            <span class="badge badge-cyan">Elliot 'Myscha' Cannon</span>
+          </div>
+          <p><strong>Spatial Dimensions:</strong> 3-tier industrial refinery arena surrounded by green radioactive toxic slime pits (`SlimeZone`).</p>
+          <p><strong>Key Architectural Secrets:</strong> Lift-triggered combat flow, parabolic jump pad arc directly into the sniper balcony, teleporter exit to the Redeemer ledge, and multi-tier line-of-sight breaks.</p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge">Toxic SlimeZone</span>
+            <span class="badge">JumpPad Arc</span>
+            <span class="badge">Redeemer Ledge</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h3>Chizra - Temple of Earth</h3>
+            <span class="badge badge-purple">Shane Caudle (Unreal 1998)</span>
+          </div>
+          <p><strong>Spatial Dimensions:</strong> Multi-chamber subterranean temple with fluted stone pillars, water canals, and ceremonial alters.</p>
+          <p><strong>Key Architectural Secrets:</strong> Environmental storytelling via `TranslatorEvent` message tablets, peaceful Nali monks reciting ancient lore, Brute guards, and subterranean water-drain puzzle triggers.</p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge">Translator Tablets</span>
+            <span class="badge">Nali Monks</span>
+            <span class="badge">Subterranean Canals</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h3>ONS-Torlan (UT2004)</h3>
+            <span class="badge" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399;">Epic Games / Streamline</span>
+          </div>
+          <p><strong>Spatial Dimensions:</strong> Giant outdoor valley with central tower fortress, rolling hills, and two fortified base compounds.</p>
+          <p><strong>Key Architectural Secrets:</strong> Symmetrical 5-node PowerNode relay network, vehicle bays (Manta, Scorpion, Goliath tank spawns), and anti-vehicle defense turrets guarding bridge bottlenecks.</p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto;">
+            <span class="badge">Onslaught PowerNodes</span>
+            <span class="badge">Vehicle Kinematics</span>
+            <span class="badge">Terrain Actors</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       DUAL-MODE ARCHITECT WIZARD
+       ========================================================================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🧙 In-Editor Wizard</span>
+        <h2 class="section-title">Dual-Mode Unreal Architect Wizard</h2>
+        <p class="section-subtitle">
+          Construct full worlds from scratch or expand existing maps without destroying user geometry.
+        </p>
+      </div>
+
+      <div class="card-grid-2">
+        <div class="feature-card">
+          <div class="feature-icon-box">✨</div>
+          <h3>Mode A: Clean Slate Synthesis</h3>
+          <p>
+            Initializes a pristine level workspace, preloads required stock texture packages via <code>OBJ LOAD</code>, and carves complete architectural complexes with integrated lighting rigs, weapons, pickups, and 52-node bot navigation graphs.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">➕</div>
+          <h3>Mode B: In-Situ Non-Destructive Extension</h3>
+          <p>
+            Attaches seamlessly to whatever active map is currently open in UnrealEd. Injects connected sniper towers, crypts, and corridors directly into existing coordinates without resetting brushes or modifying original geometry.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="images/uah_seal_circular.jpg" alt="UAH Official Seal" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-primary);">
+            <span style="font-family: var(--font-cyber); font-weight: 800; font-size: 1.1rem; color: #fff;">UNREAL AGENT HARNESS</span>
+          </div>
+          <p>The official standard and open reference architecture for multi-engine autonomous world design and editor automation (UE1 through UE5).</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Overview & Portal</a></li>
+            <li><a href="timeline.html" class="footer-link">28-Year Timeline</a></li>
+            <li><a href="mods.html" class="footer-link">Mod Support</a></li>
+            <li><a href="architecture.html" class="footer-link">5-Tier Architecture</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">GitHub & Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="footer-link">Discussions & Q&A ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="footer-link">Issue Tracker ↗</a></li>
+            <li><a href="docs.html" class="footer-link">Master Documentation</a></li>
+            <li><a href="covenant.html" class="footer-link">Sacred Covenant (10 Laws)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Author & Authority</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Created & Maintained by<br>
+            <strong style="color: var(--gold-light);">Kirk LaSalle & Antigravity AI Engineering</strong>.
+          </p>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="font-size: 0.8rem; text-decoration: none;">
+            ⭐ github.com/kirklasalle/unrealagentharness
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Kirk LaSalle & The Unreal Tournament / Unreal Engine Community.</div>
+        <button id="backToTopBtn" style="background: rgba(245,166,35,0.15); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: var(--font-tech); font-weight: 700; opacity: 0; pointer-events: none; transition: all 0.3s;">▲ BACK TO TOP</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

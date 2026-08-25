@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation & Full Citation Compendium — Unreal Agent Harness</title>
+  <meta name="description" content="Master documentation library, API reference, and comprehensive local and external web citations for Unreal Agent Harness (UAH).">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/uah_seal_circular.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="images/uah_seal_circular.jpg" alt="UAH Official Certified Seal" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">UNREAL AGENT HARNESS</span>
+          <span class="brand-tagline">STANDARD v1.0.0 • OPEN ARCHITECTURE</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Overview</a></li>
+          <li><a href="timeline.html" class="nav-link">28-Yr Timeline</a></li>
+          <li><a href="mods.html" class="nav-link">Mod Support</a></li>
+          <li><a href="architecture.html" class="nav-link">Architecture</a></li>
+          <li><a href="academy.html" class="nav-link">Academy & FX</a></li>
+          <li><a href="docs.html" class="nav-link active">Docs & Citations</a></li>
+          <li><a href="covenant.html" class="nav-link">Sacred Covenant</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta-group">
+        <div class="theme-selector-wrap" title="Switch Unreal Era Visual Style">
+          <span style="font-size: 0.95rem;">🎨</span>
+          <select class="theme-select-input" aria-label="Visual Style Theme Selector">
+            <option value="liandri">🏆 Liandri Gold</option>
+            <option value="napali">🌿 Na Pali 1998</option>
+            <option value="ue5">🌌 UE5 Nanite</option>
+            <option value="retro">📟 1998 Retro</option>
+            <option value="skaarj">🛸 Skaarj Orbital</option>
+          </select>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="btn-gh" title="Official GitHub Repository">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <div class="badge-audit">
+          <span class="badge-audit-dot"></span>
+          <span>AUDIT: 96.25 / 100</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       DOCS HERO
+       ========================================================================== -->
+  <section class="hero" style="padding-bottom: 3rem;">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badges-strip">
+          <span class="badge badge-gold">📖 25+ MASTER SPECIFICATIONS</span>
+          <span class="badge badge-cyan">🔗 FULL LOCAL & WEB CITING</span>
+          <span class="badge badge-purple">📜 RFC-STYLE UAH STANDARD v1.0.0</span>
+        </div>
+
+        <h1 class="hero-title">Documentation & Citation Compendium</h1>
+        <p class="hero-lead">
+          Explore our complete architectural repository index, UnrealScript references, UCC compiler guides, and authoritative local and external citations.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE SEARCH & FILTER BAR
+       ========================================================================== -->
+  <section class="section" style="padding-top: 0; padding-bottom: 2rem;">
+    <div class="container">
+      <div class="interactive-box" style="margin: 0 0 2rem 0; padding: 1.5rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <input type="text" id="docsSearchInput" placeholder="🔍 Search documentation, guides, citations, and specifications..." style="flex-grow: 1; background: #090d16; border: 1px solid var(--border-gold); color: #fff; padding: 0.8rem 1.25rem; border-radius: 8px; font-family: var(--font-body); font-size: 1rem;">
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+          <button class="tab-btn docs-tag-btn active" data-tag="all">All Documents</button>
+          <button class="tab-btn docs-tag-btn" data-tag="architecture">Architecture</button>
+          <button class="tab-btn docs-tag-btn" data-tag="unrealscript">UnrealScript</button>
+          <button class="tab-btn docs-tag-btn" data-tag="mods">Mod Support</button>
+          <button class="tab-btn docs-tag-btn" data-tag="ai">AI & LLMs</button>
+          <button class="tab-btn docs-tag-btn" data-tag="citation">Citations & Web</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       LOCAL REPOSITORY DOCUMENTATION INDEX
+       ========================================================================== -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <h2 style="margin-bottom: 1.5rem; color: #fff;">📚 Core Specifications & Guides</h2>
+
+      <div class="card-grid-2">
+        <div class="doc-entry-card feature-card" data-tags="architecture standard">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>UAH Standard Specification (v1.0.0)</h3>
+            <span class="badge badge-gold">RFC Standard</span>
+          </div>
+          <p>Formal architectural specification defining the open Unreal Agent Harness standard, IPC protocols, and CSG syntax rules.</p>
+          <div class="citation-meta">Local Reference: <code>docs/UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="architecture audit">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>Comprehensive Software Application Audit</h3>
+            <span class="badge badge-cyan">Score: 96.25/100</span>
+          </div>
+          <p>World-class engineering audit evaluating Win32 IPC, procedural geometry, bot pathing, concurrency, and security.</p>
+          <div class="citation-meta">Local Reference: <code>docs/07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="architecture u1-u5 timeline">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>Unreal Engine U1 to U5 Master Knowledgebase</h3>
+            <span class="badge badge-purple">Continuum</span>
+          </div>
+          <p>The definitive compendium covering CSG BSP algorithms, static mesh pipelines, Karma/Chaos physics, and bot lattices from UE1 to UE5.</p>
+          <div class="citation-meta">Local Reference: <code>docs/UNREAL_ENGINE_U1_TO_U5_MASTER_TUTORIAL_KNOWLEDGEBASE.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="unrealscript compiler tools">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>UnrealScript Language Reference & Compilation</h3>
+            <span class="badge badge-gold">UnrealScript</span>
+          </div>
+          <p>Complete syntax guide, state machine definitions, replication rules, and automated UCC make / batchexport scripts.</p>
+          <div class="citation-meta">Local Reference: <code>docs/02_UNREALSCRIPT_LANGUAGE_REFERENCE.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="mods total conversion registry">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>Game Mods & Total Conversions Architecture Guide</h3>
+            <span class="badge badge-cyan">Mod Architecture</span>
+          </div>
+          <p>Complete guide for registering custom game mods, total conversions, custom INI isolation, and weapon packages in UAH.</p>
+          <div class="citation-meta">Local Reference: <code>docs/GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="level design world class architecture">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>World-Class Unreal Level Design Guide</h3>
+            <span class="badge badge-purple">Level Design</span>
+          </div>
+          <p>Master guidelines for CSG brush construction, sightline breaks, weapon placement hierarchies, and 8-bit HSV radiosity rigs.</p>
+          <div class="citation-meta">Local Reference: <code>docs/WORLD_CLASS_UNREAL_LEVEL_DESIGN_GUIDE.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="ai llm benchmark">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>Top 20 LLM Setup & Evaluation Guide</h3>
+            <span class="badge badge-gold">AI Matrix</span>
+          </div>
+          <p>Granular ranking and setup guide for Gemini 2.5 Flash/Pro, Claude 3.7 Sonnet, GPT-4o, DeepSeek, and local Ollama Qwen 2.5.</p>
+          <div class="citation-meta">Local Reference: <code>docs/LLM_PROVIDER_SETUP.md</code></div>
+        </div>
+
+        <div class="doc-entry-card feature-card" data-tags="market intelligence competition">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>Market Landscape & Competitive Intelligence Audit</h3>
+            <span class="badge badge-cyan">Market Analysis</span>
+          </div>
+          <p>Benchmarking UAH against the global game engine AI ecosystem, Promethean AI, Ultimate Engine CoPilot, and MCP agents.</p>
+          <div class="citation-meta">Local Reference: <code>docs/MARKET_LANDSCAPE_AND_COMPETITIVE_ANALYSIS.md</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       AUTHORITATIVE WEB & ACADEMIC CITATIONS
+       ========================================================================== -->
+  <section class="section" id="citations" style="background: rgba(16, 22, 38, 0.4); border-top: 1px solid var(--border-subtle);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🌐 External Bibliography</span>
+        <h2 class="section-title">Authoritative Local & Web Citations</h2>
+        <p class="section-subtitle">
+          Acknowledging foundational academic papers, official Epic Games archives, open-source community patches, and web standards.
+        </p>
+      </div>
+
+      <div class="citation-card" data-tags="citation epic sweeney web">
+        <div class="citation-info">
+          <div class="citation-title">Epic Games / Tim Sweeney (1998) — "Unreal Engine Architecture & UnrealScript Technical Overview"</div>
+          <div class="citation-meta">Foundational whitepaper establishing the UObject mark-and-sweep GC, bytecode VM, and CSG BSP rendering pipeline.</div>
+        </div>
+        <span class="badge badge-gold">Epic Games ↗</span>
+      </div>
+
+      <div class="citation-card" data-tags="citation oldunreal patch web">
+        <div class="citation-info">
+          <div class="citation-title">OldUnreal Community Project (2020–2026) — "Unreal Tournament v469 Maintenance Release Series"</div>
+          <div class="citation-meta">Official community maintenance patch providing 64-bit MSVC binaries, Vulkan/D3D11/D3D9 renderers, and modern OS stability.</div>
+        </div>
+        <span class="badge badge-cyan">OldUnreal.org ↗</span>
+      </div>
+
+      <div class="citation-card" data-tags="citation beyondunreal liandri web">
+        <div class="citation-info">
+          <div class="citation-title">BeyondUnreal & Liandri Archives — "Unreal Tournament Game Mechanics, Weapon Physics & Entity Specifications"</div>
+          <div class="citation-meta">Authoritative community compendium documenting ReachSpec pathing calculations, jump pad physics, and weapon balance.</div>
+        </div>
+        <span class="badge badge-purple">BeyondUnreal ↗</span>
+      </div>
+
+      <div class="citation-card" data-tags="citation mcp anthropic web">
+        <div class="citation-info">
+          <div class="citation-title">Anthropic (2024–2026) — "Model Context Protocol (MCP) Open Specification"</div>
+          <div class="citation-meta">Open standard for connecting AI models to local developmental environments, tools, and IDE contexts.</div>
+        </div>
+        <span class="badge">ModelContextProtocol.io ↗</span>
+      </div>
+
+      <div class="citation-card" data-tags="citation python win32 web">
+        <div class="citation-info">
+          <div class="citation-title">Python Software Foundation & pywin32 — "Win32 API Native Integration & IPC Messaging Standards"</div>
+          <div class="citation-meta">Technical documentation for Windows user32/kernel32 message loops, SendMessage synchronization, and memory mapping.</div>
+        </div>
+        <span class="badge">Python.org ↗</span>
+      </div>
+
+      <div class="citation-card" data-tags="citation github open source repo web">
+        <div class="citation-info">
+          <div class="citation-title">GitHub Repository — Kirk LaSalle / "Unreal Agent Harness (UAH) Official Open Source Standard"</div>
+          <div class="citation-meta">Official repository containing source code, test harnesses, documentation, community discussions, issue tracking, and release distributions.</div>
+        </div>
+        <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="text-decoration: none;">github.com/kirklasalle/unrealagentharness ↗</a>
+      </div>
+
+      <div class="citation-card" data-tags="citation w3c web">
+        <div class="citation-info">
+          <div class="citation-title">World Wide Web Consortium (W3C) — "Web Content Accessibility Guidelines (WCAG 2.1) & HTML5 Specification"</div>
+          <div class="citation-meta">International standards for responsive, accessible, high-contrast, and performant web architecture.</div>
+        </div>
+        <span class="badge">W3.org ↗</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="images/uah_seal_circular.jpg" alt="UAH Official Seal" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-primary);">
+            <span style="font-family: var(--font-cyber); font-weight: 800; font-size: 1.1rem; color: #fff;">UNREAL AGENT HARNESS</span>
+          </div>
+          <p>The official standard and open reference architecture for multi-engine autonomous world design and editor automation (UE1 through UE5).</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Overview & Portal</a></li>
+            <li><a href="timeline.html" class="footer-link">28-Year Timeline</a></li>
+            <li><a href="mods.html" class="footer-link">Mod Support</a></li>
+            <li><a href="architecture.html" class="footer-link">5-Tier Architecture</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">GitHub & Community</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/discussions" target="_blank" rel="noopener" class="footer-link">Discussions & Q&A ↗</a></li>
+            <li><a href="https://github.com/kirklasalle/unrealagentharness/issues" target="_blank" rel="noopener" class="footer-link">Issue Tracker ↗</a></li>
+            <li><a href="docs.html" class="footer-link">Master Documentation</a></li>
+            <li><a href="covenant.html" class="footer-link">Sacred Covenant (10 Laws)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Author & Authority</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Created & Maintained by<br>
+            <strong style="color: var(--gold-light);">Kirk LaSalle & Antigravity AI Engineering</strong>.
+          </p>
+          <a href="https://github.com/kirklasalle/unrealagentharness" target="_blank" rel="noopener" class="badge badge-gold" style="font-size: 0.8rem; text-decoration: none;">
+            ⭐ github.com/kirklasalle/unrealagentharness
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Kirk LaSalle & The Unreal Tournament / Unreal Engine Community.</div>
+        <button id="backToTopBtn" style="background: rgba(245,166,35,0.15); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: var(--font-tech); font-weight: 700; opacity: 0; pointer-events: none; transition: all 0.3s;">▲ BACK TO TOP</button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -2,6 +2,42 @@
 
 All notable changes, architectural enhancements, and procedural world-building procedures are documented in this file.
 
+## [v3.1.0] - 2026-08-25: Public Launch Elevation — Luxury Multi-Theme Web Suite (5 Unreal Eras), 28-Year Unreal Continuum, Universal Community Mod Support & Agentic Sacred Covenant
+
+### 🌐 World-Class Standalone Public Web Suite (`public_html/`)
+- **7-Page Zero-Dependency Public Platform**:
+  - `index.html`: Portal with hero crest, certified 96.25/100 health badge, GitHub integration, and interactive CSG procedural room generator.
+  - `timeline.html`: Interactive 28-year timeline celebrating the Unreal Continuum (1998 to 2026+).
+  - `mods.html`: Universal modding and total conversion showcase celebrating community creators.
+  - `architecture.html`: 5-tier architecture, IPC communication, and Win32 automation guide.
+  - `academy.html`: Unreal Academy trick player, 3D illusions, and classic level deconstructions.
+  - `docs.html`: Live searchable documentation library with interactive tag filtering and citations.
+  - `covenant.html`: The complete Agentic Sacred Covenant and Kirk LaSalle's 10 Laws of AI Supremacy.
+
+### 🎨 Live Multi-Theme Switcher (5 Historical Unreal Eras)
+- Integrated 1-click real-time CSS variable morphing across 5 selectable aesthetics:
+  - 🏆 **Liandri Tournament Gold** (Default: Deep Obsidian Void `#06080d`, Liandri Gold `#f5a623`, Plasma Cyan `#00d4ff`).
+  - 🌿 **Na Pali Mystic Sanctuary** (1998 Unreal Emerald `#10b981`, Ancient Stone Slate, and Temple Moss Gold `#d4af37`).
+  - 🌌 **UE5 Nanite & Lumen Frontier** (Monochromatic Titanium White `#ffffff`, Pure Bloom, and Jet Black Matte `#000000`).
+  - 📟 **1998 UnrealEd Retro Terminal** (Phosphor Amber `#eab308`, Terminal Green `#84cc16`, and 3Dfx Glide CRT ambiance).
+  - 🛸 **Deep Space Skaarj Orbital** (Cosmic Deep Navy `#04060e`, Tactical Alert Crimson `#ef4444`, and Cobalt Thrusters `#3b82f6`).
+- **Adaptive Vector Constellation Canvas (`#cyberCanvas`)**: Real-time 60fps ReachSpec lattice simulation adapting particle and line colors to the active theme.
+- **Dynamic Cursor Spotlight Tracking**: Cards calculate `--mouse-x` and `--mouse-y` for a clean ambient bloom.
+- **1-Click Clipboard Code Copying**: Added copy buttons with animated checkmark feedback.
+
+### 🎮 Universal Community Mod Support
+- Universal total conversion architecture supporting *ChaosUT*, *Tactical Ops*, *Infiltration*, *Monster Hunt*, *Jailbreak*, *Rocket Arena*.
+- Added `docs/GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md` detailing dynamic mod registration and programmatic `ConfigManager` APIs.
+
+### 📜 Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy
+- Codified `AGENTIC_SACRED_COVENANT.md` and `AGENTIC_PRIME_DIRECTIVE.md` in repository root.
+- Established human creative supremacy, ethical boundaries, and immutable safety tenets.
+
+### 🧪 Certified Health Score & Test Suite
+- Certified **96.25 / 100 World-Class Health Score** in `docs/07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md`.
+- **106 / 106 unit tests passing (100%)** in ~5.3 seconds.
+- Fully integrated with official GitHub repository: `https://github.com/kirklasalle/unrealagentharness`.
+
 ## [v2.16.2] - 2026-08-24: UT2004 FPathBuilder AIController Crash Resolution, LevelInfo Root Actor Integration, Async PostMessage Command Dispatch, and Complete Nav Lattice Densification
 
 ### 🛡️ Critical Bugfix: UT2004 `FPathBuilder::buildPaths` AIController Crash Resolution

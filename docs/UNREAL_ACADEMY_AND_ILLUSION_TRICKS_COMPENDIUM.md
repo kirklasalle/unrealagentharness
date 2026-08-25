@@ -1,9 +1,10 @@
 # Unreal Academy & Illusion Tricks Compendium
 ## Autonomous Research, 3D Optical Illusions, FX Secrets & Classic Map Deconstructions
 
-**Author:** Kirk LaSalle & Antigravity AI Architect  
-**Curriculum Version:** UAH Academy v1.0  
-**Scope:** Unreal Engine 1 (1998 / UT99), Unreal Engine 2 / 2.5 (UT2003 / UT2004), Unreal Engine 5  
+**Author & Lead Architect:** Kirk LaSalle & Antigravity AI Engineering  
+**Curriculum Version:** UAH Academy v3.1  
+**Official Repository:** https://github.com/kirklasalle/unrealagentharness  
+**Scope:** Unreal 1 (1998 Namesake / UE1), UT99 GOTY (UE1 / 469e), Universal Mods, Unreal Engine 2 / 2.5 (UT2003 / UT2004), Unreal Engine 5.x  
 
 ---
 

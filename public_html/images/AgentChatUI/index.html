@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UnrealEd 3.0 AI Agent Cockpit</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">⚡</div>
+        <div class="brand-info">
+          <h1>UnrealEd 3.0 Agent</h1>
+          <span class="subtext">UT2004 Level Architect & Modding Cockpit</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="editor-status" class="status-badge disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">Scanning for UnrealEd...</span>
+        </div>
+        <button id="btn-toggle-settings" class="btn btn-secondary btn-icon">
+          ⚙️ Settings
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="main-layout">
+      <!-- Chat & Command Workspace (Left) -->
+      <main class="chat-workspace">
+        <div id="chat-stream" class="chat-stream">
+          <!-- Welcome Message -->
+          <div class="message system-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <h3>UnrealEd 3.0 Autonomous Agent Connected</h3>
+              <p>I am ready to assist with level architecture, CSG room construction, PathNode grid generation, lighting calculation, and UnrealScript synthesis.</p>
+              <div class="quick-prompts">
+                <button class="chip" onclick="quickPrompt('Create a 2048x2048 subtractive arena with metal textures and a central light.')">🏗️ Build 2048 Arena</button>
+                <button class="chip" onclick="quickPrompt('Add 4 PlayerStarts and a Shock Rifle in the center.')">🎯 Place Spawns & Weapons</button>
+                <button class="chip" onclick="quickPrompt('Rebuild geometry, lighting, and calculate path network.')">⚡ Full Rebuild & Paths</button>
+                <button class="chip" onclick="quickPrompt('Check the map for errors and orphaned nodes.')">🔍 Diagnostic Map Check</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-container">
+          <div class="quick-actions-bar">
+            <button class="btn-micro" onclick="executeDirect('MAP NEW')">📐 Initialize Viewports</button>
+            <button class="btn-micro" onclick="executeDirect('GEOMETRY REBUILD')">Rebuild BSP</button>
+            <button class="btn-micro" onclick="executeDirect('LIGHT APPLY')">Apply Lighting</button>
+            <button class="btn-micro" onclick="executeDirect('PATHS BUILD')">Build Paths</button>
+            <button class="btn-micro" onclick="executeDirect('MAP CHECK')">Check Map</button>
+            <button class="btn-micro btn-accent-micro" onclick="quickPlaytest()">▶ Test in UT2004</button>
+          </div>
+          <form id="chat-form" class="chat-input-row">
+            <textarea id="chat-input" placeholder="Instruct the agent (e.g. 'Carve a 1024x1024 room with 2 lights and rebuild paths')..." rows="1"></textarea>
+            <button type="submit" id="btn-send" class="btn btn-primary">Send</button>
+          </form>
+        </div>
+      </main>
+
+      <!-- Sidebar / Diagnostics Drawer (Right) -->
+      <aside id="sidebar-drawer" class="sidebar-drawer">
+        <!-- Tab Controls -->
+        <div class="sidebar-tabs">
+          <button id="tab-settings-btn" class="tab-btn active" onclick="switchTab('settings')">⚙️ Provider & LLM</button>
+          <button id="tab-logs-btn" class="tab-btn" onclick="switchTab('logs')">📜 Engine Log</button>
+          <button id="tab-health-btn" class="tab-btn" onclick="switchTab('health')">📊 Map Health</button>
+        </div>
+
+        <!-- TAB: SETTINGS & LLM CONFIG -->
+        <div id="tab-settings" class="tab-content active">
+          <div class="settings-card">
+            <h3>LLM Provider Profile</h3>
+            <div class="form-group">
+              <label>Active Profile</label>
+              <select id="setting-profile" onchange="loadSelectedProfile()">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Provider Type</label>
+              <select id="setting-provider" onchange="onProviderChange()">
+                <option value="google">Google Gemini (Cloud)</option>
+                <option value="openai">OpenAI Native (Cloud)</option>
+                <option value="anthropic">Anthropic Claude (Cloud)</option>
+                <option value="ollama">Ollama (Local Offline)</option>
+                <option value="lmstudio">LM Studio (Local Offline)</option>
+                <option value="groq">Groq (High-Speed Cloud)</option>
+                <option value="deepseek">DeepSeek (Cloud)</option>
+                <option value="openrouter">OpenRouter (Gateway)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Base API URL</label>
+              <input type="text" id="setting-base-url" placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="form-group">
+              <label>API Key</label>
+              <div class="password-wrapper">
+                <input type="password" id="setting-api-key" placeholder="Enter API Key or leave empty for Env Var">
+                <button type="button" class="btn-toggle-eye" onclick="toggleApiKeyVisibility()">👁</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="label-row">
+                <label>Model ID</label>
+                <button type="button" class="btn-link" onclick="fetchProviderModels()">⟳ Fetch Models</button>
+              </div>
+              <input type="text" id="setting-model" placeholder="e.g. gemini-2.5-pro or gpt-4o">
+            </div>
+            <div class="form-group">
+              <div class="label-row">
+                <label>Temperature</label>
+                <span id="temp-val">0.2</span>
+              </div>
+              <input type="range" id="setting-temp" min="0.0" max="1.0" step="0.05" value="0.2" oninput="document.getElementById('temp-val').innerText = this.value">
+            </div>
+
+            <!-- Capabilities Checkboxes -->
+            <div class="checkbox-group">
+              <label><input type="checkbox" id="setting-tools" checked> Enable Function / Tool Calling</label>
+              <label><input type="checkbox" id="setting-vision" checked> Enable Viewport Vision Capture</label>
+            </div>
+
+            <!-- Connection Test Section -->
+            <div class="connection-test-box">
+              <button type="button" id="btn-test-connection" class="btn btn-warning" onclick="testConnection()">
+                ⚡ TEST CONNECTION
+              </button>
+              <div id="test-result-badge" class="test-badge idle">
+                Status: Not Tested
+              </div>
+              <div id="test-steps-breakdown" class="test-steps-breakdown" style="display: none;">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ENGINE LOG STREAM -->
+        <div id="tab-logs" class="tab-content">
+          <div class="logs-header">
+            <span>Live Editor.log Stream</span>
+            <button class="btn-micro" onclick="clearLogConsole()">Clear</button>
+          </div>
+          <pre id="log-console" class="log-console"></pre>
+        </div>
+
+        <!-- TAB: MAP HEALTH -->
+        <div id="tab-health" class="tab-content">
+          <div class="health-card">
+            <h3>Map Diagnostic Metrics</h3>
+            <div class="metric-row">
+              <span>UnrealEd Process</span>
+              <strong id="metric-pid">Offline</strong>
+            </div>
+            <div class="metric-row">
+              <span>Bridge Server</span>
+              <strong class="text-success">127.0.0.1:9090</strong>
+            </div>
+            <div class="metric-row">
+              <span>WebSocket Bus</span>
+              <strong class="text-success">Port 9091 (Active)</strong>
+            </div>
+            <div class="metric-row">
+              <span>Active LLM Profile</span>
+              <strong id="metric-profile">Google Gemini</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

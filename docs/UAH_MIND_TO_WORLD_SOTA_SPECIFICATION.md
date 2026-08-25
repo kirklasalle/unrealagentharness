@@ -1,10 +1,11 @@
 # UAH Mind-to-World: The SOTA Neuro-Symbolic Level Architect Specification
 ## "Connecting the Human Mind to the Visual Interactive"
 
-**Author:** Kirk LaSalle & Antigravity AI Architect  
-**Standard:** UAH-MindBridge v2.0  
+**Author & Lead Architect:** Kirk LaSalle & Antigravity AI Engineering  
+**Standard:** UAH-MindBridge v3.1  
 **Status:** Certified Reference Standard  
-**Target Engines:** Unreal Engine 1 (UT99/UTron), Unreal Engine 2/2.5 (UT2004), Unreal Engine 5.x  
+**Official Repository:** https://github.com/kirklasalle/unrealagentharness  
+**Target Engines:** Unreal 1 (1998 Namesake / UE1), Unreal Tournament 99 GOTY (UE1 / 469e), Universal Mods (ChaosUT, Tactical Ops, Infiltration, Monster Hunt, Jailbreak), Unreal Engine 2/2.5 (UT2004), Unreal Engine 5.x  
 
 ---
 
@@ -47,7 +48,7 @@ The **75% Budget Law** mathematically bounds the procedural compiler:
 
 $$\text{Target Complexity} = 0.75 \times \text{Engine Limit}$$
 
-| Metric | UE1 Limit (UT99 / UTron) | UAH 75% Target (UE1) | UE2.5 Limit (UT2004) | UAH 75% Target (UE2.5) |
+| Metric | UE1 Limit (Unreal / UT99 / Mods) | UAH 75% Target (UE1) | UE2.5 Limit (UT2004) | UAH 75% Target (UE2.5) |
 | :--- | :---: | :---: | :---: | :---: |
 | **Visible Node Count** | 65,536 Nodes | **49,152 Nodes** | 131,072 Nodes | **98,304 Nodes** |
 | **Active Brushes per Room** | ~120 Brushes | **90 Brushes** | ~400 Brushes | **300 Brushes** |

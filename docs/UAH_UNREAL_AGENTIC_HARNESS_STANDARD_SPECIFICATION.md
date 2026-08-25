@@ -4,6 +4,10 @@
 **Author:** Kirk LaSalle & Antigravity AI Systems  
 **Repository:** [kirklasalle/unrealagentharness](https://github.com/kirklasalle/unrealagentharness)  
 
+<p align="center">
+  <img src="../assets/uah_stamp_rectangular.jpg" alt="UAH Certified Standard Compliance Plaque" width="100%">
+</p>
+
 ---
 
 ## Abstract

@@ -1,9 +1,10 @@
 # UAH Unreal Architect Wizard Builder Guide
 ## Dual-Mode Procedural Level & Campaign Synthesizer
 
-**Author:** Kirk LaSalle & Antigravity AI Architect  
-**Feature Version:** UAH Wizard v2.0  
-**Supported Engines:** Unreal 1 (1998), UT99 GOTY (UE1), UTron Mod, UT2003, UT2004 (UE2.5), Unreal Engine 5  
+**Author & Lead Architect:** Kirk LaSalle & Antigravity AI Engineering  
+**Feature Version:** UAH Wizard v3.1  
+**Official Repository:** https://github.com/kirklasalle/unrealagentharness  
+**Supported Engines:** Unreal 1 (1998 Namesake / UE1), UT99 GOTY (UE1), Universal Community Mods, UT2003, UT2004 (UE2.5), Unreal Engine 5.x  
 
 ---
 
