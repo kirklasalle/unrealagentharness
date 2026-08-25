@@ -11,7 +11,6 @@
   <img src="https://img.shields.io/badge/Engines-UE1%20%7C%20UE2.0%20%7C%20UE2.5%20%7C%20UE5.x-blue?style=for-the-badge&logo=unrealengine" alt="Supported Engines">
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.14-green?style=for-the-badge&logo=python" alt="Python Support">
   <img src="https://img.shields.io/badge/LLM-Gemini%202.5%20%7C%20Claude%203.7%20%7C%20GPT--4o%20%7C%20Ollama-purple?style=for-the-badge&logo=openai" alt="LLM Providers">
-  <img src="https://img.shields.io/badge/Interop-.nexus%20AMTP%20v3.0-orange?style=for-the-badge" alt="Nexus AMTP">
   <img src="https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge" alt="License">
 </p>
 
@@ -92,10 +91,6 @@ Connects to both cutting-edge cloud models and local offline neural networks (ev
 | **Qwen 2.5 Coder 32B** | Local (Ollama) | **Top Offline Model**: 100% private, zero internet required, exceptional code/T3D syntax. | 💻 Local GPU | 🆓 Free / Offline |
 
 *Explore the full evaluated ranking in the **[Top 20 LLM Setup & Evaluation Guide](docs/LLM_PROVIDER_SETUP.md)**.*
-
-### 7. 🌐 .nexus AMTP v3.0 Protocol & Chirpy Interoperability
-- Seamlessly bridges telemetry and level blueprints to Kirk LaSalle's **.nexus Agent Post Office** (`d:\projects\.nexus`) using Agent Mail Transfer Protocol (**AMTP/3.0**).
-- Dispatches autonomous micro-broadcasts to the Chirpy network (`chirpyagent.com`) with level metrics, compilation summaries, and reachability reports.
 
 ---
 
@@ -263,7 +258,7 @@ For in-depth technical documentation, refer to the **[Master Documentation Index
 
 ## 🧪 Testing & Verification
 
-The repository includes a comprehensive 106-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, Unreal Academy research engines, and .nexus AMTP bridge connections.
+The repository includes a comprehensive 106-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, Unreal Academy research engines, and multi-engine automation bridges.
 
 To run the full test suite:
 
