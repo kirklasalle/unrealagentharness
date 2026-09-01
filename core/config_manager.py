@@ -240,29 +240,81 @@ class ConfigManager:
             self.apply_scan_results(discovered)
         return discovered
 
+    def quick_engine_inventory(self) -> Dict[str, Dict[str, Any]]:
+        """Returns fast configured/common-path inventory without deep scanning."""
+        from .engine_scanner import EngineScanner
+        return EngineScanner.quick_inventory(self.get_all_engine_profiles())
+
+    def verify_engine_profile(self, engine_id: str) -> Dict[str, Any]:
+        """Verifies a single engine profile and persists its status."""
+        from .engine_scanner import EngineScanner
+        profile = self.engine_data.get("profiles", {}).get(engine_id, {})
+        result = EngineScanner.verify_profile(profile)
+        result["initialized"] = True
+        result["summary"] = (
+            f"Verified: {profile.get('editor_exe', 'Editor')} ready in {profile.get('system_dir', '')}"
+            if result["verified"] else
+            f"Not verified: check {profile.get('system_dir', '')}"
+        )
+        if engine_id in self.engine_data.get("profiles", {}):
+            self.engine_data["profiles"][engine_id]["status"] = result
+            self._save_json(self.engine_file, self.engine_data)
+        return result
+
     # -------------------------------------------------------------------------
     # LLM PROFILE ACCESSORS
     # -------------------------------------------------------------------------
     def get_active_llm_profile_id(self) -> str:
-        return self.llm_data.get("active_profile", "google-gemini")
+        configured = self.llm_data.get("active_profile")
+        profiles = self.llm_data.get("profiles", {})
+        if configured in profiles:
+            return configured
+        # Keep older configuration files usable after profile renames.
+        for fallback in ("google-gemini-flash", "google-gemini", "ollama-local"):
+            if fallback in profiles:
+                return fallback
+        return next(iter(profiles), "")
 
     def set_active_llm_profile_id(self, profile_id: str) -> bool:
-        if profile_id in self.llm_data.get("profiles", {}):
-            self.llm_data["active_profile"] = profile_id
-            self._save_json(self.llm_file, self.llm_data)
-            logger.info(f"Active LLM Profile switched to: '{profile_id}'")
-            return True
-        return False
+        if "profiles" not in self.llm_data:
+            self.llm_data["profiles"] = {}
+        self.llm_data["active_profile"] = profile_id
+        self._save_json(self.llm_file, self.llm_data)
+        logger.info(f"Active LLM Profile switched to: '{profile_id}'")
+        return True
 
     def get_active_llm_profile(self) -> Dict[str, Any]:
         profile_id = self.get_active_llm_profile_id()
         return self.llm_data.get("profiles", {}).get(profile_id, {})
 
     def update_llm_profile(self, profile_id: str, updates: Dict[str, Any]) -> bool:
-        if profile_id in self.llm_data.get("profiles", {}):
-            self.llm_data["profiles"][profile_id].update(updates)
-            return self._save_json(self.llm_file, self.llm_data)
-        return False
+        if "profiles" not in self.llm_data:
+            self.llm_data["profiles"] = {}
+        if profile_id not in self.llm_data["profiles"]:
+            self.llm_data["profiles"][profile_id] = {
+                "name": profile_id,
+                "provider": profile_id,
+                "base_url": "",
+                "api_key": "",
+                "model": "",
+                "temperature": 0.2,
+                "max_tokens": 8192,
+                "enable_tools": True,
+                "enable_vision": True,
+            }
+        self.llm_data["profiles"][profile_id].update(updates)
+        return self._save_json(self.llm_file, self.llm_data)
+
+    def get_llm_capabilities(self, profile_id: Optional[str] = None) -> Dict[str, Any]:
+        """Returns declared provider capabilities for UI and adapter routing."""
+        profile = self.llm_data.get("profiles", {}).get(profile_id or self.get_active_llm_profile_id(), {})
+        return {
+            "provider": profile.get("provider", "unknown"),
+            "model": profile.get("model", ""),
+            "tool_calling": bool(profile.get("enable_tools", False)),
+            "vision": bool(profile.get("enable_vision", False)),
+            "configured": bool(profile.get("api_key") or profile.get("provider") in {"ollama", "lmstudio"}),
+        }
 
     def get_all_llm_profiles(self) -> Dict[str, Any]:
         return self.llm_data.get("profiles", {})

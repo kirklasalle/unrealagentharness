@@ -281,6 +281,16 @@ class WizardBuilderDialog(tk.Toplevel):
                             include_secret_crypt=self.var_crypt.get(),
                             detail_level="ultra",
                         )
+                    elif "UT99" in arch and "Verdant" in preset:
+                        # Keep the named Valley Fortress preset on its
+                        # dedicated world compiler.  Routing it through the
+                        # generic mind synthesizer loses the reference image's
+                        # authored mountain/fortress topology.
+                        from core.formula_engine import FormulaEngine
+                        cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(
+                            system_dir=self.controller.system_dir,
+                            detail_level="ultra",
+                        )
                     else:
                         from core.mind_synthesizer import MindSynthesizer
                         cmds = MindSynthesizer.synthesize_level_from_mind(

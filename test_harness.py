@@ -450,6 +450,71 @@ class TestEngineController(unittest.TestCase):
         result = self.ctrl.is_connected()
         self.assertIsInstance(result, bool)
 
+    def test_validate_generated_map_actor_manifest(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            actor_file = Path(tmp) / "Actors.t3d"
+            actor_file.write_text(
+                "Begin Map\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartA\n"
+                "    Location=(X=0.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartB\n"
+                "    Location=(X=512.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\nEnd Map\n",
+                encoding="utf-8",
+            )
+            report = self.ctrl.validate_generated_map(actor_file)
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["checks"]["actors"]["player_start_count"], 2)
+
+    def test_execute_batch_staged_stops_on_failure(self):
+        original = self.ctrl.execute_command
+        try:
+            self.ctrl.execute_command = lambda command: {"success": command != "FAIL"}
+            report = self.ctrl.execute_batch_staged(["MAP NEW", "FAIL", "FLUSH"])
+            self.assertFalse(report["ok"])
+            self.assertEqual(report["stage"], "world")
+            self.assertEqual(len(report["results"]), 2)
+        finally:
+            self.ctrl.execute_command = original
+
+    def test_validate_t3d_actor_manifest(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            actor_file = Path(tmp) / "Actors.t3d"
+            actor_file.write_text(
+                "Begin Map\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartA\n"
+                "    Location=(X=0.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartB\n"
+                "    Location=(X=512.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\nEnd Map\n",
+                encoding="utf-8",
+            )
+            result = self.ctrl.validate_generated_map(actor_file)
+            self.assertTrue(result["ok"])
+            self.assertEqual(result["checks"]["actors"]["player_start_count"], 2)
+
+    def test_validate_t3d_actor_manifest_rejects_close_starts(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            actor_file = Path(tmp) / "Actors.t3d"
+            actor_file.write_text(
+                "Begin Map\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartA\n"
+                "    Location=(X=0.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\n"
+                "Begin Actor Class=Engine.PlayerStart Name=StartB\n"
+                "    Location=(X=32.000000,Y=0.000000,Z=50.000000)\n"
+                "End Actor\nEnd Map\n",
+                encoding="utf-8",
+            )
+            result = self.ctrl.validate_generated_map(actor_file)
+            self.assertFalse(result["ok"])
+            self.assertTrue(result["checks"]["actors"]["warnings"])
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # PHASE 2: Bot Pathing & Multimodal Vision Tests
@@ -577,12 +642,50 @@ class TestVisionInspector(unittest.TestCase):
         vi = VisionInspector()
         self.assertTrue(vi.screenshots_dir.exists())
 
+    def test_viewport_quality_detects_red_upper_surface(self):
+        from PIL import Image
+        vi = VisionInspector()
+        image = Image.new("RGB", (20, 20), (20, 20, 20))
+        for y in range(8):
+            for x in range(20):
+                image.putpixel((x, y), (180, 20, 20))
+        report = vi.analyze_viewport_quality(image)
+        self.assertFalse(report["ok"])
+        self.assertIn("opaque_or_red_upper_surface", report["findings"])
+
+    def test_reference_graph_contains_edge_profile(self):
+        import tempfile
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as tmp:
+            image_path = Path(tmp) / "valley.png"
+            Image.new("RGB", (24, 16), (80, 100, 120)).save(image_path)
+            graph = VisionInspector().reference_analyzer.build_scene_graph(image_path)
+            self.assertEqual(len(graph["source"]["edge_column_profile"]), 12)
+            self.assertIn("clean_edge_density", graph["source"])
+
     def test_viewport_quadrants_defined(self):
         from core.vision_inspector import VIEWPORT_QUADRANTS
         self.assertIn("perspective", VIEWPORT_QUADRANTS)
+        self.assertIn("dynamic_light", VIEWPORT_QUADRANTS)
         self.assertIn("top", VIEWPORT_QUADRANTS)
         self.assertIn("front", VIEWPORT_QUADRANTS)
         self.assertIn("side", VIEWPORT_QUADRANTS)
+        # Verify 3-top-1-bottom percentage structure
+        top_box = VIEWPORT_QUADRANTS["top"]
+        front_box = VIEWPORT_QUADRANTS["front"]
+        side_box = VIEWPORT_QUADRANTS["side"]
+        persp_box = VIEWPORT_QUADRANTS["perspective"]
+        self.assertAlmostEqual(top_box[0], 0.0)
+        self.assertAlmostEqual(top_box[3], 0.5)
+        self.assertAlmostEqual(front_box[3], 0.5)
+        self.assertAlmostEqual(side_box[3], 0.5)
+        self.assertAlmostEqual(persp_box[1], 0.5)
+        self.assertAlmostEqual(persp_box[2], 1.0)
+
+    def test_capture_all_viewports_methods(self):
+        vi = VisionInspector()
+        self.assertTrue(hasattr(vi, "capture_all_viewports"))
+        self.assertTrue(hasattr(vi, "capture_standard_quad_view"))
 
     def test_build_vision_context_without_window(self):
         vi = VisionInspector()
@@ -591,6 +694,7 @@ class TestVisionInspector(unittest.TestCase):
         self.assertIn("viewports", context)
         # Won't capture anything since hwnd=0 is invalid
         self.assertEqual(len(context["viewports"]), 0)
+
 
 
 class TestEngineScanner(unittest.TestCase):
@@ -788,6 +892,7 @@ class TestTargetAndPaletteSystem(unittest.TestCase):
             "ut99_utron": 1,
             "ut2004": 2,
             "ut2003": 2,
+            "ut2004_utron2004": 2,
         }
         for p_id in self.cm.get_all_engine_profiles():
             if p_id != "ue5":
@@ -957,6 +1062,78 @@ class TestFormulaEngineUltraGeometry(unittest.TestCase):
         self.assertIn("BridgeArchRib.t3d", cmd_str)
         self.assertIn("CastleButtress.t3d", cmd_str)
 
+    def test_verdant_valley_ultra_contains_world_detail_layers(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(
+                system_dir=Path(tmp), detail_level="ultra"
+            )
+            command_text = "\n".join(cmds)
+            for asset in [
+                "ValleyRockTerrace.t3d", "CastleMerlon.t3d", "CastleWindowFrame.t3d",
+                "BridgeStonePier.t3d", "RiverSurface.t3d", "WaterfallSheet.t3d",
+            ]:
+                self.assertIn(asset, command_text)
+                self.assertTrue((Path(tmp) / asset).exists())
+
+            actors = (Path(tmp) / "ValleyActors.t3d").read_text(encoding="utf-8")
+            self.assertGreaterEqual(actors.count("Class=Engine.PathNode"), 50)
+            self.assertGreaterEqual(actors.count("Name=TreeDetail"), 16)
+            self.assertGreaterEqual(actors.count("Name=FernDetail"), 8)
+            self.assertIn("CastleWindowGlowL", actors)
+            self.assertIn("RiverBounceNorth", actors)
+
+    def test_verdant_valley_runtime_safety_assets(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(system_dir=Path(tmp), detail_level="ultra")
+            command_text = "\n".join(cmds)
+            self.assertIn("ValleySkyOpening.t3d", command_text)
+            self.assertIn("CastleBattleTowerInterior.t3d", command_text)
+            self.assertIn("CastleTowerTopPlatform.t3d", command_text)
+            actors = (Path(tmp) / "ValleyActors.t3d").read_text(encoding="utf-8")
+            self.assertIn("PlayerStart3", actors)
+            self.assertIn("X=2000.000000,Y=-2000.000000,Z=-974.000000", actors)
+
+    def test_scene_graph_layout_drives_macro_coordinates(self):
+        graph = {
+            "landmarks": [
+                {"id": "river_axis", "bounds": {"left": 0.40, "top": 0.30, "right": 0.60, "bottom": 0.90}},
+                {"id": "east_fortress_mass", "bounds": {"left": 0.70, "top": 0.20, "right": 0.90, "bottom": 0.50}},
+                {"id": "west_cliff_mass", "bounds": {"left": 0.00, "top": 0.20, "right": 0.30, "bottom": 0.70}},
+            ]
+        }
+        layout = FormulaEngine.valley_layout_from_scene_graph(graph)
+        self.assertLess(layout["west_cliff"][0], 0)
+        self.assertGreater(layout["castle"][0], 0)
+        self.assertAlmostEqual(layout["river"][0], 0, delta=1)
+
+    def test_reference_valley_blockout_consumes_scene_graph(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            graph = {"landmarks": [
+                {"id": "river_axis", "bounds": {"left": 0.45, "top": 0.30, "right": 0.55, "bottom": 0.90}},
+                {"id": "east_fortress_mass", "bounds": {"left": 0.70, "top": 0.20, "right": 0.90, "bottom": 0.50}},
+                {"id": "west_cliff_mass", "bounds": {"left": 0.00, "top": 0.20, "right": 0.30, "bottom": 0.70}},
+            ]}
+            cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(
+                system_dir=Path(tmp), detail_level="standard", scene_graph=graph
+            )
+            command_text = "\n".join(cmds)
+            self.assertIn("ValleyReferenceMacro.t3d", command_text)
+            self.assertIn("ValleyReferenceCastleMass.t3d", command_text)
+            self.assertIn("ValleyReferenceRiverChannel.t3d", command_text)
+
+    def test_verdant_valley_standard_avoids_optional_detail_brushes(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = FormulaEngine.generate_ut99_verdant_mountain_valley(
+                system_dir=Path(tmp), detail_level="standard"
+            )
+            command_text = "\n".join(cmds)
+            self.assertNotIn("ValleyRockTerrace.t3d", command_text)
+            self.assertNotIn("RiverSurface.t3d", command_text)
+
     def test_tournament_arena_ultra_vs_standard(self):
         cmds_standard = FormulaEngine.generate_ut99_tournament_arena(detail_level="standard")
         cmds_ultra = FormulaEngine.generate_ut99_tournament_arena(detail_level="ultra")
@@ -964,6 +1141,74 @@ class TestFormulaEngineUltraGeometry(unittest.TestCase):
         self.assertGreater(len(cmds_ultra), len(cmds_standard))
         self.assertGreaterEqual(len(cmds_ultra), 50)
         self.assertLessEqual(len(cmds_standard), 30)
+
+    def test_ut2004_verdant_mountain_valley_generation(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            cmds = FormulaEngine.generate_ut2004_verdant_mountain_valley(system_dir=tmp_path, detail_level="ultra")
+            self.assertIsInstance(cmds, list)
+            self.assertGreaterEqual(len(cmds), 10)
+            cmd_str = "\n".join(cmds)
+            self.assertIn("MAP NEW", cmd_str)
+            self.assertIn("AbaddonTerrain", cmd_str)
+            self.assertIn("AbaddonArchitecture", cmd_str)
+            self.assertIn("HumanoidArchitecture", cmd_str)
+            self.assertIn("PATHS DEFINE", cmd_str)
+            self.assertIn("MAP REBUILD", cmd_str)
+            self.assertIn("UT2k4_ValleyActors.t3d", cmd_str)
+            self.assertIn("CAMERA MOVETO", cmd_str)
+
+            # 1. Verify Complete Monolithic T3D Map File
+            complete_map_path = tmp_path / "UT2k4_ValleyFortress_Complete.t3d"
+            self.assertTrue(complete_map_path.exists())
+            map_content = complete_map_path.read_text(encoding="utf-8")
+            self.assertGreater(len(map_content), 100000)
+
+            # 2. Verify Builder Brush (Actors(1) - UnLevel.h Line 507) and CSG Operations in monolithic map
+            self.assertIn("Begin Actor Class=Brush Name=Brush0", map_content)
+            self.assertIn("CsgOper=CSG_Active", map_content)
+            self.assertIn("Brush=Model'Brush0_Model'", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=ValleySkybox", map_content)
+            self.assertIn("Brush=Model'ValleySkybox_Model'", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=ValleyMain", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=ValleySkyOpening", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=RiverGorge", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CastleBluffBase", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CliffSkirt", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=TerrainRamp_W", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CastleKeepBastion", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CastleGreatHall", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=TowerNW", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=TowerNW_Inner", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CitadelSpire", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=LowerStoneBridge", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=UpperDrawbridge", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=MountainLookout", map_content)
+
+            # 3. Verify FakeBackdrop flags and translucent flags in monolithic map
+            self.assertIn("Flags=4194432", map_content)
+            self.assertIn("Flags=36", map_content)
+
+            # 4. Verify Semi-Solid Decorative Brushes in monolithic map
+            self.assertIn("Begin Actor Class=Brush Name=RockTerrace_N", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CastleButtress_N", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=CastleMerlon_NW", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=BridgeStonePier", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=BridgeArchRib", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=WaterfallSheet_Upper", map_content)
+            self.assertIn("Begin Actor Class=Brush Name=RiverSurface", map_content)
+
+            # 5. Verify Gameplay Actors, Pickups, Weapons & Navigation
+            self.assertIn("XGame.xDeathMatch", map_content)
+            self.assertIn("XWeapons.ShockRiflePickup", map_content)
+            self.assertIn("XWeapons.FlakCannonPickup", map_content)
+            self.assertIn("XWeapons.RocketLauncherPickup", map_content)
+            self.assertIn("XPickups.SuperShieldPack", map_content)
+            self.assertIn("XPickups.xJumpPad", map_content)
+            self.assertGreaterEqual(map_content.count("Class=Engine.PathNode"), 20)
+            self.assertGreaterEqual(map_content.count("Class=Engine.PlayerStart"), 8)
+
 
 
 class TestMemoryEngine(unittest.TestCase):
@@ -986,11 +1231,12 @@ class TestMemoryEngine(unittest.TestCase):
             pass
 
     def test_database_initialization_and_seeding(self):
-        wisdom = self.memory.query_wisdom("", limit=10)
+        wisdom = self.memory.query_wisdom("", limit=50)
         self.assertGreaterEqual(len(wisdom), 5)
         titles = [w["title"] for w in wisdom]
         self.assertTrue(any("Watertight Brush" in t for t in titles))
         self.assertTrue(any("UT2004 Navigation" in t for t in titles))
+        self.assertTrue(any("UnLevel.h Actors(1)" in t for t in titles))
 
     def test_record_and_query_wisdom(self):
         ok = self.memory.record_wisdom(
@@ -1136,7 +1382,43 @@ class TestSkillGenesis(unittest.TestCase):
 
         skills = self.genesis.list_learned_skills()
         self.assertGreaterEqual(len(skills), 1)
-        self.assertEqual(skills[0]["skill_name"], "TestCathedralVault")
+        self.assertTrue(any(s["skill_name"] == "TestCathedralVault" for s in skills))
+
+    def test_seeded_standard_skills(self):
+        skills = self.genesis.list_learned_skills()
+        names = [s["skill_name"] for s in skills]
+        self.assertIn("unrealed_viewport_setup", names)
+        self.assertIn("valley_fortress_synthesis", names)
+
+    def test_record_skill_training_event(self):
+        ok = self.genesis.record_skill_training_event(
+            skill_name="unrealed_viewport_setup",
+            build_id="build_test_001",
+            success=True,
+            metrics={"alignment_verified": True},
+        )
+        self.assertTrue(ok)
+        nodes = self.memory.query_graph("build_test_001")
+        self.assertGreaterEqual(len(nodes), 1)
+
+    def test_procedural_technology_graph_nodes_seeded(self):
+        pcg_node = self.memory.query_graph("procedural:pcg_csg_stack")
+        self.assertGreaterEqual(len(pcg_node), 1)
+        math_node = self.memory.query_graph("procedural:watertight_bsp_math")
+        self.assertGreaterEqual(len(math_node), 1)
+        terrain_node = self.memory.query_graph("procedural:stepped_terrain_heightfield")
+        self.assertGreaterEqual(len(terrain_node), 1)
+        lighting_node = self.memory.query_graph("procedural:atmospheric_radiosity_lighting")
+        self.assertGreaterEqual(len(lighting_node), 1)
+
+    def test_learning_engine_procedural_curriculum(self):
+        from core.learning_engine import LearningEngine
+        le = LearningEngine(self.memory)
+        tutorials = le.get_all_entries_by_category("tutorials")
+        self.assertTrue(any("Hierarchical Procedural CSG Stack" in t["title"] for t in tutorials))
+        self.assertTrue(any("Procedural Heightfield" in t["title"] for t in tutorials))
+
+
 
 
 class TestUnrealWizardBuilder(unittest.TestCase):

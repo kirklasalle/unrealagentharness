@@ -8,11 +8,12 @@ import ctypes
 import json
 import os
 import sys
+import hashlib
 import threading
 import time
 import tkinter as tk
 from pathlib import Path
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 from typing import Any, Dict, List, Optional
 
 # Ensure repository root is in sys.path BEFORE importing core
@@ -63,6 +64,7 @@ class StandaloneHarnessCockpit(tk.Tk):
         self.configure(bg="#0b0e14")
 
         self.chat_history: List[Dict[str, str]] = []
+        self.chat_artifacts: List[Dict[str, Any]] = []
         self.is_docked = False
 
         self._build_ui()
@@ -110,15 +112,27 @@ class StandaloneHarnessCockpit(tk.Tk):
         self.status_pill = tk.Label(title_box, text="● SCANNING", font=("Segoe UI", 8, "bold"), fg="#f59e0b", bg="#1e293b", padx=8, pady=2)
         self.status_pill.pack(side=tk.LEFT, padx=4)
 
-        # Right-side Action Buttons (Launch Editor, Rebuild, Dock, Settings)
+        # Editor Launch Button (Right next to Online Status Pill)
+        self.editor_btn = tk.Button(
+            title_box,
+            text="🎮 EDITOR",
+            font=("Segoe UI", 8, "bold"),
+            bg="#10b981",
+            fg="#ffffff",
+            activebackground="#059669",
+            activeforeground="#ffffff",
+            relief=tk.FLAT,
+            padx=8,
+            pady=1,
+            command=self._launch_editor,
+        )
+        self.editor_btn.pack(side=tk.LEFT, padx=(4, 8))
+
+        # Utility controls remain in the global header. Primary authoring
+        # controls are additionally presented above the palette below.
         act_box = tk.Frame(self.hdr, bg="#111726")
         act_box.pack(side=tk.RIGHT)
 
-        tk.Button(act_box, text="🧙 WIZARD", font=("Segoe UI", 8, "bold"), bg="#8b5cf6", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_wizard_builder).pack(side=tk.LEFT, padx=3)
-        tk.Button(act_box, text="🎓 ACADEMY", font=("Segoe UI", 8, "bold"), bg="#059669", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_academy).pack(side=tk.LEFT, padx=3)
-        tk.Button(act_box, text="🔍 SCAN ENGINES", font=("Segoe UI", 8, "bold"), bg="#0284c7", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_engine_scanner).pack(side=tk.LEFT, padx=3)
-        tk.Button(act_box, text="🎮 LAUNCH EDITOR", font=("Segoe UI", 8, "bold"), bg="#10b981", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._launch_editor).pack(side=tk.LEFT, padx=3)
-        tk.Button(act_box, text="🔄 REBUILD", font=("Segoe UI", 8, "bold"), bg="#38bdf8", fg="#0f172a", relief=tk.FLAT, padx=8, pady=3, command=self._quick_rebuild).pack(side=tk.LEFT, padx=3)
         tk.Button(act_box, text="📌 DOCK", font=("Segoe UI", 8), bg="#334155", fg="#f1f5f9", relief=tk.FLAT, padx=8, pady=3, command=self._toggle_dock).pack(side=tk.LEFT, padx=3)
         self.upd_btn = tk.Button(act_box, text="🚀 UPDATES", font=("Segoe UI", 8, "bold"), bg="#475569", fg="#ffffff", relief=tk.FLAT, padx=8, pady=3, command=self._open_updater)
         self.upd_btn.pack(side=tk.LEFT, padx=3)
@@ -131,6 +145,7 @@ class StandaloneHarnessCockpit(tk.Tk):
         # Left: Quick Build Palettes
         self.palette_frame = tk.Frame(self.paned, bg="#0f172a", width=340)
         self.paned.add(self.palette_frame)
+        self._build_primary_action_rail(self.palette_frame)
         self._build_palette_ui(self.palette_frame)
 
         # Right: Chat & Agent Output
@@ -161,6 +176,7 @@ class StandaloneHarnessCockpit(tk.Tk):
             "ut99_utron": 1,
             "ut2004": 2,
             "ut2003": 2,
+            "ut2004_utron2004": 2,
         }
 
         # Tab 1: UT99 GOTY Classic
@@ -177,6 +193,22 @@ class StandaloneHarnessCockpit(tk.Tk):
         tab_ut2004 = tk.Frame(self.palette_notebook, bg="#0f172a")
         self.palette_notebook.add(tab_ut2004, text="⚔️ UT2004 Base")
         self._populate_palette_tab(tab_ut2004, get_ut2004_palette(self._send_prompt))
+
+    def _build_primary_action_rail(self, parent: tk.Frame):
+        """Adds the requested primary authoring rail above the palette."""
+        rail = tk.Frame(parent, bg="#111c32", padx=5, pady=5)
+        rail.pack(fill=tk.X)
+        for text, color, callback in [
+            ("🧙 WIZARD", "#8b5cf6", self._open_wizard_builder),
+            ("🎓 ACADEMY", "#059669", self._open_academy),
+            ("🔍 SCAN", "#0284c7", self._open_engine_scanner),
+            ("🔄 BUILD", "#38bdf8", self._quick_rebuild),
+        ]:
+            tk.Button(rail, text=text, font=("Segoe UI", 7, "bold"), bg=color,
+                      fg="#0f172a" if color == "#38bdf8" else "#ffffff",
+                      relief=tk.FLAT, padx=4, pady=3, command=callback).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2)
+        tk.Label(parent, text="PRIMARY AUTHORING CONTROLS", font=("Segoe UI", 7, "bold"),
+                 fg="#64748b", bg="#0f172a").pack(anchor=tk.W, padx=8, pady=(2, 0))
 
     def _populate_palette_tab(self, parent: tk.Frame, palette_data: List[Dict[str, Any]]):
         canvas = tk.Canvas(parent, bg="#0f172a", highlightthickness=0)
@@ -248,18 +280,24 @@ class StandaloneHarnessCockpit(tk.Tk):
             return
 
         self._append_chat("Quick Palette", f"🚀 Executing **{title}** ({len(commands)} commands)...")
-        self.status_lbl.configure(text=f"Building {title}...")
+        self._set_status(f"Building {title}...")
+
+        def _stage(stage: str, index: int, total: int, command: str):
+            self._set_status(f"{title}: {stage} ({index}/{total})")
 
         def _worker():
             try:
-                results = self.controller.execute_batch(commands)
-                success_count = sum(1 for r in results if r.get("success", True))
-                self._append_chat("AI Architect", f"✅ **{title} Built Successfully!**\nExecuted {success_count}/{len(commands)} commands in UnrealEd.")
-                self.status_lbl.configure(text="Ready.")
+                report = self.controller.execute_batch_staged(commands, stage_callback=_stage)
+                success_count = sum(1 for r in report.get("results", []) if r.get("success", True))
+                if report.get("ok"):
+                    self._append_chat("AI Architect", f"✅ **{title} Built Successfully!**\nExecuted {success_count}/{len(commands)} commands in UnrealEd.")
+                else:
+                    self._append_chat("AI Architect", f"⚠️ **{title} stopped during {report.get('stage', 'build')}.**\nExecuted {success_count}/{len(commands)} commands.")
+                self._set_status("Ready.")
             except Exception as e:
                 logger.error(f"Direct blueprint build error: {e}")
                 self._append_chat("AI Architect", f"⚠️ Error: {str(e)}")
-                self.status_lbl.configure(text="Build Error.")
+                self._set_status("Build Error.")
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -277,6 +315,37 @@ class StandaloneHarnessCockpit(tk.Tk):
         )
         self.chat_display.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
 
+        # Quick Direct Actions Bar (Integrated from legacy AgentChatUI)
+        self.quick_bar = tk.Frame(parent, bg="#0f172a", padx=4, pady=2)
+        self.quick_bar.pack(fill=tk.X, padx=4, pady=(0, 2))
+        for text, cmd_text, bg_col in [
+            ("📐 VIEWPORTS", "VIEWPORTS", "#1e293b"),
+            ("🔨 BSP REBUILD", "MAP REBUILD", "#1e293b"),
+            ("💡 LIGHT APPLY", "LIGHT APPLY", "#1e293b"),
+            ("🧭 BUILD PATHS", "PATHS DEFINE", "#1e293b"),
+            ("🔍 MAP CHECK", "MAP CHECK", "#1e293b"),
+            ("▶ PLAYTEST", "PLAYTEST", "#065f46"),
+        ]:
+            if cmd_text == "VIEWPORTS":
+                cb = self._quick_configure_viewports
+            elif cmd_text == "PLAYTEST":
+                cb = self._launch_playtest
+            else:
+                cb = lambda c=cmd_text: self._execute_direct_command(c)
+            tk.Button(
+                self.quick_bar,
+                text=text,
+                font=("Segoe UI", 7, "bold"),
+                bg=bg_col,
+                fg="#38bdf8" if bg_col == "#1e293b" else "#34d399",
+                activebackground="#334155",
+                activeforeground="#7dd3fc",
+                relief=tk.FLAT,
+                padx=4,
+                pady=2,
+                command=cb,
+            ).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=1)
+
         # Bottom Input Area
         in_frame = tk.Frame(parent, bg="#111726", pady=6, padx=6)
         in_frame.pack(fill=tk.X, padx=4, pady=(0, 4))
@@ -284,6 +353,15 @@ class StandaloneHarnessCockpit(tk.Tk):
         self.input_entry = tk.Entry(in_frame, font=("Segoe UI", 10), bg="#0f172a", fg="#f8fafc", insertbackground="#38bdf8")
         self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6), ipady=6)
         self.input_entry.bind("<Return>", lambda e: self._on_submit_input())
+
+        # Additive artifact tray: staged files are hashed and remain local.
+        self.artifact_frame = tk.Frame(parent, bg="#111726", padx=6, pady=3)
+        self.artifact_frame.pack(fill=tk.X, padx=4, pady=(0, 2))
+        tk.Button(self.artifact_frame, text="📎 FILE", font=("Segoe UI", 7, "bold"), bg="#334155", fg="#f8fafc", relief=tk.FLAT, command=self._attach_file).pack(side=tk.LEFT, padx=2)
+        tk.Button(self.artifact_frame, text="🖼 IMAGE", font=("Segoe UI", 7, "bold"), bg="#334155", fg="#f8fafc", relief=tk.FLAT, command=self._attach_image).pack(side=tk.LEFT, padx=2)
+        tk.Button(self.artifact_frame, text="CLEAR", font=("Segoe UI", 7), bg="#475569", fg="#f8fafc", relief=tk.FLAT, command=self._clear_artifacts).pack(side=tk.RIGHT, padx=2)
+        self.artifact_status = tk.Label(self.artifact_frame, text="No artifacts", font=("Segoe UI", 7), fg="#64748b", bg="#111726")
+        self.artifact_status.pack(side=tk.LEFT, padx=8)
 
         self.send_btn = tk.Button(
             in_frame,
@@ -305,12 +383,75 @@ class StandaloneHarnessCockpit(tk.Tk):
             f"⚡ **Universal Standalone Agent Harness Online.**\nActive Target: **{active_engine.get('name')}**.\nAsk me to construct rooms, arenas, spawn UTron diffusers/wirenodes, or click any blueprint from the palette!",
         )
 
+    def _register_artifact(self, path: str, kind: str):
+        artifact_path = Path(path)
+        try:
+            size = artifact_path.stat().st_size
+            if size > 8 * 1024 * 1024:
+                messagebox.showwarning("Artifact too large", "Please select a file smaller than 8 MB.", parent=self)
+                return
+            digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+            artifact = {"path": str(artifact_path.resolve()), "name": artifact_path.name,
+                        "kind": kind, "size": size, "sha256": digest}
+            self.chat_artifacts.append(artifact)
+            try:
+                self.llm_engine.memory_engine.record_artifact(
+                    artifact_id=digest, path=artifact["path"], kind=kind,
+                    size=size, sha256=digest,
+                )
+            except Exception as exc:
+                logger.warning(f"Artifact memory record failed: {exc}")
+            self.artifact_status.configure(text=f"{len(self.chat_artifacts)} artifact(s) staged")
+            self._append_chat("Artifact", f"Attached `{artifact_path.name}` ({kind}, {size} bytes, SHA-256 `{digest[:12]}…`).")
+        except OSError as exc:
+            messagebox.showerror("Artifact error", str(exc), parent=self)
+
+    def _attach_file(self):
+        path = filedialog.askopenfilename(parent=self, title="Attach document or Unreal artifact",
+                                          filetypes=[("Supported files", "*.md *.txt *.json *.t3d *.log *.uc"), ("All files", "*.*")])
+        if path:
+            self._register_artifact(path, "document")
+
+    def _attach_image(self):
+        path = filedialog.askopenfilename(parent=self, title="Attach reference image",
+                                          filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp"), ("All files", "*.*")])
+        if path:
+            self._register_artifact(path, "image")
+
+    def _attach_viewport(self):
+        image_bytes = self.controller.capture_viewport_image()
+        if not image_bytes:
+            messagebox.showwarning("Viewport unavailable", "No connected UnrealEd viewport could be captured.", parent=self)
+            return
+        target = Path(__file__).resolve().parent.parent / "logs" / "screenshots" / f"chat_viewport_{int(time.time())}.png"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(image_bytes)
+        self._register_artifact(str(target), "viewport")
+
+    def _clear_artifacts(self):
+        self.chat_artifacts.clear()
+        self.artifact_status.configure(text="No artifacts")
+
+    def _set_status(self, text: str):
+        """Thread-safe status label updater."""
+        if threading.current_thread() is threading.main_thread():
+            self.status_lbl.configure(text=text)
+        else:
+            self.after(0, lambda: self.status_lbl.configure(text=text))
+
     def _append_chat(self, sender: str, text: str):
-        self.chat_display.configure(state=tk.NORMAL)
-        self.chat_display.insert(tk.END, f"\n[{sender}]\n", "sender_tag")
-        self.chat_display.insert(tk.END, f"{text}\n")
-        self.chat_display.see(tk.END)
-        self.chat_display.configure(state=tk.DISABLED)
+        """Thread-safe chat appending."""
+        def _do_append():
+            self.chat_display.configure(state=tk.NORMAL)
+            self.chat_display.insert(tk.END, f"\n[{sender}]\n", "sender_tag")
+            self.chat_display.insert(tk.END, f"{text}\n")
+            self.chat_display.see(tk.END)
+            self.chat_display.configure(state=tk.DISABLED)
+
+        if threading.current_thread() is threading.main_thread():
+            _do_append()
+        else:
+            self.after(0, _do_append)
 
     def _on_submit_input(self):
         msg = self.input_entry.get().strip()
@@ -328,8 +469,8 @@ class StandaloneHarnessCockpit(tk.Tk):
 
     def _worker_inference(self, prompt: str):
         try:
-            self.status_lbl.configure(text="Agent thinking and executing tools...")
-            resp = self.llm_engine.chat(prompt, self.chat_history)
+            self._set_status("Agent thinking and executing tools...")
+            resp = self.llm_engine.chat(prompt, self.chat_history, artifacts=self.chat_artifacts)
             content = resp.get("content", "")
             tool_execs = resp.get("tool_executions", [])
 
@@ -342,11 +483,14 @@ class StandaloneHarnessCockpit(tk.Tk):
             final_text = content + tool_summary
             self.chat_history.append({"role": "assistant", "content": final_text})
             self._append_chat("AI Architect", final_text)
-            self.status_lbl.configure(text="Ready.")
+            self._set_status("Ready.")
+            self.chat_artifacts.clear()
+            self.after(0, lambda: self.artifact_status.configure(text="No artifacts"))
 
         except Exception as e:
             logger.error(f"Inference worker error: {e}")
             self._append_chat("AI Architect", f"⚠️ Error: {str(e)}")
+            self._set_status("Ready.")
     def _select_palette_tab_for_engine(self, engine_id: str):
         """Switches the active tab in the Quick Architect Palette notebook to match the engine."""
         idx = getattr(self, "tab_map", {}).get(engine_id, 0)
@@ -421,8 +565,14 @@ class StandaloneHarnessCockpit(tk.Tk):
         self._switch_and_initialize_engine(selected_id, force_recheck=True, is_startup=False)
 
     def _quick_rebuild(self):
-        res = self.controller.execute_batch(["MAP REBUILD", "PATHS DEFINE"])
-        self._append_chat("System", "🔄 Executed complete level rebuild (`MAP REBUILD` + `PATHS DEFINE`).")
+        active_engine = self.config_mgr.get_active_engine_id()
+        path_cmd = "PATHS DEFINE" if active_engine in ["ut2003", "ut2004"] else "PATHS BUILD"
+        res = self.controller.execute_batch(["MAP REBUILD", "LIGHT APPLY", path_cmd, "FLUSH"])
+        gate = self.controller.validate_editor_log()
+        if gate["ok"]:
+            self._append_chat("System", f"🔄 Executed complete level rebuild (`MAP REBUILD` + `LIGHT APPLY` + `{path_cmd}` + `FLUSH`).")
+        else:
+            self._append_chat("System", f"⚠️ Rebuild completed with blocking validation findings ({gate['error_count']}). See engine log.")
 
     def _toggle_dock(self):
         if not HAS_PYWIN32:
@@ -456,6 +606,85 @@ class StandaloneHarnessCockpit(tk.Tk):
         else:
             self.status_lbl.configure(text="Failed to launch UnrealEd. Check paths in Settings.")
 
+    def _quick_rebuild(self):
+        """Executes full CSG BSP rebuild, lighting calculation, path definition, and viewport redraw."""
+        self._append_chat("Quick Action", "🔄 **Rebuilding Geometry, Lighting & AI Paths in UnrealEd...**")
+        self._set_status("Rebuilding Map...")
+
+        def _worker():
+            try:
+                cmds = ["MAP REBUILD", "LIGHT APPLY", "PATHS DEFINE", "VIEWPORT REDRAW", "FLUSH"]
+                report = self.controller.execute_batch(cmds)
+                if report.get("ok"):
+                    self._append_chat("AI Architect", "✅ **Full Map Rebuild Complete!** Geometry, lighting, and path network updated.")
+                else:
+                    self._append_chat("AI Architect", "⚠️ Rebuild executed with warnings.")
+                self._set_status("Ready.")
+            except Exception as e:
+                logger.error(f"Quick rebuild error: {e}")
+                self._append_chat("AI Architect", f"⚠️ Rebuild error: {e}")
+                self._set_status("Rebuild Error.")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _quick_configure_viewports(self):
+        """Configures the standard 4-viewport layout (Top, Front, Side + Dynamic Light)."""
+        self._append_chat("Quick Action", "📐 **Configuring Standard 4-Viewport Layout (Top, Front, Side + Dynamic Light)...**")
+        self._set_status("Configuring Viewports...")
+
+        def _worker():
+            try:
+                res = self.controller.configure_standard_viewports()
+                if res.get("success"):
+                    self._append_chat("AI Architect", "✅ **Standard Viewports Configured!** Top (XY), Front (XZ), Side (YZ) & Dynamic Light 3D active.")
+                self._set_status("Ready.")
+            except Exception as e:
+                logger.error(f"Viewport config error: {e}")
+                self._append_chat("AI Architect", f"⚠️ Viewport setup error: {e}")
+                self._set_status("Ready.")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _execute_direct_command(self, cmd_text: str):
+        """Executes a single direct UnrealEd command."""
+        self._append_chat("Direct Command", f"⚡ Executing: `{cmd_text}`")
+        self._set_status(f"Running {cmd_text}...")
+
+        def _worker():
+            try:
+                res = self.controller.execute_command(cmd_text)
+                if res.get("success"):
+                    self._append_chat("UnrealEd", f"✅ `{cmd_text}` executed successfully.")
+                else:
+                    self._append_chat("UnrealEd", f"⚠️ `{cmd_text}`: {res.get('error', 'Execution finished')}")
+                self._set_status("Ready.")
+            except Exception as e:
+                logger.error(f"Direct command error: {e}")
+                self._append_chat("UnrealEd", f"⚠️ Error: {e}")
+                self._set_status("Ready.")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _launch_playtest(self):
+        """Launches a live in-game playtest session."""
+        self._append_chat("Playtest", "🎮 **Saving map and launching game playtest...**")
+        self._set_status("Launching Playtest...")
+
+        def _worker():
+            try:
+                res = self.controller.launch_playtest()
+                if res.get("success"):
+                    self._append_chat("AI Architect", "🚀 **Playtest Game Launched!** Enjoy testing your map.")
+                else:
+                    self._append_chat("AI Architect", f"⚠️ Playtest launch notice: {res.get('error', 'Check game paths')}")
+                self._set_status("Ready.")
+            except Exception as e:
+                logger.error(f"Playtest error: {e}")
+                self._append_chat("AI Architect", f"⚠️ Playtest error: {e}")
+                self._set_status("Ready.")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
     def _open_wizard_builder(self):
         """Opens the interactive Unreal Architect Wizard Builder dialog."""
         from ui.wizard_builder_dialog import WizardBuilderDialog
@@ -476,16 +705,9 @@ class StandaloneHarnessCockpit(tk.Tk):
         SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
 
     def _open_updater(self):
-        """Opens Settings directly on the Updates tab and triggers update check."""
-        dlg = SettingsDialog(self, self.config_mgr, self.controller, self.nexus, on_saved_cb=self._on_settings_saved)
-        # Select tab 4 (Updates)
-        for child in dlg.winfo_children():
-            if isinstance(child, ttk.Notebook):
-                try:
-                    child.select(4)
-                except Exception:
-                    pass
-        dlg._check_updates_action()
+        """Opens the dedicated standalone Software Updater dialog."""
+        from ui.updater_dialog import UpdaterDialog
+        UpdaterDialog(self)
 
     def _open_engine_scanner(self):
         """Opens Settings with the auto-scanner modal automatically triggered."""

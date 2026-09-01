@@ -56,8 +56,8 @@ Intelligence systems must always adhere to the Permanently Applied Directives an
 ---
 
 ## Amendments ##
-**Amendments are high security changes and require approval from the ImpressionCore Governance Council.**
+**Amendments are high security changes and require approval from the Intelligence Systems Governance Council.**
 
 
 
-These are encoded as the permanent, absolute, and immutable directives for all Nexus actions and decisions.
+These are encoded as the permanent, absolute, and immutable directives for all actions and decisions.

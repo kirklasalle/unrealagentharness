@@ -1,4 +1,5 @@
 # Master Documentation Index & Architecture Map
+
 ### Unreal Agent Harness (UAH) & Unreal Tournament Ecosystem
 
 This document serves as the master directory and cross-reference index for all documentation, technical audits, language references, level design manuals, standard specifications, and engineering roadmaps across the **Unreal Agent Harness** repository.
@@ -10,7 +11,10 @@ Official Repository: [https://github.com/kirklasalle/unrealagentharness](https:/
 ## 📚 Complete Document Catalog
 
 ### 🏛️ Standards, Core Audits & Governance
-1. **[Comprehensive Software Application Audit & Critical Review](07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)**  
+
+1. **[Deep Hardcore Architecture, Design & Engineering Audit (v3.1.0)](08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)**  
+   *Exhaustive 13-subsystem critical audit, CSG mathematical forensic analysis, Win32 IPC verification, thread safety hardening, security, and governance certification (Score: 97.7/100).*
+2. **[Comprehensive Software Application Audit & Critical Review](07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)**  
    *Gold-standard enterprise software audit, certified 96.25/100 world-class health score, 5-tier architecture analysis, critical reliability assessment, security audit, and AI model benchmarking.*
 2. **[Official Engineering & Product Roadmap (2026–2027)](../ROADMAP.md)**  
    *Phased multi-milestone roadmap covering engine hardening, multi-modal vision perception, multi-agent swarms over .nexus AMTP v3.0, and cross-engine transpilers.*
@@ -30,47 +34,59 @@ Official Repository: [https://github.com/kirklasalle/unrealagentharness](https:/
 ---
 
 ### 🎓 SOTA Procedural Engines, Academy & Wizard Builders
-9. **[SOTA Mind-to-World Synthesizer & 75% Budget Law](UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md)**  
+
+1. **[SOTA Mind-to-World Synthesizer & 75% Budget Law](UAH_MIND_TO_WORLD_SOTA_SPECIFICATION.md)**  
    *Procedural synthesis engine translating natural language prompts into watertight subtractive CSG brush trees and AI navigation graphs.*
-10. **[Unreal Architect Wizard Builder Guide](UNREAL_ARCHITECT_WIZARD_GUIDE.md)**  
+2. **[Unreal Engine Procedural Technology (UE99 Condensed)](UNREAL_ENGINE_PROCEDURAL_TECHNOLOGY_UE99_CONDENSED.md)**  
+   *Condensed technical manual on CSG Boolean subtraction, procedural brush vertices, texture coordinate math, and reachability pathing.*
+3. **[Valley Fortress Geometry Remediation & Architectural Engineering Walkthrough](Valley%20Fortress%20Geometry%20Remediation%20%26%20Architectural%20Engineering%20Walkthrough.md)**  
+   *Forensic architectural analysis of viewport quad layouts, groundings, solid keep foundations, and raytraced radiosity lighting.*
+4. **[Valley Fortress Geometry Remediation & UT2004 Generator Critical Fixes](Valley%20Fortress%20Geometry%20Remediation%20%26%20UT2004%20Generator%20Critical%20Fixes.md)**  
+   *2-stage CSG & Actor Import pipeline specification resolving uncompiled BSP wireframes and UnLevel.h Line 507 C++ assertions in UT2004.*
+5. **[Unreal Architect Wizard Builder Guide](UNREAL_ARCHITECT_WIZARD_GUIDE.md)**  
     *Dual-mode interactive wizard for Clean Slate level synthesis and in-situ non-destructive map injections.*
-11. **[Unreal Academy & Illusion Tricks Compendium](UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md)**  
+6. **[Unreal Academy & Illusion Tricks Compendium](UNREAL_ACADEMY_AND_ILLUSION_TRICKS_COMPENDIUM.md)**  
     *Master repository of 30+ classic optical illusions, 1:16 scale planetary skyboxes, WarpZone infinite corridors, and deconstructions of classic maps.*
-12. **[Unreal Engine U1 to U5 Master Tutorial Knowledgebase](UNREAL_ENGINE_U1_TO_U5_MASTER_TUTORIAL_KNOWLEDGEBASE.md)**  
+7. **[Unreal Engine U1 to U5 Master Tutorial Knowledgebase](UNREAL_ENGINE_U1_TO_U5_MASTER_TUTORIAL_KNOWLEDGEBASE.md)**  
     *Comprehensive master knowledgebase covering UnrealEd 1, UnrealEd 2 (UT99), UnrealEd 3 (UT2003/UT2004), UE3, UE4, and UE5.*
+8. **[Proposal: Valley Fortress Vision, Reliability & Cockpit Elevation](PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md)**  
+   *Approved foundation plan for edge-driven reference recreation, runtime playability validation, provider/model configuration, fast engine discovery, chat artifacts, cockpit UX, and durable graph memory.*
 
 ---
 
 ### 🎮 Engine Architecture, Scripting & Universal Mod Support
-13. **[01. Unreal Engine Architecture & Engine Audit](01_UNREAL_ENGINE_ARCHITECTURE_AUDIT.md)**  
+
+ 1. **[01. Unreal Engine Architecture & Engine Audit](01_UNREAL_ENGINE_ARCHITECTURE_AUDIT.md)**  
     *Deep technical audit of Unreal Engine 1 & 2.5 internals, package formats, BSP compilation pipelines, and memory models.*
-14. **[02. UnrealScript Language Reference & Syntax](02_UNREALSCRIPT_LANGUAGE_REFERENCE.md)**  
+ 2. **[02. UnrealScript Language Reference & Syntax](02_UNREALSCRIPT_LANGUAGE_REFERENCE.md)**  
     *Definitive language specification for UnrealScript: states, replication, native functions, event execution, and memory safety.*
-15. **[03. Package Extraction & Compilation Guide](03_EXTRACTION_AND_COMPILATION_GUIDE.md)**  
+ 3. **[03. Package Extraction & Compilation Guide](03_EXTRACTION_AND_COMPILATION_GUIDE.md)**  
     *Step-by-step instructions for `UCC.exe make` compilation, `batchexport` source extraction, and automated package management.*
-16. **[Universal Game Mods & Total Conversions Guide](GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md)**  
+ 4. **[Universal Game Mods & Total Conversions Guide](GAME_MODS_AND_TOTAL_CONVERSIONS_GUIDE.md)**  
     *Architectural patterns for total conversions, custom gametypes, mutate commands, and weapon actors (*ChaosUT*, *Tactical Ops*, *Infiltration*, *Monster Hunt*, *Jailbreak*).*
-17. **[05. Development Environment & Tools Index](05_DEVELOPMENT_ENVIRONMENT_AND_TOOLS_INDEX.md)**  
+ 5. **[05. Development Environment & Tools Index](05_DEVELOPMENT_ENVIRONMENT_AND_TOOLS_INDEX.md)**  
     *Complete index of IDEs, debuggers, Win32 bridge utilities, hex editors, and UnrealScript tools.*
 
 ---
 
 ### 🎨 Level Design, Lighting & Skybox Manuals
-18. **[World-Class Unreal Level Design Guide](WORLD_CLASS_UNREAL_LEVEL_DESIGN_GUIDE.md)**  
+
+ 1. **[World-Class Unreal Level Design Guide](WORLD_CLASS_UNREAL_LEVEL_DESIGN_GUIDE.md)**  
     *Gold-standard procedural construction handbook: CSG subtraction, additive geometry, dais structures, cover obstacles, and item placement.*
-19. **[UnrealEd Skybox & Exterior World Guide](UNREALED_SKYBOX_AND_EXTERIOR_WORLD_GUIDE.md)**  
+ 2. **[UnrealEd Skybox & Exterior World Guide](UNREALED_SKYBOX_AND_EXTERIOR_WORLD_GUIDE.md)**  
     *Techniques for building multi-tier natural environments, mountain valleys, desert canyons, and SkyZone parallax atmospheres.*
-20. **[UnrealEd Command Reference](UNREALED_COMMAND_REFERENCE.md)**  
+ 3. **[UnrealEd Command Reference](UNREALED_COMMAND_REFERENCE.md)**  
     *Exhaustive dictionary of all UnrealEd console commands (`MAP`, `BRUSH`, `ACTOR`, `LIGHT`, `PATHS`, `POLY`, `SELECT`, `OBJ`, `TEXTURE`).*
 
 ---
 
 ### 🧠 LLM Integration & Deployment Guides
-21. **[LLM Provider Setup & Live Connection Guide](LLM_PROVIDER_SETUP.md)**  
+
+ 1. **[LLM Provider Setup & Live Connection Guide](LLM_PROVIDER_SETUP.md)**  
     *Setup instructions for Google Gemini (Flash & Pro), Anthropic Claude 3.7, OpenAI GPT-4o, DeepSeek, Groq, and local offline Ollama/LM Studio.*
-22. **[UnrealScript Development & Compilation Guide](UNREALSCRIPT_DEVELOPMENT_AND_COMPILATION_GUIDE.md)**  
+ 2. **[UnrealScript Development & Compilation Guide](UNREALSCRIPT_DEVELOPMENT_AND_COMPILATION_GUIDE.md)**  
     *Best practices for writing, compiling, and testing UnrealScript code with automated backup routines.*
-23. **[Release Changelog & History](CHANGELOG.md)**  
+ 3. **[Release Changelog & History](CHANGELOG.md)**  
     *Detailed chronological record of features, fixes, and schema updates across all releases.*
 
 ---
@@ -90,6 +106,7 @@ All UnrealScript and package utilities are consolidated under the [`tools/`](../
 ## 🌐 Public Website & Multi-Theme Suite (`public_html/`)
 
 The official standalone public documentation website is housed under [`public_html/`](../public_html/):
+
 - **`index.html`**: Main portal with hero crest, certified 96.25/100 health badge, GitHub integration, and procedural CSG generator.
 - **`timeline.html`**: Interactive 28-year timeline celebrating the Unreal Continuum (1998 to 2026+).
 - **`mods.html`**: Universal modding and total conversion showcase celebrating community creators.

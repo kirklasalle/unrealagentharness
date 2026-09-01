@@ -18,13 +18,13 @@ def get_ut99_goty_palette(
 
     return [
         {
-            "category": "🧠 SOTA MIND-TO-WORLD NEURO SYNTHESIZERS",
+            "category": "🏆 UT99 ARENA BLUEPRINTS",
             "items": [
                 {
-                    "title": "🔮 Neuro-Symbolic Arena Synthesizer",
-                    "desc": "Mind-to-World generative compiler: Synthesizes a watertight, illuminated, and fully pathed level from dynamic thematic reasoning.",
-                    "commands_factory": lambda: MindSynthesizer.synthesize_level_from_mind("Ancient Skaarj Temple Arena with central combat dais and jump pads", system_dir=system_dir, engine_id="ut99_goty"),
-                    "prompt": "Synthesize a world-class watertight Unreal Tournament arena from creative intent with 75% engine budget detail, dynamic radiosity lighting, and full Botpack pathing lattice.",
+                    "title": "🏔️ Valley Fortress — Image Fidelity (75% UE1)",
+                    "desc": "One-click high-fidelity forest valley fortress: skybox, stepped cliffs, waterfall sheets, grounded keep, crenellations, dual bridges, authored foliage, lighting, and navigation.",
+                    "commands_factory": lambda: FormulaEngine.generate_ut99_verdant_mountain_valley(system_dir=system_dir, detail_level="ultra"),
+                    "prompt": "Construct the supplied Valley Fortress reference image in UT99 at the safe 75% UE1 detail budget: establish the skybox and world silhouette first, then stepped forest cliffs, waterfall and river, grounded multi-tower fortress, crenellated walls, dual bridges, lookout towers, authored foliage, rocks, torches, lighting, weapons, lore and Botpack pathing.",
                 },
                 {
                     "title": "🏰 Interconnected Multi-Chamber Compound",
@@ -32,11 +32,6 @@ def get_ut99_goty_palette(
                     "commands_factory": lambda: MindSynthesizer.generate_procedural_compound(room_count=3, system_dir=system_dir, engine_id="ut99_goty"),
                     "prompt": "Carve a multi-room interconnected facility with central hub, connecting corridors, and defense perches.",
                 },
-            ],
-        },
-        {
-            "category": "🏆 UT99 ARENA BLUEPRINTS",
-            "items": [
                 {
                     "title": "🏟️ Classic Tournament Arena (Ultra)",
                     "desc": "3072x3072 multi-tier arena with semi-solid fluted pillars, perimeter trim, crown moldings, arched portals, alcove lighting, and 44 path nodes.",

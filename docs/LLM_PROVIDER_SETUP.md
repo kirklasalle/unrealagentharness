@@ -1,4 +1,19 @@
+# Provider, Model & Reference Artifact Configuration
+
+The Harness provider configuration is available from **Settings → LLM Providers**. The approved elevation proposal adds explicit provider/model capability badges, connection testing, and separate roles for reference analysis and map execution.
+
+## Provider roles
+
+- **Reference analysis**: image-capable provider used for edge/landmark interpretation and scene-graph review.
+- **Map execution**: tool-capable provider allowed to issue UnrealEd commands.
+- **Local fallback**: Ollama/compatible local endpoint for private, offline analysis where vision/tool support is available.
+
+API keys remain configuration data and must never be copied into chat history, build manifests, screenshots, or ordinary logs. Attachments are hashed and bounded before being presented to a provider.
+
+See [`PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md`](PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md) for the approval-gated implementation plan.
+
 # LLM Provider Setup & Top 20 Model Evaluation Guide
+
 ## Multi-Provider Model Configuration for Unreal Editor World Creation
 
 **Author:** Kirk LaSalle & Antigravity AI Architect  
@@ -10,6 +25,7 @@
 ## 1. Top 20 Evaluated Models for Unreal Agent Harness
 
 To qualify for autonomous UnrealEd level design, every model must pass the **5 Core Harness Tests**:
+
 1. **Strict Tool / Function Calling**: Flawlessly format JSON parameters for `execute_unrealed_commands`, `create_bsp_room`, `build_outdoor_world`, `build_path_lattice`, and `switch_engine_profile`.
 2. **3D Spatial Geometry & Coordinate Math**: Correctly calculate bounding boxes, $+30\text{ UU}$ floor offsets for path nodes, $+50\text{ UU}$ spawn clearances, and jump pad trajectories.
 3. **T3D & UnrealScript Syntax Adherence**: Write watertight `.t3d` PolyList polygon windings and correct `.uc` state/function declarations without hallucinated engine classes.
@@ -48,6 +64,7 @@ To qualify for autonomous UnrealEd level design, every model must pass the **5 C
 ## 2. Step-by-Step Provider Setup
 
 ### 2.1 Google Gemini 2.5 Flash & Pro (Top Recommendation)
+
 1. **Get an API Key**: Visit [Google AI Studio](https://aistudio.google.com/) and click **"Create API Key"**.
 2. **Configure in UAH**:
    - Open the In-Editor Cockpit -> Click **`⚙️ SETTINGS`**.
@@ -56,11 +73,13 @@ To qualify for autonomous UnrealEd level design, every model must pass the **5 C
    - Click **`[ ⚡ TEST CONNECTION ]`** $\rightarrow$ Verify green status badge.
    - Click **`[ SAVE ALL SETTINGS ]`**.
 3. **Environment Variable Option**:
+
    ```cmd
    set GEMINI_API_KEY=AIzaSy...
    ```
 
 ### 2.2 Anthropic Claude 3.7 Sonnet
+
 1. **Get an API Key**: Visit [Anthropic Console](https://console.anthropic.com/).
 2. **Configure in UAH**:
    - In Settings drawer, select **`Anthropic Claude 3.7 Sonnet`**.
@@ -68,22 +87,28 @@ To qualify for autonomous UnrealEd level design, every model must pass the **5 C
    - Click **`[ ⚡ TEST CONNECTION ]`** $\rightarrow$ Click **`[ SAVE ALL SETTINGS ]`**.
 
 ### 2.3 OpenAI GPT-4o
+
 1. **Get an API Key**: Visit [OpenAI Platform](https://platform.openai.com/).
 2. **Configure in UAH**:
    - In Settings drawer, select **`OpenAI GPT-4o`**.
    - Paste your `sk-...` API key $\rightarrow$ Test & Save.
 
 ### 2.4 High-Speed Groq & DeepSeek
+
 * **Groq**: Enter your Groq API key with model `llama-3.3-70b-versatile` for 300+ tokens/second.
-* **DeepSeek**: Enter your DeepSeek API key with model `deepseek-chat` or `deepseek-reasoner`.
+- **DeepSeek**: Enter your DeepSeek API key with model `deepseek-chat` or `deepseek-reasoner`.
 
 ### 2.5 100% Offline & Air-Gapped Models (Ollama / Local)
+
 For completely private, offline, zero-cost operation on your local workstation:
+
 1. Download [Ollama](https://ollama.com/).
 2. Open terminal and run:
+
    ```bash
    ollama run qwen2.5-coder:32b
    ```
+
    *(Or for 16GB GPUs: `ollama run qwen2.5-coder:14b`)*
 3. In the UAH Settings drawer, select **`Local Ollama (Offline / Air-Gapped)`**.
 4. The Base URL is preset to `http://127.0.0.1:11434/v1`.
@@ -104,8 +129,9 @@ Inside the In-Editor Chat Cockpit Settings drawer, clicking **`[ ⚡ TEST CONNEC
   [Step 5] Vision Capability    ──► Confirms if model supports PNG viewport inspection
 ```
 
-### Diagnostic Status Indicators:
+### Diagnostic Status Indicators
+
 * 🟢 **Connected (120ms)**: Ready for full natural language control, tool execution, and vision.
-* 🟡 **Connected (No Vision)**: Text and tools work, but viewport screenshot analysis is disabled.
-* 🔴 **Error 401**: Invalid API Key.
-* 🔴 **Endpoint Unreachable**: Server address incorrect or local Ollama daemon is stopped.
+- 🟡 **Connected (No Vision)**: Text and tools work, but viewport screenshot analysis is disabled.
+- 🔴 **Error 401**: Invalid API Key.
+- 🔴 **Endpoint Unreachable**: Server address incorrect or local Ollama daemon is stopped.

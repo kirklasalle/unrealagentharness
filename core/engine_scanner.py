@@ -8,6 +8,7 @@ automatically configuring paths for standalone portable execution.
 import os
 import string
 import threading
+import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -234,6 +235,66 @@ class EngineScanner:
 
         logger.info(f"Scan complete. Found {len(discovered)} total engine & mod targets.")
         return discovered
+
+    @classmethod
+    def quick_inventory(cls, configured_profiles: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[str, Dict[str, Any]]:
+        """Returns a fast, non-recursive inventory of configured/common installs.
+
+        The existing deep scan remains available. This method is intended for
+        the engine button: it reports known paths immediately and verifies only
+        the expected executable/package signatures.
+        """
+        inventory: Dict[str, Dict[str, Any]] = {}
+        candidates: List[Path] = []
+        for profile in (configured_profiles or {}).values():
+            root = profile.get("root_dir")
+            if root:
+                candidates.append(Path(root))
+        candidates.extend(Path(p) for p in cls._generate_search_candidates()[:40])
+
+        seen = set()
+        for candidate in candidates:
+            try:
+                resolved = str(candidate.resolve()).lower()
+            except OSError:
+                continue
+            if resolved in seen or not candidate.is_dir():
+                continue
+            seen.add(resolved)
+            info = cls.inspect_directory(candidate)
+            if info:
+                info["inventory_mode"] = "quick"
+                info["inventory_timestamp"] = time.time()
+                inventory[info["id"]] = info
+            for mod in cls.inspect_mods_in_directory(candidate):
+                mod["inventory_mode"] = "quick"
+                mod["inventory_timestamp"] = time.time()
+                inventory[mod["id"]] = mod
+        return inventory
+
+    @classmethod
+    def verify_profile(cls, profile: Dict[str, Any]) -> Dict[str, Any]:
+        """Verifies one configured profile without scanning unrelated drives."""
+        root = Path(profile.get("root_dir", ""))
+        system = Path(profile.get("system_dir", ""))
+        editor = system / profile.get("editor_exe", "UnrealEd.exe")
+        game_name = profile.get("game_exe", "")
+        game = system / game_name if game_name else None
+        required = [editor.exists()]
+        if game is not None:
+            required.append(game.exists())
+        return {
+            "root_exists": root.is_dir(),
+            "system_dir_exists": system.is_dir(),
+            "editor_exe_exists": editor.is_file(),
+            "game_exe_exists": game.is_file() if game is not None else False,
+            "verified": bool(system.is_dir() and all(required)),
+            "root_dir": str(root),
+            "system_dir": str(system),
+            "editor_path": str(editor),
+            "game_path": str(game) if game is not None else "",
+            "verified_at": time.time(),
+        }
 
     @classmethod
     def inspect_directory(cls, directory: Path) -> Optional[Dict[str, Any]]:

@@ -374,18 +374,21 @@ class PathingEngine:
         self,
         existing_nodes: List[Tuple[int, int, int]],
         max_reachable_distance: int = 700,
+        max_neighborhood_distance: Optional[int] = None,
     ) -> List[str]:
         """
-        Given a list of existing navigation node positions, identifies pairs
-        that exceed max_reachable_distance and inserts bridging PathNodes
-        at the midpoint.
+        Given a list of existing navigation node positions, identifies adjacent pairs
+        in the same local sector that exceed max_reachable_distance and inserts
+        equidistant bridging PathNodes along the vector connecting them.
 
-        In UE1, the default max reachability distance is ~700 UU (~14m).
-        Pairs beyond this need intermediate nodes.
+        In UE1/UE2, the default max reachability distance is ~700 UU (~14m).
+        Only pairs within max_neighborhood_distance (default 2.5x max_reach) are bridged
+        to prevent spurious connections across opposite map extremities.
         """
         node_class = self._nav_classes["PathNode"]
         bridges: List[str] = []
-        inserted_positions: set = set()
+        inserted_positions: List[Tuple[int, int, int]] = []
+        max_neighbor = max_neighborhood_distance or int(max_reachable_distance * 2.5)
 
         for i, pos_a in enumerate(existing_nodes):
             for j, pos_b in enumerate(existing_nodes):
@@ -396,20 +399,27 @@ class PathingEngine:
                 dz = pos_b[2] - pos_a[2]
                 dist = math.sqrt(dx * dx + dy * dy + dz * dz)
 
-                if dist > max_reachable_distance:
-                    # Insert midpoint node
+                # Only bridge local neighbors that exceed max_reach but are within neighborhood range
+                if max_reachable_distance < dist <= max_neighbor:
                     mid_x = (pos_a[0] + pos_b[0]) // 2
                     mid_y = (pos_a[1] + pos_b[1]) // 2
                     mid_z = (pos_a[2] + pos_b[2]) // 2
-                    pos_key = (mid_x, mid_y, mid_z)
 
-                    if pos_key not in inserted_positions:
+                    # Check if any existing or inserted node is already close to this spot (< 200 UU)
+                    too_close = False
+                    for ex_pos in existing_nodes + inserted_positions:
+                        if math.sqrt((mid_x - ex_pos[0])**2 + (mid_y - ex_pos[1])**2 + (mid_z - ex_pos[2])**2) < 200:
+                            too_close = True
+                            break
+
+                    if not too_close:
                         bridges.append(f"BRUSH MOVETO X={mid_x} Y={mid_y} Z={mid_z}")
                         bridges.append(f"ACTOR ADD CLASS={node_class}")
-                        inserted_positions.add(pos_key)
+                        inserted_positions.append((mid_x, mid_y, mid_z))
 
         logger.info(
             f"Gap-fill analysis: {len(existing_nodes)} existing nodes, "
-            f"{len(bridges)} bridging nodes needed (max_dist={max_reachable_distance}UU)"
+            f"{len(inserted_positions)} bridging nodes inserted (reach_limit={max_reachable_distance}UU)"
         )
         return bridges
+

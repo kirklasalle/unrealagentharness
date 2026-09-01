@@ -1,4 +1,5 @@
 # Comprehensive Software Application Audit & Critical Engineering Review
+
 ## Unreal Agent Harness (UAH) — Multi-Engine Autonomous World Architect
 
 **Author:** Kirk LaSalle & Antigravity AI Architect  
@@ -38,6 +39,12 @@
 
 ## 1. Executive Summary & Overall Health Score
 
+### 1.1 Confirmed 2026-08-30 runtime findings
+
+The current Valley Fortress run must not be certified playable. The captured `G:\UnrealTournament\System\UnrealTournament.log` shows `Couldn't spawn player at Autoplay.PlayerStart3`, followed by `Failed to spawn player actor` and process termination during `UGameEngine::Init`. The corresponding `Editor.log` shows `FPoly::Fix: Collapsed a point`, multiple `Scout didn't fit` / `No valid start found` messages, and navigation warnings near starts and inventory markers.
+
+The current generated `ValleyMain.t3d` is a rectangular six-face shell. Although it contains `PF_FakeBackdrop | PF_Unlit` flags and the actor map contains `SkyZoneInfo`, the supplied viewport still renders an opaque repeated red ceiling. This proves that command delivery and actor presence are insufficient acceptance criteria for skybox correctness. The next implementation is approval-gated in [`PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md`](PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md) and will use annotation-aware edge extraction, measured macro blockout, runtime screenshot validation, spawn-fit preflight, and deterministic playtest save/launch.
+
 The **Unreal Agent Harness (UAH)** is an advanced, multi-generational autonomous level architecture and editor copilot suite. Spanning over 25 years of Unreal Engine technology (from 1999 Unreal Engine 1 through 2026 Unreal Engine 5), UAH bridges low-level Win32 operating system mechanics, procedural Constructive Solid Geometry (CSG), directed graph bot navigation, and frontier multi-modal LLMs.
 
 ### 📊 System Health Scorecard
@@ -71,8 +78,9 @@ The **Unreal Agent Harness (UAH)** is an advanced, multi-generational autonomous
 ```
 
 ### Tier 1: Win32 Automation & Platform Abstraction
+
 * **Module**: [`core/engine_controller.py`](file:///d:/Projects/unrealagentharness/core/engine_controller.py)
-* **Responsibilities**:
+- **Responsibilities**:
   - Top-level window enumeration (`EnumWindows`) to resolve `WUnrealEd`, `UnrealEd.exe`, and `UTronEditor.exe` across process spaces.
   - Child control discovery (`EnumChildWindows`) targeting the command bar `Edit` control at the viewport status strip.
   - Command dispatching via synchronous `win32gui.SendMessage` (`WM_SETTEXT`, `WM_KEYDOWN`, `WM_CHAR`, `WM_KEYUP`, `EN_CHANGE`).
@@ -80,39 +88,42 @@ The **Unreal Agent Harness (UAH)** is an advanced, multi-generational autonomous
   - Real-time log offset streaming (`Editor.log` / `UnrealEd.log`) to parse engine events without polling disk from zero byte offset.
   - Automated modal dialog dismissal (`#32770` "Map Check", "Rebuild Complete", "Warning" popups) using `PostMessage(WM_CLOSE)`.
   - Non-blocking viewport screenshot acquisition via `PIL.ImageGrab` with bounding-box clipping.
-* **Audit Findings**:
+- **Audit Findings**:
   - *Strengths*: Highly resilient. The two-tier fallback (Win32 Edit injection $\rightarrow$ batch `EXEC` script) ensures that even if UnrealEd's UI handles shift during window docking or minimize states, commands execute reliably.
   - *Observation*: Viewport screenshotting uses window bounding box capture. While effective on primary displays, Windows DPI virtualization or multi-monitor setups with mixed scaling factors require monitor DPI awareness context (`ctypes.windll.shcore.SetProcessDpiAwareness(2)`).
 
 ### Tier 2: Procedural Geometry & CSG Synthesis
+
 * **Module**: [`core/formula_engine.py`](file:///d:/Projects/unrealagentharness/core/formula_engine.py)
-* **Responsibilities**:
+- **Responsibilities**:
   - 150KB+ procedural generation library producing 100% compliant Unreal Text 3D (`.t3d`) assets.
   - CSG Subtractive and Additive primitive generation (cubes, cylinders, spheres, cones, curved arches, hypostyle colonnades, multi-tier sniper gantries).
   - Winding rules and polygon planarity enforcement (strictly convex, 4-vertex coplanar quads or 3-vertex triangles) preventing BSP holes and HOM (Hall of Mirrors) rendering artifacts.
   - Thematic texture paletting across stock packages (`UTtech1`, `UTtech2`, `Ancient`, `Factory`, `City`, `Indus1`, `Egypt`, `SkaarjPack`).
   - Radiosity and 8-bit HSV color space calculation (Hue: 0–255, Saturation: 0–255, Brightness: 0–255) with light radius attenuation.
   - Two-stage map compilation: Stage 1 creates brush geometry; Stage 2 injects actors, pickups, weapons, lights, and pathing nodes with coordinate validation.
-* **Audit Findings**:
+- **Audit Findings**:
   - *Strengths*: Outstanding mathematical precision. Textures are properly assigned with UV alignments (`TextureU`, `TextureV`, `PANU`, `PANV`), preventing texture stretching on angled brush surfaces.
   - *Performance*: Generates complex full-arena geometries (e.g. 5,000+ line T3D files) in under 12 milliseconds in-memory.
 
 ### Tier 3: Bot AI Navigation & Reachability Engine
+
 * **Module**: [`core/pathing_engine.py`](file:///d:/Projects/unrealagentharness/core/pathing_engine.py)
-* **Responsibilities**:
+- **Responsibilities**:
   - Generation of uniform 2D/3D navigation lattices (`Engine.PathNode`) adhering to the 700 Unreal Unit (UU) maximum ReachSpec threshold.
   - Perimeter patrol rings for circular arenas (e.g. UTron Disc Arenas, Egyptian Altars).
   - Parabolic trajectory calculations for `Botpack.Kicker` / `xPickups.JumpPad` actors, aligning `KickVelocity` ($V_x, V_y, V_z$) with landing target nodes.
   - Two-way Teleporter actor synchronization (`URL` $\leftrightarrow$ `Tag` matching).
   - Lift system wiring (`LiftCenter` $\leftrightarrow$ `LiftExit` pairs linked by `LiftTag`).
   - Real-time `Editor.log` parsing after `PATHS BUILD` to compute network statistics (total nodes, reachable nodes, unreachable islands, total paths defined, network health score).
-* **Audit Findings**:
+- **Audit Findings**:
   - *Strengths*: Ensures every generated level is immediately playable by AI bots with zero human navigation authoring needed.
   - *Diagnostics*: The `generate_reachability_report()` parser provides instant quality grading (`EXCELLENT`, `GOOD`, `NEEDS_WORK`, `CRITICAL_GAPS`).
 
 ### Tier 4: Multi-Provider LLM & Tool-Calling Orchestrator
+
 * **Module**: [`core/llm_engine.py`](file:///d:/Projects/unrealagentharness/core/llm_engine.py), [`core/tools_schema.py`](file:///d:/Projects/unrealagentharness/core/tools_schema.py)
-* **Responsibilities**:
+- **Responsibilities**:
   - Multi-provider inference dispatching to:
     1. **Google Gemini**: Native `v1beta` REST API supporting `gemini-2.5-flash` and `gemini-2.5-pro` with 1M+ context.
     2. **Anthropic Claude**: `v1/messages` API supporting `claude-3-7-sonnet-20250219` with extended reasoning.
@@ -120,19 +131,20 @@ The **Unreal Agent Harness (UAH)** is an advanced, multi-generational autonomous
     4. **Local Offline (Ollama / LM Studio)**: Zero-cloud, air-gapped local model inference over `http://127.0.0.1:11434/v1`.
   - Dynamic System Prompt synthesis: Automatically injects engine-specific directives, verified package classes, weapon hierarchies, and coordinate rules based on the active engine target (`ut99_goty`, `ut99_utron`, `ut2004`, `ut99_chaosut`, `ut99_tacticalops`, `ue5`).
   - JSON Schema definition (`UNREALED_TOOLS`) exposing 11 distinct tools for level creation, BSP carving, actor placement, path synthesis, viewport capture, and level compilation.
-* **Audit Findings**:
+- **Audit Findings**:
   - *Strengths*: Highly flexible. Zero vendor lock-in; users can swap between cloud frontier models and local private models on the fly.
   - *Tool Execution*: Tool calls are mapped directly to controller and formula engine methods with JSON response packaging.
 
 ### Tier 5: Cockpit UI, FastAPI Server, Config & Telemetry
+
 * **Modules**: [`ui/tk_harness_cockpit.py`](file:///d:/Projects/unrealagentharness/ui/tk_harness_cockpit.py), [`server/api_server.py`](file:///d:/Projects/unrealagentharness/server/api_server.py), [`core/config_manager.py`](file:///d:/Projects/unrealagentharness/core/config_manager.py), [`core/nexus_bridge.py`](file:///d:/Projects/unrealagentharness/core/nexus_bridge.py), [`core/logger.py`](file:///d:/Projects/unrealagentharness/core/logger.py)
-* **Responsibilities**:
+- **Responsibilities**:
   - **Tkinter Cockpit**: 100% native Python GUI with zero Chromium/Electron/WebView2 footprint (< 35MB RAM). Provides chat terminal, 35+ one-click quick architect blueprints, engine switching, and live log tailing.
   - **FastAPI Bridge (Port 9090)**: Asynchronous REST & WebSocket server streaming 60 FPS log deltas and handling headless command dispatching.
   - **ConfigManager**: Persisted JSON state storage (`engine_profiles.json`, `llm_profiles.json`, `personality_profiles.json`) with engine verification caching.
   - **NexusBridge**: Interoperability bridge connecting UnrealEd directly to Kirk LaSalle's `.nexus` Post Office (AMTP v3.0) and Chirpy micro-broadcast feeds.
   - **Logger**: Enterprise-grade logging with custom `TRACE` level (5), rotating log files (10MB limit), and global crash hooks.
-* **Audit Findings**:
+- **Audit Findings**:
   - *Strengths*: Zero-dependency lightness allows the cockpit to run alongside heavy game engines without memory contention.
 
 ---
@@ -140,31 +152,37 @@ The **Unreal Agent Harness (UAH)** is an advanced, multi-generational autonomous
 ## 3. Critical Engineering & Reliability Analysis
 
 ### Concurrency, Thread Safety & Race Conditions
+
 * **UI Thread Isolation**: Tkinter requires all GUI modifications to occur on the main execution thread. UAH cleanly isolates background tasks (engine status polling, update checking, WebSocket log watching) into daemon threads (`threading.Thread(daemon=True)`) and uses thread-safe status flags to prevent GUI freezes.
-* **Log Tailing Offset**: `EngineController.get_log_deltas()` tracks `self._last_log_offset` using `f.seek()` and `f.tell()`. This guarantees $O(1)$ memory consumption and avoids reading the entire disk file on every polling cycle.
-* **File Write Safety**: In `ConfigManager._save_json()`, file writes are guarded by exception handlers preventing configuration corruption if disk operations are interrupted.
+- **Log Tailing Offset**: `EngineController.get_log_deltas()` tracks `self._last_log_offset` using `f.seek()` and `f.tell()`. This guarantees $O(1)$ memory consumption and avoids reading the entire disk file on every polling cycle.
+- **File Write Safety**: In `ConfigManager._save_json()`, file writes are guarded by exception handlers preventing configuration corruption if disk operations are interrupted.
 
 ### Resource Management, File Descriptors & Process Lifecycle
+
 * **File Descriptors**: All file I/O operations in `formula_engine.py`, `config_manager.py`, and `logger.py` utilize Python `with open(...)` context managers, ensuring immediate closure of file descriptors upon completion.
-* **Rotating Log Handlers**: `core/logger.py` configures `RotatingFileHandler` with `maxBytes=10*1024*1024` (10 MB) and `backupCount=5`. This prevents uncontrolled disk expansion during continuous level design sessions.
-* **Image Buffer Cleanup**: Viewport screenshots captured in `EngineController.capture_viewport_image()` use in-memory `io.BytesIO()` streams with explicit buffer deallocation.
+- **Rotating Log Handlers**: `core/logger.py` configures `RotatingFileHandler` with `maxBytes=10*1024*1024` (10 MB) and `backupCount=5`. This prevents uncontrolled disk expansion during continuous level design sessions.
+- **Image Buffer Cleanup**: Viewport screenshots captured in `EngineController.capture_viewport_image()` use in-memory `io.BytesIO()` streams with explicit buffer deallocation.
 
 ### Security Audit: Secret Redaction, Command Sanitization & Path Traversal
+
 * **API Key & Credential Redaction**:
   - `core/logger.py` implements regex pattern matching across all log records and crash dumps:
+
     ```python
     re.sub(r'(sk-[a-zA-Z0-9_-]{20,}|AIzaSy[a-zA-Z0-9_-]{33}|ghp_[a-zA-Z0-9]{36})', '[REDACTED_API_KEY]', dump)
     ```
+
   - API keys stored in `config/llm_profiles.json` are never written to standard output or trace logs.
-* **Path Traversal Containment**: Engine directory resolution enforces absolute path validation against configured engine root boundaries.
-* **Subprocess Execution**: Commands executed via `subprocess.run` or `subprocess.Popen` specify explicit working directories (`cwd`) and avoid shell injection vectors by using tokenized argument arrays where possible.
+- **Path Traversal Containment**: Engine directory resolution enforces absolute path validation against configured engine root boundaries.
+- **Subprocess Execution**: Commands executed via `subprocess.run` or `subprocess.Popen` specify explicit working directories (`cwd`) and avoid shell injection vectors by using tokenized argument arrays where possible.
 
 ### Error Handling, Crash Trapping & Recovery Mechanisms
+
 * **Global Exception Hooks**:
   - Installed `sys.excepthook` intercepts uncaught exceptions on the main thread.
   - Installed `threading.excepthook` intercepts uncaught exceptions across background worker threads.
   - Uncaught exceptions write a comprehensive diagnostic dump to `logs/agent_harness_crash.log` containing thread name, timestamp, OS platform, sanitized environment variables, and full tracebacks.
-* **Win32 Window Fallbacks**: If UnrealEd is minimized, unresponsive, or experiencing a modal freeze, `EngineController` automatically attempts `#32770` dialog dismissal and falls back to script-based `EXEC` injection.
+- **Win32 Window Fallbacks**: If UnrealEd is minimized, unresponsive, or experiencing a modal freeze, `EngineController` automatically attempts `#32770` dialog dismissal and falls back to script-based `EXEC` injection.
 
 ---
 
@@ -183,6 +201,7 @@ The table below summarizes verified compatibility across all supported Unreal En
 | **Unreal Engine 5.x Bridge** | UE5 | Unreal Editor 5.x | 🟡 Tier 2 Supported | REST/WebSocket Bridge to UE5 Python Subsystem & MCP Agent Bridge. |
 
 ### Python Environment Compatibility
+
 - **Python 3.10 – 3.12**: 🟢 100% Native & Fully Compatible (FastAPI, PyWin32, Tkinter, PIL).
 - **Python 3.13 – 3.14**: 🟢 Fully Compatible (Passed all 70 unit tests in 2.92 seconds).
 
@@ -191,6 +210,7 @@ The table below summarizes verified compatibility across all supported Unreal En
 ## 5. Comprehensive AI Model Evaluation for Unreal Editor World Creation
 
 Level design and spatial synthesis require unique model strengths:
+
 1. **Spatial & Mathematical Reasoning**: Ability to compute 3D bounding boxes, non-overlapping room layouts, and heights.
 2. **Deterministic Syntax & Schema Adherence**: Flawless output of T3D PolyList coordinates, UnrealScript classes, and JSON tool parameters without hallucinating non-existent properties.
 3. **Multi-Modal Vision Perception**: Visual inspection of 2D top/side wireframes and 3D textured viewports to detect BSP cuts or lighting anomalies.
@@ -216,19 +236,23 @@ Level design and spatial synthesis require unique model strengths:
 ### Frontier Cloud Models
 
 #### 1. Google Gemini 2.5 Flash (`gemini-2.5-flash`) — *Top Recommendation*
+
 - **Why it Excels**: Outstanding price-performance ratio, sub-half-second response times, native JSON structured output, and high-fidelity vision processing for UnrealEd viewport screenshots.
 - **Context Window**: 1,000,000+ tokens (can absorb entire game mod package listings and directory trees).
 - **Ideal For**: Real-time conversational building in the In-Editor Cockpit, fast iterative adjustments ("add 4 sniper alcoves", "raise ceiling by 256 UU", "place red armor on the upper dais").
 
 #### 2. Google Gemini 2.5 Pro (`gemini-2.5-pro`)
+
 - **Why it Excels**: Industry-leading 2M token context, state-of-the-art multi-modal spatial comprehension, and mathematical precision for multi-room interconnected level designs.
 - **Ideal For**: Generating entire tournament maps from scratch with complete themed lighting, multi-level path networks, and complex objective placement.
 
 #### 3. Anthropic Claude 3.7 Sonnet (`claude-3-7-sonnet-20250219`)
+
 - **Why it Excels**: Hybrid reasoning mode allows the model to spend "thinking" budget planning exact 3D spatial coordinate trees and validating non-overlapping brush boundaries before emitting tool calls.
 - **Ideal For**: Complex UnrealScript class authoring, custom mod actor programming, and intricate CTF base symmetry design.
 
 #### 4. OpenAI GPT-4o & Groq Llama 3.3 70B
+
 - **GPT-4o**: Rock-solid JSON tool-calling reliability and wide ecosystem compatibility.
 - **Groq Llama 3.3 70B**: Unrivaled inference speed (300+ tokens/sec) providing zero-lag interactive response in terminal sessions.
 
@@ -239,12 +263,15 @@ Level design and spatial synthesis require unique model strengths:
 For game studios, confidential projects, or offline workstations without internet access, UAH connects directly to local inference runtimes:
 
 #### 1. Qwen 2.5 Coder 32B (`ollama run qwen2.5-coder:32b`)
+
 - **Best-in-Class Local Model**: Exhibits exceptional proficiency in code synthesis, T3D syntax adherence, and coordinate math. Runs comfortably on modern GPUs with 24GB VRAM (e.g. RTX 3090, RTX 4090).
 
 #### 2. Llama 3.3 70B Instruct (`ollama run llama3.3:70b`)
+
 - **High-Capacity Open Architecture**: Near-frontier intelligence for level layout planning, ambient narrative world-building, and complex botpath logic.
 
 #### 3. DeepSeek-R1 14B / 32B (`ollama run deepseek-r1:14b`)
+
 - **Local Reasoning Engine**: Ideal for solving complex spatial puzzles and calculating exact JumpPad physics trajectories locally.
 
 ---
@@ -254,6 +281,7 @@ For game studios, confidential projects, or offline workstations without interne
 Configuring your chosen model in Unreal Agent Harness takes less than 30 seconds:
 
 #### Method A: Via In-Editor Cockpit UI (Recommended)
+
 1. Launch the cockpit: Double-click `launch_harness_universal.bat` or run `python -m ui.tk_harness_cockpit`.
 2. Click **`⚙️ SETTINGS`** in the top navigation bar to open the configuration drawer.
 3. In the **LLM Provider** dropdown, select your preferred profile (e.g. `Google Gemini 2.5 Flash`, `Google Gemini 2.5 Pro`, `Anthropic Claude 3.7`, `OpenAI GPT-4o`, or `Local Ollama (Offline)`).
@@ -262,7 +290,9 @@ Configuring your chosen model in Unreal Agent Harness takes less than 30 seconds
 6. Click **`[ SAVE ALL SETTINGS ]`**.
 
 #### Method B: Via `config/llm_profiles.json`
+
 Edit [`config/llm_profiles.json`](file:///d:/Projects/unrealagentharness/config/llm_profiles.json) directly:
+
 ```json
 {
   "active_profile": "google-gemini-flash",
@@ -283,7 +313,9 @@ Edit [`config/llm_profiles.json`](file:///d:/Projects/unrealagentharness/config/
 ```
 
 #### Method C: Via Environment Variables
+
 Set the environment variable in your Windows shell before launching:
+
 ```cmd
 set GEMINI_API_KEY=AIzaSy...
 set AGENT_HARNESS_LOG_LEVEL=DEBUG

@@ -12,6 +12,7 @@ Supports:
 
 import base64
 import io
+import json
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -30,22 +31,23 @@ except ImportError:
 
 from .bootstrap import get_dpi_scale_factor
 from .logger import get_logger
+from .reference_analyzer import ReferenceAnalyzer
 
 logger = get_logger("VisionInspector", "vision_inspector.log")
 
-# OldUnreal 469e UnrealEd viewport layout constants (approximate)
-# The main window has 4 quadrant viewports:
-# ┌──────────┬──────────┐
-# │  3D Persp │  Top XY  │
-# ├──────────┼──────────┤
-# │ Front XZ │ Side YZ  │
-# └──────────┴──────────┘
+# OldUnreal 469e & UnrealEd Standard Viewport Layout:
+# ┌──────────────┬──────────────┬──────────────┐
+# │   Top (XY)   │  Front (XZ)  │  Side (YZ)   │
+# ├──────────────┴──────────────┴──────────────┤
+# │             Dynamic Light (3D)             │
+# └────────────────────────────────────────────┘
 
 VIEWPORT_QUADRANTS = {
-    "perspective": (0.0, 0.0, 0.5, 0.5),   # top-left (x%, y%, w%, h%)
-    "top":         (0.5, 0.0, 0.5, 0.5),   # top-right
-    "front":       (0.0, 0.5, 0.5, 0.5),   # bottom-left
-    "side":        (0.5, 0.5, 0.5, 0.5),   # bottom-right
+    "top":           (0.0, 0.0, 1.0 / 3.0, 0.5),     # top-left (x%, y%, w%, h%)
+    "front":         (1.0 / 3.0, 0.0, 1.0 / 3.0, 0.5), # top-center
+    "side":          (2.0 / 3.0, 0.0, 1.0 / 3.0, 0.5), # top-right
+    "perspective":   (0.0, 0.5, 1.0, 0.5),           # bottom full-width
+    "dynamic_light": (0.0, 0.5, 1.0, 0.5),           # alias for bottom dynamic light
 }
 
 
@@ -62,6 +64,35 @@ class VisionInspector:
         else:
             self.screenshots_dir = Path(__file__).resolve().parent.parent / "logs" / "screenshots"
         self.screenshots_dir.mkdir(parents=True, exist_ok=True)
+        self.reference_analyzer = ReferenceAnalyzer(self.screenshots_dir.parent / "reference_artifacts")
+
+    def analyze_reference(self, image_path: str, annotation_regions: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Analyzes a supplied reference and returns its normalized scene graph."""
+        graph_path = self.reference_analyzer.analyze_to_json(Path(image_path))
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        graph["scene_graph_path"] = str(graph_path)
+        return graph
+
+    def analyze_viewport_quality(self, image: "Image.Image") -> Dict[str, Any]:
+        """Runs deterministic visual smoke checks on a captured viewport."""
+        if image is None:
+            return {"ok": False, "reason": "No viewport image supplied"}
+        rgb = image.convert("RGB")
+        pixels = list(rgb.get_flattened_data() if hasattr(rgb, "get_flattened_data") else rgb.getdata())
+        if not pixels:
+            return {"ok": False, "reason": "Empty viewport image"}
+        width, height = rgb.size
+        upper = pixels[: max(width * max(height // 3, 1), 1)]
+        red_like = sum(1 for r, g, b in upper if r > 110 and r > g * 1.35 and r > b * 1.35)
+        dark = sum(1 for r, g, b in upper if r < 20 and g < 20 and b < 20)
+        upper_count = max(len(upper), 1)
+        return {
+            "ok": red_like / upper_count < 0.45,
+            "upper_red_ratio": round(red_like / upper_count, 4),
+            "upper_dark_ratio": round(dark / upper_count, 4),
+            "size": {"width": width, "height": height},
+            "findings": (["opaque_or_red_upper_surface"] if red_like / upper_count >= 0.45 else []),
+        }
 
     def capture_full_window(self, hwnd: int) -> Optional[Image.Image]:
         """
@@ -251,3 +282,23 @@ class VisionInspector:
 
         logger.info(f"Built vision context: {len(context['viewports'])} viewport(s) captured")
         return context
+
+    def capture_all_viewports(self, hwnd: int) -> Dict[str, Optional["Image.Image"]]:
+        """
+        Captures all 4 standard viewports (top, front, side, perspective/dynamic_light)
+        as individual PIL Images.
+        """
+        return {
+            "top": self.capture_viewport(hwnd, "top"),
+            "front": self.capture_viewport(hwnd, "front"),
+            "side": self.capture_viewport(hwnd, "side"),
+            "dynamic_light": self.capture_viewport(hwnd, "dynamic_light"),
+        }
+
+    def capture_standard_quad_view(self, hwnd: int) -> Dict[str, Any]:
+        """
+        Captures all standard viewports (Top, Front, Side, and Dynamic Light)
+        and packages them for multimodal LLM spatial evaluation.
+        """
+        return self.build_vision_context(hwnd, viewports=["top", "front", "side", "dynamic_light"])
+

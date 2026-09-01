@@ -9,6 +9,65 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
     {
         "type": "function",
         "function": {
+            "name": "analyze_reference_image",
+            "description": "Analyzes a reference image, masks red operator annotations, extracts clean edges, and creates a normalized Valley Fortress scene graph before geometry synthesis.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "image_path": {
+                        "type": "string",
+                        "description": "Absolute path to a PNG, JPG, or BMP reference image available to the Harness.",
+                    },
+                },
+                "required": ["image_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "build_reference_valley_blockout",
+            "description": "Builds a standard-detail UT99 Valley Fortress macro blockout from a reviewed normalized scene graph; does not perform the final high-detail pass.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "scene_graph_path": {
+                        "type": "string",
+                        "description": "Absolute path to a reviewed uah.valley_scene_graph.v1 JSON artifact.",
+                    },
+                },
+                "required": ["scene_graph_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "validate_generated_map",
+            "description": "Validates a generated Unreal actor manifest for required player starts and minimum start separation without launching the game.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "actor_file": {
+                        "type": "string",
+                        "description": "Absolute path to a generated actor T3D manifest.",
+                    },
+                },
+                "required": ["actor_file"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "inspect_viewport_quality",
+            "description": "Captures the connected UnrealEd viewport and runs a visual smoke check for an opaque/red upper surface and empty capture.",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "execute_unrealed_commands",
             "description": "Executes one or more raw UnrealEd console/exec commands directly in UEditorEngine.",
             "parameters": {
@@ -341,6 +400,30 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
     {
         "type": "function",
         "function": {
+            "name": "configure_unrealed_viewports",
+            "description": "Configures UnrealEd to the standard 4-viewport layout (Top XY, Front XZ, Side YZ along the top row, and Dynamic Light 3D along the bottom row).",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "capture_standard_quad_view",
+            "description": "Captures all 4 standard viewports (Top, Front, Side, and Dynamic Light 3D) and packages them for multimodal spatial analysis.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "inspect_viewport",
             "description": "Captures a specific UnrealEd viewport (perspective, top, front, side) and returns a base64-encoded PNG for multimodal spatial analysis.",
             "parameters": {
@@ -348,7 +431,7 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
                 "properties": {
                     "viewport": {
                         "type": "string",
-                        "enum": ["perspective", "top", "front", "side", "all"],
+                        "enum": ["perspective", "top", "front", "side", "dynamic_light", "all"],
                         "description": "Which viewport to capture.",
                     },
                     "add_grid": {
@@ -359,6 +442,7 @@ UNREALED_TOOLS: List[Dict[str, Any]] = [
             },
         },
     },
+
     {
         "type": "function",
         "function": {

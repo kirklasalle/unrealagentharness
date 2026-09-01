@@ -101,17 +101,27 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 _file_formatter = logging.Formatter(fmt=DETAILED_FORMAT, datefmt=DATE_FORMAT)
 _console_formatter = ColoredConsoleFormatter(fmt=CONSOLE_FORMAT, datefmt=DATE_FORMAT)
 
+class SafeRotatingFileHandler(RotatingFileHandler):
+    """Windows-safe RotatingFileHandler that gracefully handles temporary WinError 32 file locks during rollover."""
+
+    def doRollover(self):
+        try:
+            super().doRollover()
+        except (PermissionError, OSError):
+            pass
+
+
 # Shared master file handler
-_master_file_handler: Optional[RotatingFileHandler] = None
+_master_file_handler: Optional[SafeRotatingFileHandler] = None
 _master_handler_lock = threading.Lock()
 
 
-def get_master_file_handler() -> RotatingFileHandler:
+def get_master_file_handler() -> SafeRotatingFileHandler:
     """Returns a singleton rotating file handler for the consolidated master log."""
     global _master_file_handler
     with _master_handler_lock:
         if _master_file_handler is None:
-            _master_file_handler = RotatingFileHandler(
+            _master_file_handler = SafeRotatingFileHandler(
                 str(MASTER_LOG_FILE),
                 maxBytes=10 * 1024 * 1024,  # 10 MB per file
                 backupCount=5,
@@ -163,7 +173,7 @@ def get_logger(
     if log_filename and log_filename != "agent_harness.log":
         try:
             comp_log_path = LOGS_DIR / log_filename
-            fh = RotatingFileHandler(
+            fh = SafeRotatingFileHandler(
                 str(comp_log_path),
                 maxBytes=5 * 1024 * 1024,  # 5 MB per component file
                 backupCount=3,

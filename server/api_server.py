@@ -71,7 +71,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -137,9 +137,14 @@ def execute_commands(req: ExecRequest):
 
 @app.post("/api/spawn_actor")
 def spawn_actor(req: SpawnActorRequest):
-    cmd = f"ACTOR ADD CLASS={req.actor_class} LOCATION=({req.location[0]},{req.location[1]},{req.location[2]})"
-    res = controller.execute_command(cmd)
-    return {"status": "success", "command": cmd, "result": res}
+    loc = req.location if len(req.location) >= 3 else [0.0, 0.0, 0.0]
+    cmds = [
+        f"BRUSH MOVETO X={loc[0]} Y={loc[1]} Z={loc[2]}",
+        f"ACTOR ADD CLASS={req.actor_class}",
+        "FLUSH",
+    ]
+    results = controller.execute_batch(cmds)
+    return {"status": "success", "commands": cmds, "results": results}
 
 
 @app.post("/api/chat")

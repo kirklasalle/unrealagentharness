@@ -15,7 +15,7 @@ echo [%DATE% %TIME%] Launch Args: %* >> "%LAUNCH_LOG%"
 
 echo ======================================================================
 echo   UNREAL ENGINE AI AGENT HARNESS (UNIVERSAL MULTI-ENGINE)
-echo   Supports: UT99 GOTY / UTron TC Mod / UT2003 / UT2004 / UE2.5+
+echo   Supports: UT99 GOTY / Unreal TC & Mods / UT2003 / UT2004 / UE2.5+
 echo ======================================================================
 echo.
 

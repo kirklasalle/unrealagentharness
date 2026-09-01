@@ -6,6 +6,7 @@ Handles Win32 UI Handles, Command Bar injection, Log streaming, and Viewport Cap
 
 import ctypes
 import io
+import json
 import math
 import os
 import subprocess
@@ -206,6 +207,66 @@ class EngineController:
             logger.error(f"Failed to launch UnrealEd: {e}")
             return False
 
+    def launch_playtest(
+        self,
+        map_name: str = "Current",
+        game_type: Optional[str] = None,
+        num_bots: int = 0,
+    ) -> Dict[str, Any]:
+        """Saves the current editor map, validates it, and launches a playtest.
+
+        The editor's in-memory level is never treated as playable until a
+        deterministic map file exists on disk. This specifically prevents the
+        historical ``Index.ut2``/stale-map launch failure.
+        """
+        profile = self.config_mgr.get_active_engine_profile()
+        root_dir = Path(profile.get("root_dir", self.system_dir.parent))
+        maps_dir = root_dir / "Maps"
+        maps_dir.mkdir(parents=True, exist_ok=True)
+        generation = str(profile.get("generation", "UE1")).upper()
+        extension = ".ut2" if generation in {"UE2", "UE2.0", "UE2.5"} else ".unr"
+        playtest_stem = str(map_name) if map_name and str(map_name).lower() != "current" else "AgentPlaytest"
+        playtest_file = maps_dir / f"{playtest_stem}{extension}"
+
+        if str(map_name).lower() == "current":
+            save_result = self.execute_command(f'MAP SAVE FILE="{playtest_file}"')
+            if not save_result.get("success"):
+                return {"success": False, "stage": "save", "error": save_result.get("error", "Map save command failed")}
+            deadline = time.time() + 8.0
+            while time.time() < deadline and not playtest_file.exists():
+                time.sleep(0.1)
+            if not playtest_file.exists():
+                return {"success": False, "stage": "save", "error": f"Editor did not create {playtest_file}"}
+
+        log_gate = self.validate_editor_log()
+        if not log_gate["ok"]:
+            return {
+                "success": False,
+                "stage": "preflight",
+                "error": "Editor log contains blocking build warnings",
+                "validation": log_gate,
+            }
+
+        game_exe = profile.get("game_exe", "UnrealTournament.exe")
+        game_path = self.system_dir / game_exe
+        if not game_path.exists():
+            return {"success": False, "stage": "launch", "error": f"Game executable not found: {game_path}"}
+
+        selected_game = game_type or profile.get("signature_classes", {}).get("GameType", "Botpack.DeathMatchPlus")
+        url = playtest_file.name
+        if selected_game:
+            url += f"?game={selected_game}"
+        if num_bots > 0:
+            url += f"?NumBots={int(num_bots)}"
+        args = [url]
+        args.extend(str(profile.get("game_args", "")).split())
+        try:
+            process = subprocess.Popen([str(game_path), *args], cwd=str(self.system_dir))
+            return {"success": True, "stage": "launched", "map_file": str(playtest_file), "pid": process.pid, "args": args}
+        except Exception as e:
+            logger.error(f"Failed to launch playtest: {e}")
+            return {"success": False, "stage": "launch", "error": str(e)}
+
     # -----------------------------------------------------------------
     # COMMAND EXECUTION
     # -----------------------------------------------------------------
@@ -286,6 +347,149 @@ class EngineController:
             elif delay_between > 0:
                 time.sleep(delay_between)
         return results
+
+    def execute_batch_staged(
+        self,
+        commands: List[str],
+        stage_callback: Optional[Any] = None,
+        delay_between: float = 0.08,
+    ) -> Dict[str, Any]:
+        """Executes commands in observable stages and returns a QA summary."""
+        stages = [
+            ("world", lambda c: c.startswith("MAP NEW") or c.startswith("OBJ LOAD") or "ValleyMain" in c),
+            ("geometry", lambda c: "BRUSH" in c),
+            ("actors", lambda c: "MAP IMPORT" in c or "ACTOR" in c),
+            ("compile", lambda c: any(token in c for token in ("MAP REBUILD", "LIGHT APPLY", "PATHS BUILD", "PATHS DEFINE"))),
+        ]
+        results: List[Dict[str, Any]] = []
+        current_stage = "prepare"
+        for index, command in enumerate(commands):
+            clean = command.strip()
+            if not clean:
+                continue
+            for name, predicate in stages:
+                if predicate(clean):
+                    current_stage = name
+                    break
+            if stage_callback:
+                stage_callback(current_stage, index + 1, len(commands), clean)
+            result = self.execute_command(clean)
+            results.append(result)
+            if not result.get("success", False):
+                return {"ok": False, "stage": current_stage, "index": index, "results": results}
+            upper = clean.upper()
+            if "PATHS BUILD" in upper:
+                time.sleep(0.8)
+                self.dismiss_dialogs()
+            elif any(token in upper for token in ("REBUILD", "IMPORT", "SUBTRACT", "MAP NEW", "BRUSH ADD")):
+                time.sleep(0.4)
+                self.dismiss_dialogs()
+            elif delay_between > 0:
+                time.sleep(delay_between)
+        return {"ok": True, "stage": current_stage, "results": results}
+
+    def validate_editor_log(self, lines: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Classifies known UnrealEd geometry/navigation warnings for build gates."""
+        source = lines if lines is not None else self.get_log_deltas()
+        patterns = {
+            "collapsed_polygon": "collapsed a point",
+            "scout_didnt_fit": "scout didn't fit",
+            "no_valid_start": "no valid start found",
+            "failed_spawn": "failed to spawn player actor",
+            "too_close": "may be too close",
+        }
+        findings = {
+            key: [line for line in source if needle in line.lower()]
+            for key, needle in patterns.items()
+        }
+        errors = {key: value for key, value in findings.items() if value}
+        return {
+            "ok": not errors,
+            "findings": findings,
+            "error_count": sum(len(value) for value in errors.values()),
+        }
+
+    def validate_t3d_actor_manifest(self, actor_file: Path) -> Dict[str, Any]:
+        """Performs deterministic preflight checks on generated actor T3D."""
+        text = Path(actor_file).read_text(encoding="utf-8", errors="replace")
+        import re
+        locations = []
+        for match in re.finditer(
+            r"Begin Actor Class=([^ ]+) Name=([^\r\n]+).*?Location=\(X=([-+0-9.]+),Y=([-+0-9.]+),Z=([-+0-9.]+)\)",
+            text,
+            flags=re.DOTALL,
+        ):
+            locations.append({
+                "class": match.group(1), "name": match.group(2).strip(),
+                "location": tuple(float(match.group(i)) for i in (3, 4, 5)),
+            })
+
+        starts = [a for a in locations if a["class"].endswith("PlayerStart")]
+        warnings: List[str] = []
+        for i, first in enumerate(starts):
+            for second in starts[i + 1:]:
+                distance = sum((first["location"][axis] - second["location"][axis]) ** 2 for axis in range(3)) ** 0.5
+                if distance < 128.0:
+                    warnings.append(f"Player starts too close: {first['name']} / {second['name']}")
+        return {
+            "ok": bool(starts) and not warnings,
+            "actor_count": len(locations),
+            "player_start_count": len(starts),
+            "warnings": warnings,
+        }
+
+    def run_map_preflight(self, actor_file: Optional[Path] = None) -> Dict[str, Any]:
+        """Combines generated-actor and editor-log gates for build orchestration."""
+        report: Dict[str, Any] = {"ok": True, "checks": {}}
+        if actor_file and Path(actor_file).exists():
+            report["checks"]["actors"] = self.validate_t3d_actor_manifest(Path(actor_file))
+            report["ok"] = report["ok"] and report["checks"]["actors"]["ok"]
+        report["checks"]["editor_log"] = self.validate_editor_log()
+        report["ok"] = report["ok"] and report["checks"]["editor_log"]["ok"]
+        return report
+
+    def validate_generated_map(self, actor_file: Optional[Path] = None) -> Dict[str, Any]:
+        """Validates generated actor content without consuming live log state.
+
+        Use :meth:`run_map_preflight` when the caller intentionally wants to
+        combine this deterministic manifest check with current UnrealEd log
+        findings. Keeping the two operations separate makes offline/unit
+        validation reproducible and prevents an unrelated previous map's log
+        warning from contaminating a newly generated manifest check.
+        """
+        if actor_file and Path(actor_file).exists():
+            actors = self.validate_t3d_actor_manifest(Path(actor_file))
+            return {"ok": actors["ok"], "checks": {"actors": actors}}
+        return {"ok": False, "checks": {"actors": {"ok": False, "warnings": ["Actor manifest not found"]}}}
+
+    def build_manifest(
+        self,
+        build_id: str,
+        actor_file: Optional[Path] = None,
+        scene_graph_path: Optional[Path] = None,
+    ) -> Dict[str, Any]:
+        """Creates a portable build manifest from current engine evidence."""
+        manifest = {
+            "schema": "uah.build_manifest.v1",
+            "build_id": build_id,
+            "engine_id": self.config_mgr.get_active_engine_id(),
+            "system_dir": str(self.system_dir),
+            "actor_file": str(actor_file) if actor_file else "",
+            "scene_graph_path": str(scene_graph_path) if scene_graph_path else "",
+            "preflight": self.run_map_preflight(actor_file),
+            "created_at": time.time(),
+        }
+        manifest_dir = Path(__file__).resolve().parent.parent / "logs" / "build_manifests"
+        manifest_dir.mkdir(parents=True, exist_ok=True)
+        target = manifest_dir / f"{build_id}.json"
+        target.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        manifest["manifest_path"] = str(target)
+        try:
+            from .memory_engine import MemoryEngine
+            MemoryEngine().record_build_manifest(manifest)
+        except Exception as exc:
+            logger.debug(f"Build manifest graph record unavailable: {exc}")
+        return manifest
 
     # -----------------------------------------------------------------
     # DIALOG DISMISSAL & UTILITIES
@@ -376,3 +580,102 @@ class EngineController:
         except Exception as e:
             logger.error(f"Viewport capture error: {e}")
             return None
+
+    def capture_viewport_quality(self) -> Dict[str, Any]:
+        """Captures the editor viewport and runs the visual smoke gate."""
+        image_bytes = self.capture_viewport_image()
+        if not image_bytes:
+            return {"ok": False, "reason": "Viewport capture unavailable"}
+        try:
+            from PIL import Image
+            image = Image.open(io.BytesIO(image_bytes))
+            from .vision_inspector import VisionInspector
+            return VisionInspector().analyze_viewport_quality(image)
+        except Exception as exc:
+            return {"ok": False, "reason": str(exc)}
+
+    # -----------------------------------------------------------------
+    # STANDARD VIEWPORT CONFIGURATION (TOP, FRONT, SIDE + DYNAMIC LIGHT)
+    # -----------------------------------------------------------------
+    def configure_standard_viewports(self) -> Dict[str, Any]:
+        """
+        Configures UnrealEd to the standard 4-viewport layout:
+        - Top row (1/3 width each, 1/2 height): Top (XY), Front (XZ), Side (YZ) scaled for complete view
+        - Bottom row (full width, 1/2 height): Dynamic Light (3D perspective)
+        Updates UnrealEd.ini and dispatches camera alignment/extents commands.
+        """
+        ini_path = self.system_dir / "UnrealEd.ini"
+        ini_updated = False
+        if ini_path.exists():
+            try:
+                content = ini_path.read_text(encoding="utf-8", errors="replace")
+                # Ensure Config=3 in [Viewports] if present
+                import re
+                if "[Viewports]" in content:
+                    content = re.sub(r"(?<=\[Viewports\][\r\n]{1,2})Config=\d+", "Config=3", content)
+                ini_path.write_text(content, encoding="utf-8")
+                ini_updated = True
+                logger.info(f"Updated {ini_path.name} to standard 4-viewport layout (Config=3)")
+            except Exception as e:
+                logger.warning(f"Could not update UnrealEd.ini viewport config: {e}")
+
+        # If connected to live editor, issue viewport alignment, centering, zoom, and redraw commands
+        commands_dispatched = []
+        if self.is_connected():
+            setup_cmds = [
+                # 1. Move camera/starting vantage position out to the adjacent foreground vantage location
+                "CAMERA MOVETO X=-600 Y=1400 Z=400 PITCH=-3000 YAW=-16000 ROLL=0",
+                # 2. Zoom out and center the Top (XY) orthographic grid view
+                "VIEWPORT TOP ZOOM=100",
+                # 3. Zoom out and center the Front (XZ) orthographic grid view
+                "VIEWPORT FRONT ZOOM=100",
+                # 4. Zoom out and center the Side (YZ) orthographic grid view
+                "VIEWPORT SIDE ZOOM=100",
+                # 5. Enable real-time Dynamic Lighting on perspective viewport and redraw all
+                "MODE DYNAMICLIGHT",
+                "CAMERA ALIGN",
+                "VIEWPORT REDRAW",
+            ]
+            for cmd in setup_cmds:
+                res = self.execute_command(cmd)
+                commands_dispatched.append(res)
+
+
+        # Record training and configuration telemetry in Graph Memory
+        try:
+            from .memory_engine import MemoryEngine
+            mem = MemoryEngine()
+            mem.record_graph_node(
+                "viewport:standard_quad_layout",
+                "config",
+                "Standard 4-Viewport Setup (Top, Front, Side + Dynamic Light)",
+                {
+                    "layout": "3_top_ortho_1_bottom_dynamic_light",
+                    "top_row": ["top_xy", "front_xz", "side_yz"],
+                    "bottom_row": ["dynamic_light_3d"],
+                    "ini_updated": ini_updated,
+                    "active_engine": self.config_mgr.get_active_engine_id(),
+                    "timestamp": time.time(),
+                }
+            )
+            mem.record_wisdom(
+                category="viewport_standard",
+                title="Standard 4-Viewport Editor Setup (Top, Front, Side + Dynamic Light)",
+                content=(
+                    "The world-class default Unreal Editor layout splits the workspace into a top tri-view "
+                    "(Top XY, Front XZ, Side YZ scaled to full extents) and a bottom panoramic Dynamic Light 3D viewport. "
+                    "This ensures continuous multi-angle spatial awareness and real-time lighting evaluation."
+                ),
+                tags="viewport,unrealed,dynamic_light,ortho,standards",
+                confidence=1.0,
+            )
+        except Exception as e:
+            logger.debug(f"Memory recording for viewport setup deferred: {e}")
+
+        return {
+            "success": True,
+            "ini_updated": ini_updated,
+            "commands": commands_dispatched,
+            "layout": "Top (XY) | Front (XZ) | Side (YZ) above Dynamic Light (3D)",
+        }
+

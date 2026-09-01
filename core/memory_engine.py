@@ -31,7 +31,9 @@ class MemoryEngine:
 
         self._init_db()
         self._seed_foundational_wisdom()
+        self.seed_procedural_technology_graph()
         logger.info(f"MemoryEngine initialized with database at: '{self.db_path}'")
+
 
     @contextmanager
     def _connection(self) -> Generator[sqlite3.Connection, None, None]:
@@ -103,6 +105,29 @@ class MemoryEngine:
                 )
             """)
 
+            # Graph-shaped durable memory for reference artifacts, scene
+            # graphs, build manifests, findings, and approvals.
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS graph_nodes (
+                    id TEXT PRIMARY KEY,
+                    node_type TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at REAL NOT NULL,
+                    updated_at REAL NOT NULL
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS graph_edges (
+                    source_id TEXT NOT NULL,
+                    relation TEXT NOT NULL,
+                    target_id TEXT NOT NULL,
+                    payload_json TEXT DEFAULT '{}',
+                    created_at REAL NOT NULL,
+                    PRIMARY KEY (source_id, relation, target_id)
+                )
+            """)
+
             conn.commit()
 
     def _seed_foundational_wisdom(self) -> None:
@@ -137,6 +162,42 @@ class MemoryEngine:
                 "8-bit HSV Unreal Color Radiosity",
                 "In UE1/UE2.5, LightBrightness (120-220), LightRadius (32-64), LightHue (0-255: Red=0, Gold=35, Green=85, Cyan=145, Blue=170), and LightSaturation (0=Pure Vivid, 255=White Monochrome).",
                 "lighting,radiosity,colors,hsv,atmosphere",
+            ),
+            (
+                "csg_skybox",
+                "Outdoor Skybox Projection & FakeBackdrop Rule",
+                "Outdoor ceilings must be flagged with PF_FakeBackdrop | PF_Unlit (Flags=4194432) and accompanied by a thin SkyOpening subtract slab to guarantee the isolated SkyZoneInfo projects celestial horizons without opaque grey tiles.",
+                "skybox,fakebackdrop,unlit,ceiling,flags,skyzone",
+            ),
+            (
+                "civil_engineering",
+                "Bedrock Grounding & Terrain Ramp Integration",
+                "Never place additive architecture hovering over void. Always anchor fortresses and towers with solid bedrock bluffs, cliff skirts, and sloping terrain ramps connected to valley floor elevation.",
+                "architecture,grounding,bluff,ramp,cliff,terrain",
+            ),
+            (
+                "level_safety",
+                "Chasm & River Gorge End-Cap Boundary Containment",
+                "Subtracted river gorges and trenches must never terminate openly at world extents. Always seal both ends with solid rock end-cap blocking brushes (128-256 UU) to prevent player falls off the map.",
+                "safety,gorge,river,bounds,void,fall,bsp",
+            ),
+            (
+                "csg_detail",
+                "Semi-Solid Architectural Enrichment (Zero BSP Cuts)",
+                "Always generate decorative detail (merlons, buttresses, bridge arch ribs, stone piers, rock terraces) as semi-solid brushes (PF_Semisolid = 32). This maximizes visual fidelity within 75% engine budget without BSP cuts.",
+                "semisolid,merlon,buttress,arch,pier,terrace,detail",
+            ),
+            (
+                "fluid_rendering",
+                "Translucent Waterfall Sheets & River Planes",
+                "Waterfall sheets and river water planes must be flagged with PF_Translucent (4) | PF_Semisolid (32) = Flags=36 to ensure proper water depth rendering, buoyancy, and translucent cascade visuals.",
+                "water,translucent,fluid,waterfall,river,semisolid",
+            ),
+            (
+                "engine_internals",
+                "UnLevel.h Actors(1) Builder Brush Invariant",
+                "In Unreal Engine C++ architecture (UnLevel.h line 507: check(Actors(1)->Brush != NULL)), Actors(0) is strictly LevelInfo and Actors(1) is hardcoded as the active Builder Brush (CsgOper=CSG_Active). Monolithic T3D files must emit Brush0 as the second actor before all other geometry and non-brush entities to avoid engine assertion crashes.",
+                "unlevel,actors,builder_brush,brush0,csg_active,assertion,crash,t3d",
             ),
         ]
 
@@ -199,7 +260,13 @@ class MemoryEngine:
             params.append(f"%{category}%")
 
         where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-        sql = f"SELECT * FROM wisdom_insights {where_clause} ORDER BY confidence DESC, updated_at DESC LIMIT ?"
+        # Prefer exact title matches for focused operator queries, then fall
+        # back to confidence and recency. This prevents foundational seed
+        # entries from masking a newly recorded, exact user lesson.
+        title_priority = "CASE WHEN LOWER(title) LIKE ? THEN 0 ELSE 1 END, " if tokens else ""
+        if tokens:
+            params.append(f"%{tokens[0]}%")
+        sql = f"SELECT * FROM wisdom_insights {where_clause} ORDER BY {title_priority} confidence DESC, updated_at DESC LIMIT ?"
         params.append(limit)
 
         try:
@@ -254,6 +321,249 @@ class MemoryEngine:
         except Exception as e:
             logger.error(f"Error retrieving build telemetry: {e}")
             return []
+
+    # -------------------------------------------------------------------------
+    # GRAPH MEMORY
+    # -------------------------------------------------------------------------
+    def record_graph_node(
+        self,
+        node_id: str,
+        node_type: str,
+        label: str,
+        payload: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Upserts a durable graph node without storing secret material."""
+        now = time.time()
+        try:
+            with self._connection() as conn:
+                conn.execute("""
+                    INSERT INTO graph_nodes (id, node_type, label, payload_json, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        node_type = excluded.node_type,
+                        label = excluded.label,
+                        payload_json = excluded.payload_json,
+                        updated_at = excluded.updated_at
+                """, (node_id, node_type, label, json.dumps(payload or {}, sort_keys=True), now, now))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Failed to record graph node '{node_id}': {e}")
+            return False
+
+    def record_graph_edge(
+        self,
+        source_id: str,
+        relation: str,
+        target_id: str,
+        payload: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Upserts a typed relationship between durable graph nodes."""
+        try:
+            with self._connection() as conn:
+                conn.execute("""
+                    INSERT INTO graph_edges (source_id, relation, target_id, payload_json, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(source_id, relation, target_id) DO UPDATE SET
+                        payload_json = excluded.payload_json
+                """, (source_id, relation, target_id, json.dumps(payload or {}, sort_keys=True), time.time()))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Failed to record graph edge '{source_id}' -[{relation}]-> '{target_id}': {e}")
+            return False
+
+    def query_graph(self, query: str = "", limit: int = 50) -> List[Dict[str, Any]]:
+        """Returns graph nodes matching a label/type/payload text query."""
+        pattern = f"%{query.lower()}%"
+        try:
+            with self._connection() as conn:
+                rows = conn.execute("""
+                    SELECT id, node_type, label, payload_json, created_at, updated_at
+                    FROM graph_nodes
+                    WHERE LOWER(id) LIKE ? OR LOWER(node_type) LIKE ?
+                       OR LOWER(label) LIKE ? OR LOWER(payload_json) LIKE ?
+                    ORDER BY updated_at DESC LIMIT ?
+                """, (pattern, pattern, pattern, pattern, limit)).fetchall()
+                return [dict(row) for row in rows]
+        except Exception as e:
+            logger.error(f"Failed to query graph memory: {e}")
+            return []
+
+    def record_reference_analysis(
+        self,
+        scene_id: str,
+        source_path: str,
+        scene_graph_path: str,
+        source_sha256: str,
+        landmark_count: int,
+    ) -> bool:
+        """Persists a reference-analysis result and its artifact relationships."""
+        source_id = f"artifact:{source_sha256}"
+        graph_id = f"scene-graph:{scene_id}"
+        ok = self.record_graph_node(
+            source_id,
+            "artifact",
+            Path(source_path).name,
+            {"path": source_path, "sha256": source_sha256, "artifact_kind": "reference_image"},
+        )
+        ok = self.record_graph_node(
+            graph_id,
+            "scene",
+            scene_id,
+            {
+                "scene_graph_path": scene_graph_path,
+                "source_sha256": source_sha256,
+                "landmark_count": landmark_count,
+                "analysis_schema": "uah.valley_scene_graph.v1",
+            },
+        ) and ok
+        return self.record_graph_edge(source_id, "derived_to", graph_id) and ok
+
+    def record_artifact(
+        self,
+        artifact_id: str,
+        path: str,
+        kind: str,
+        size: int,
+        sha256: str,
+    ) -> bool:
+        """Stores a chat artifact node for future retrieval and audit."""
+        return self.record_graph_node(
+            f"artifact:{artifact_id}",
+            "artifact",
+            Path(path).name,
+            {"path": path, "kind": kind, "size": size, "sha256": sha256},
+        )
+
+    def record_build_manifest(self, manifest: Dict[str, Any]) -> bool:
+        """Persists a build manifest node for future diagnosis and retrieval."""
+        build_id = str(manifest.get("build_id", f"build-{int(time.time())}"))
+        ok = self.record_graph_node(
+            f"build:{build_id}", "build", build_id,
+            {key: value for key, value in manifest.items() if key not in {"api_key", "token", "secret"}},
+        )
+        scene_path = manifest.get("scene_graph_path")
+        if scene_path:
+            ok = self.record_graph_edge(f"build:{build_id}", "uses_scene_graph", f"scene-graph:{Path(scene_path).stem}") and ok
+        return ok
+
+    def record_build_finding(self, build_id: str, finding_type: str, message: str, confidence: float = 1.0) -> bool:
+        """Stores a build finding and links it to a build node."""
+        finding_id = f"finding:{build_id}:{finding_type}:{abs(hash(message))}"
+        ok = self.record_graph_node(
+            finding_id,
+            "finding",
+            finding_type,
+            {"message": message, "confidence": confidence, "build_id": build_id},
+        )
+        return self.record_graph_edge(f"build:{build_id}", "has_finding", finding_id) and ok
+
+    def seed_procedural_technology_graph(self) -> None:
+
+        """Seeds the permanent Graph Memory with the complete distilled Unreal Procedural Technology ontology."""
+        nodes = [
+            (
+                "procedural:pcg_csg_stack",
+                "procedural_technology",
+                "Hierarchical CSG Stack (Macro-to-Micro Decomposition)",
+                {
+                    "paradigm": "subtractive_macro_to_semisolid_micro",
+                    "layers": [
+                        "1_subtractive_master_hull",
+                        "2_additive_bedrock_foundations",
+                        "3_subtractive_negative_spaces",
+                        "4_semisolid_detail_multipliers",
+                        "5_nonsolid_translucent_projections",
+                    ],
+                    "budget_limit_pct": 0.75,
+                },
+            ),
+            (
+                "procedural:watertight_bsp_math",
+                "csg_rule",
+                "Watertight BSP Mathematical Plane Equations",
+                {
+                    "plane_equation": "Ax + By + Cz + D = 0",
+                    "winding_order": "clockwise_outward_normals",
+                    "non_planar_triangulation": "split_into_coplanar_triangles",
+                    "zero_hom_guarantee": True,
+                },
+            ),
+            (
+                "procedural:stepped_terrain_heightfield",
+                "terrain_rule",
+                "Procedural Heightfield & Stepped Outdoor Terrain in CSG",
+                {
+                    "features": ["beveled_terraces", "interlocking_ramps", "subtracted_river_chasms", "rock_faceting"],
+                    "floor_material": "GenEarth.grasrok2",
+                    "cliff_material": "GenEarth.Rockfac1",
+                },
+            ),
+            (
+                "procedural:atmospheric_radiosity_lighting",
+                "lighting_rule",
+                "Dual-Spectrum Complementary Atmospheric Radiosity",
+                {
+                    "key_light": {"hue": 38, "saturation": 100, "brightness": 250, "type": "warm_sun_torch"},
+                    "fill_light": {"hue": 155, "saturation": 160, "brightness": 180, "type": "cool_sky_water_bounce"},
+                    "dynamic_fx": ["LE_WateryShimmer", "LE_TorchWaver"],
+                },
+            ),
+            (
+                "procedural:ai_reachability_lattice",
+                "navigation_rule",
+                "Automated AI Reachability Lattice & Scout Clearance",
+                {
+                    "node_spacing_range": [300, 650],
+                    "floor_elevation_offset": 30.0,
+                    "scout_collision_cylinder": {"radius": 42.0, "height": 80.0},
+                    "chokepoint_triad": ["approach", "threshold", "exit"],
+                },
+            ),
+            (
+                "procedural:celestial_skybox_parallax",
+                "skybox_rule",
+                "Isolated Parallax Skybox Chamber & FakeBackdrop Projection",
+                {
+                    "chamber_dimension": [1024, 1024, 1024],
+                    "actor": "Engine.SkyZoneInfo",
+                    "surface_flag": 4194432,  # PF_FakeBackdrop | PF_Unlit
+                    "parallax_scale": "infinite",
+                },
+            ),
+            (
+                "procedural:poisson_foliage_scattering",
+                "foliage_rule",
+                "Procedural Foliage & Clustered Poisson Scatter",
+                {
+                    "species": ["UnrealShare.Tree1", "Tree2", "Tree3", "Tree6", "Plant1-7", "BigRock", "Boulder"],
+                    "min_tree_spacing": 256.0,
+                    "max_interactive_actors": 384,
+                },
+            ),
+        ]
+
+        edges = [
+            ("procedural:pcg_csg_stack", "implements_rule", "procedural:watertight_bsp_math"),
+            ("procedural:pcg_csg_stack", "governs_generation", "skill:valley_fortress_synthesis"),
+            ("procedural:stepped_terrain_heightfield", "derived_to", "skill:valley_fortress_synthesis"),
+            ("procedural:atmospheric_radiosity_lighting", "illuminates_scene", "skill:valley_fortress_synthesis"),
+            ("procedural:celestial_skybox_parallax", "projects_vista_for", "skill:valley_fortress_synthesis"),
+            ("procedural:ai_reachability_lattice", "pathfinds_map", "skill:valley_fortress_synthesis"),
+            ("procedural:poisson_foliage_scattering", "populates_terrain", "skill:valley_fortress_synthesis"),
+            ("skill:unrealed_viewport_setup", "inspects_geometry", "procedural:pcg_csg_stack"),
+        ]
+
+        for node_id, node_type, label, payload in nodes:
+            self.record_graph_node(node_id, node_type, label, payload)
+
+        for source_id, relation, target_id in edges:
+            self.record_graph_edge(source_id, relation, target_id)
+
+        logger.info(f"Graph Memory seeded with {len(nodes)} procedural technology nodes and {len(edges)} semantic edges.")
+
+
 
     # -------------------------------------------------------------------------
     # DYNAMIC KNOWLEDGE BASE INDEXING (RAG)

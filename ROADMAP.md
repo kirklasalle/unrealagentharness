@@ -17,7 +17,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 │                        2026 - 2027 ROADMAP TRAJECTORY OVERVIEW                         │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ Q3 2026 (v2.14 - v3.1)  │ Multi-Engine Architecture, Mind-to-World & Web Suite (DONE)  │
-│ Q4 2026 (v3.2 - v3.4)   │ Multi-Modal Vision & Direct Viewport Semantic Spatial Engine │
+│ Q4 2026 (v3.2 - v3.4)   │ Vision-to-World Reliability, Valley Fidelity & Cockpit UX   │
 │ Q1 2027 (v3.5 - v3.7)   │ Autonomous Level Synthesis Swarm & .nexus AMTP v3.0 Hub      │
 │ Q2 2027 (v3.8 - v3.9)   │ Headless CI/CD Level Testing, Bot Simulation & QA Regression │
 │ Q3-Q4 2027 (v4.0)       │ Cross-Engine Universal Level Transpiler (UE1 <-> UE2.5 <-> UE5)│
@@ -29,6 +29,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 ## 📅 Phased Milestone Matrix
 
 ### 🚀 Phase 1: Engine Hardening, Logging & Full Multi-Engine Palettes (*Completed*)
+
 *Status: 🟢 Complete & Verified (v2.12.0 – v2.14.0)*
 
 - [x] **Universal Multi-Engine Support**: Full profile switching and live Win32 targeting across `ut99_goty`, `ut99_chaosut`, `ut99_tacticalops`, `ut2003`, `ut2004`, and `ue5`.
@@ -41,6 +42,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 - [x] **Master Tutorial Knowledgebase (U1 to U5)**: 10,000+ word deep architectural guide covering CSG math, T3D poly grammar, HSV lighting science, and bot ReachSpecs.
 
 ### 🏛️ Phase 1.5: Mind-to-World Synthesizer, Wizard Builder & Public Web Suite (*Completed*)
+
 *Status: 🟢 Complete & Verified (v2.15.0 – v3.1.0)*
 
 - [x] **Ultra Geometry Detail Engine (75% Engine Limit Architecture)**:
@@ -60,7 +62,29 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 ---
 
 ### 👁️ Phase 2: Multi-Modal Vision & Real-Time Viewport Spatial Perception (Q4 2026)
+
 *Status: 🟡 In Progress / Scheduled (v3.2.0 – v3.4.0)*
+
+**Approved:** [`docs/PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md`](docs/PROPOSAL_Valley_Fortress_Vision_UI_Reliability_Elevation.md) — implementation authorized by Kirk LaSalle on 2026-08-30.
+
+- [x] **Reference-to-World foundation:** Separate red operator annotations from source pixels, extract clean edges, classify macro landmarks, and produce a reviewable normalized scene graph before geometry synthesis.
+- [ ] **Valley Fortress blockout gate:** Build skybox, valley silhouette, river axis, east fortress, west waterfall cliffs, and bridges as a measured macro blockout before adding foliage/detail.
+- [ ] **Runtime playability gate:** Validate PlayerStart capsule fit, support surfaces, pickup embedding, class/package availability, BSP warnings, map save output, and actual runtime boot before reporting success.
+- [ ] **Skybox acceptance test:** Verify `SkyZoneInfo`, sky package/texture resolution, visible FakeBackdrop surfaces, isolated chamber, and post-build screenshot content.
+- [x] **Chat artifact foundation:** Add document/image/viewport attachments with size bounds, hashing, local staging, and removable per-turn state.
+- [x] **Provider/model restoration foundation:** Restore profile resolution and preserve the visible provider/model/base URL/key configuration tab.
+- [x] **Fast engine inventory foundation:** Add quick configured/common-path inventory and per-profile verification while retaining deep scan.
+- [x] **Cockpit UX elevation foundation:** Add the primary authoring rail above the Quick Architect Palette while preserving utility controls and advanced features.
+- [x] **Short- and long-term graph memory foundation:** Persist artifacts and reference scene-graph relationships in SQLite.
+- [x] **Provider capability negotiation foundation:** Add declared vision/tool badges, background endpoint test action, and analysis/execution role controls.
+- [x] **Reference-driven macro compiler foundation:** Consume normalized reviewed landmarks to generate deterministic macro coordinates and a separate standard-detail blockout tool.
+- [x] **Runtime QA foundation:** Add deterministic map-save gating, actor-manifest checks, editor-log warning gates, and portable build manifests.
+- [x] **Observable build orchestration:** Report world, geometry, actor, and compile stages and stop on first command failure.
+- [ ] **Full runtime QA harness:** Add engine collision-fit queries, map identity confirmation, post-build screenshot analysis, and successful game boot confirmation.
+- [ ] **Engine-integrated runtime certification:** Verify actual UnrealEd collision support, visible map identity, skybox screenshot content, and successful player login after playtest.
+- [x] **Viewport visual smoke gate foundation:** Detect empty captures and the known opaque/red upper-surface failure pattern.
+- [x] **Measured edge profile foundation:** Persist normalized per-column edge density alongside the scene graph.
+- [x] **Artifact multimodal adapters:** Pass bounded document/image parts to providers that explicitly support them.
 
 - [ ] **High-Fidelity 4K Viewport Inspection**:
   - Win32 DPI-aware screen capture (`SetProcessDpiAwareness`) for multi-monitor 4K coordinate mapping.
@@ -74,6 +98,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 ---
 
 ### 🐝 Phase 3: Swarm Architecture & Multi-Agent Collaborative Design (Q1 2027)
+
 *Status: ⚪ Scheduled (v3.5.0 – v3.7.0)*
 
 - [ ] **Specialized Agent Swarm Roles over `.nexus` AMTP v3.0**:
@@ -87,6 +112,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 ---
 
 ### 🧪 Phase 4: Headless CI/CD Level Synthesis & Automated Bot QA Testing (Q2 2027)
+
 *Status: ⚪ Scheduled (v3.8.0 – v3.9.0)*
 
 - [ ] **Headless Map Compiler & Validator Pipeline**:
@@ -98,6 +124,7 @@ The **Unreal Agent Harness** is dedicated to pioneering **autonomous, multi-gene
 ---
 
 ### 🌐 Phase 5: Cross-Engine Universal Level Transpiler (Q3-Q4 2027)
+
 *Status: ⚪ Scheduled (v4.0.0)*
 
 - [ ] **Bidirectional Map Transpilation**:

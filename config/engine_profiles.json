@@ -57,7 +57,7 @@
         "system_dir_exists": true,
         "editor_exe_exists": true,
         "game_exe_exists": true,
-        "last_checked": "2026-08-25 19:26:22",
+        "last_checked": "2026-09-01 19:18:27",
         "summary": "Verified: UnrealEd.exe ready in G:\\UnrealTournament\\System"
       }
     },
@@ -355,7 +355,7 @@
         "system_dir_exists": true,
         "editor_exe_exists": true,
         "game_exe_exists": true,
-        "last_checked": "2026-08-24 19:10:24",
+        "last_checked": "2026-09-01 11:27:36",
         "summary": "Verified: UnrealEd.exe ready in G:\\UnrealTournament2004\\System"
       }
     },
@@ -393,7 +393,56 @@
         "NavMeshBoundsVolume": "/Script/NavigationSystem.NavMeshBoundsVolume",
         "GameModeBase": "/Script/Engine.GameModeBase",
         "Character": "/Script/Engine.Character"
+      },
+      "status": {
+        "root_exists": false,
+        "system_dir_exists": false,
+        "editor_exe_exists": false,
+        "game_exe_exists": false,
+        "verified": false,
+        "root_dir": "G:\\UnrealEngine5",
+        "system_dir": "G:\\UnrealEngine5\\Engine\\Binaries\\Win64",
+        "editor_path": "G:\\UnrealEngine5\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+        "game_path": "G:\\UnrealEngine5\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+        "verified_at": 1788130902.806623,
+        "initialized": true,
+        "summary": "Not verified: check G:\\UnrealEngine5\\Engine\\Binaries\\Win64"
       }
+    },
+    "ut2004_utron2004": {
+      "id": "ut2004_utron2004",
+      "name": "UTron 2004 Mod (UE2.5)",
+      "category": "Game Mod (Total Conversion)",
+      "mod_type": "Total Conversion",
+      "parent_engine": "ut2004",
+      "generation": "UE2.5",
+      "icon": "\u26a1",
+      "description": "UTron Cyberspace conversion for Unreal Tournament 2004.",
+      "root_dir": "G:\\UnrealTournament2004",
+      "system_dir": "G:\\UnrealTournament2004\\System",
+      "editor_exe": "UnrealEd.exe",
+      "editor_args": "",
+      "game_exe": "UT2004.exe",
+      "game_args": "",
+      "window_classes": [
+        "WUnrealEd",
+        "WWindow",
+        "UnrealEd"
+      ],
+      "process_names": [
+        "unrealed.exe",
+        "utroneditor.exe",
+        "unrealtournament.exe",
+        "ut2004.exe"
+      ],
+      "log_files": [
+        "Editor.log",
+        "UnrealEd.log",
+        "UTronProject.log",
+        "UnrealTournament.log"
+      ],
+      "inventory_mode": "quick",
+      "inventory_timestamp": 1788130884.7916143
     }
   }
 }

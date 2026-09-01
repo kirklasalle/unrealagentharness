@@ -17,25 +17,14 @@ def get_ut99_utron_palette(
 
     return [
         {
-            "category": "🧠 SOTA MIND-TO-WORLD NEURO SYNTHESIZERS",
+            "category": "🌐 UTRON CYBER-GRID BLUEPRINTS",
             "items": [
-                {
-                    "title": "🔮 Neuro-Symbolic Cyber Grid Synthesizer",
-                    "desc": "Mind-to-World generative compiler: Synthesizes cyberspace platforms, neon light cycle grids, and wirenodes from dynamic intent.",
-                    "commands_factory": lambda: MindSynthesizer.synthesize_level_from_mind("UTron Neon Cyberspace Void with floating disc platforms and recognizers", system_dir=system_dir, engine_id="ut99_utron"),
-                    "prompt": "Synthesize a UTron cyberspace level with neon disc platforms, wirenode triggers, and identity disc combat armory.",
-                },
                 {
                     "title": "🏰 Interconnected Multi-Chamber Compound",
                     "desc": "Carves a 3-chamber facility connected via sealed corridors with full weapon armories and pathing.",
                     "commands_factory": lambda: MindSynthesizer.generate_procedural_compound(room_count=3, system_dir=system_dir, engine_id="ut99_utron"),
                     "prompt": "Carve a multi-room interconnected facility with central hub, connecting corridors, and defense perches.",
                 },
-            ],
-        },
-        {
-            "category": "🌐 UTRON CYBER-GRID BLUEPRINTS",
-            "items": [
                 {
                     "title": "⚡ Master Control Program (MCP) Core",
                     "desc": "Monumental MCP Sanctum with central rotating core, 4 quadrant platforms, Sentinels, and Armory.",

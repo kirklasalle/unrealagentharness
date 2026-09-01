@@ -300,10 +300,14 @@ def _generate_brush_polylist_t3d(
         # Right wall
         faces.append(("RightWall", side_surface_tex, (1, 0, 0), (0, -1, 0), (0, 0, 1), [(hx, hy, -hz), (hx, -hy, -hz), (hx, -hy, -hz + hw), (hx, hy, -hz + hw)], w_flag))
         # Front Facade (+Y)
-        front_verts = [(-hx, hy, -hz), (hx, hy, -hz), (hx, hy, -hz + hw)] + [(x, hy, z) for x, z in reversed(pts)] + [(-hx, hy, -hz + hw)]
+        # Exclude the two arc endpoints from the sampled section: they are
+        # already represented by the spring points above/below. Keeping both
+        # copies produces a zero-length edge and UE1 reports
+        # ``FPoly::Fix: Collapsed a point`` during import.
+        front_verts = [(-hx, hy, -hz), (hx, hy, -hz), (hx, hy, -hz + hw)] + [(x, hy, z) for x, z in reversed(pts[1:-1])] + [(-hx, hy, -hz + hw)]
         faces.append(("FrontFacade", wall_tex, (0, 1, 0), (1, 0, 0), (0, 0, 1), front_verts, w_flag))
         # Back Facade (-Y)
-        back_verts = [(hx, -hy, -hz), (-hx, -hy, -hz), (-hx, -hy, -hz + hw)] + [(x, -hy, z) for x, z in pts] + [(hx, -hy, -hz + hw)]
+        back_verts = [(hx, -hy, -hz), (-hx, -hy, -hz), (-hx, -hy, -hz + hw)] + [(x, -hy, z) for x, z in pts[1:-1]] + [(hx, -hy, -hz + hw)]
         faces.append(("BackFacade", wall_tex, (0, -1, 0), (-1, 0, 0), (0, 0, 1), back_verts, w_flag))
         # Vault Quads
         for i in range(arch_sides):
@@ -432,6 +436,53 @@ def _generate_actor_t3d(
     return "\n".join(lines)
 
 
+def _generate_brush_actor_t3d(
+    name: str,
+    location: Tuple[float, float, float],
+    dimensions: Tuple[float, float, float],
+    csg_oper: str = "CSG_Subtract",
+    shape: str = "Box",
+    sides: int = 16,
+    floor_tex: str = "UTtech1.Floor.rClfFlr2",
+    wall_tex: str = "UTtech1.Wall.bmwall3",
+    ceil_tex: str = "UTtech1.Ceiling.bmCeiling3",
+    dais_tex: Optional[str] = None,
+    trim_tex: Optional[str] = None,
+    ceil_flags: int = 0,
+    floor_flags: int = 0,
+    wall_flags: int = 0,
+    is_semisolid: bool = False,
+    poly_flags: int = 0,
+) -> str:
+    """
+    Generates a complete, self-contained Unreal Engine Brush Actor block for monolithic T3D map files.
+    Allows atomic MAP IMPORT of entire worlds (brushes + actors) in a single operation.
+    """
+    polylist = _generate_brush_polylist_t3d(
+        dimensions, shape=shape, sides=sides,
+        floor_tex=floor_tex, wall_tex=wall_tex, ceil_tex=ceil_tex,
+        dais_tex=dais_tex, trim_tex=trim_tex,
+        ceil_flags=ceil_flags, floor_flags=floor_flags, wall_flags=wall_flags,
+        is_semisolid=is_semisolid,
+    )
+    indented_polylist = "\n".join("        " + line for line in polylist.splitlines())
+    extra_lines = []
+    if is_semisolid or poly_flags:
+        p_flag = poly_flags | (32 if is_semisolid else 0)
+        extra_lines.append(f"    PolyFlags={p_flag}")
+    extra_str = ("\n" + "\n".join(extra_lines)) if extra_lines else ""
+    return (
+        f"Begin Actor Class=Brush Name={name}\n"
+        f"    CsgOper={csg_oper}{extra_str}\n"
+        f"    Location=(X={location[0]:.6f},Y={location[1]:.6f},Z={location[2]:.6f})\n"
+        f"    Begin Brush Name={name}_Model\n"
+        f"{indented_polylist}\n"
+        f"    End Brush\n"
+        f"    Brush=Model'{name}_Model'\n"
+        f"End Actor"
+    )
+
+
 def _resolve_system_dir(system_dir: Optional[Path] = None) -> Path:
     """Dynamically resolves the active engine's System directory."""
     if system_dir:
@@ -522,6 +573,101 @@ def _get_ut2004_obj_load_commands(packages: List[str]) -> List[str]:
 
 class FormulaEngine:
     """Parametric procedural level generator for Unreal Engine 1, 2.0, and 2.5."""
+
+    @staticmethod
+    def valley_layout_from_scene_graph(
+        scene_graph: Dict[str, Any],
+        width: int = 4608,
+        length: int = 4608,
+        height: int = 2048,
+    ) -> Dict[str, Tuple[int, int, int]]:
+        """Maps normalized reference landmarks into a deterministic UE1 layout.
+
+        The result is deliberately a compact macro layout. Detail generation
+        remains separate so a reviewed blockout can be compiled and tested
+        before semisolids, foliage, and lighting are added.
+        """
+        landmarks = {item.get("id"): item for item in scene_graph.get("landmarks", [])}
+
+        def center(name: str, fallback: Tuple[float, float]) -> Tuple[float, float]:
+            bounds = landmarks.get(name, {}).get("bounds", {})
+            return (
+                (float(bounds.get("left", fallback[0])) + float(bounds.get("right", fallback[1]))) / 2.0,
+                (float(bounds.get("top", 0.5)) + float(bounds.get("bottom", 0.5))) / 2.0,
+            )
+
+        river_x, river_y = center("river_axis", (0.45, 0.55))
+        castle_x, castle_y = center("east_fortress_mass", (0.72, 0.40))
+        cliff_x, cliff_y = center("west_cliff_mass", (0.22, 0.48))
+        # Keep the image-derived macro masses inside the playable bounds even
+        # when a hand-edited scene graph contains an extreme region.
+        river_x = min(max(river_x, 0.25), 0.75)
+        castle_x = min(max(castle_x, 0.58), 0.88)
+        cliff_x = min(max(cliff_x, 0.12), 0.42)
+        river_y = min(max(river_y, 0.25), 0.82)
+        castle_y = min(max(castle_y, 0.18), 0.62)
+        cliff_y = min(max(cliff_y, 0.20), 0.76)
+        return {
+            "river": (round((river_x - 0.5) * width), round((0.5 - river_y) * length), -height // 2),
+            "castle": (round((castle_x - 0.5) * width), round((0.5 - castle_y) * length), -height // 2 + 1024),
+            "west_cliff": (round((cliff_x - 0.5) * width), round((0.5 - cliff_y) * length), -height // 2 + 512),
+            "lower_bridge": (round((river_x - 0.5) * width), round((0.5 - 0.69) * length), -height // 2 + 256),
+            "upper_bridge": (round((castle_x - 0.5) * width - 512), round((0.5 - castle_y) * length), -height // 2 + 928),
+        }
+
+    @staticmethod
+    def _reference_macro_commands(
+        system_dir: Optional[Path],
+        layout: Dict[str, Tuple[int, int, int]],
+    ) -> List[str]:
+        """Builds the reviewed reference silhouette from a compact macro layer."""
+        macro_file = _write_brush_file(
+            system_dir, "ValleyReferenceMacro.t3d", (1024.0, 1024.0, 256.0),
+            shape="BeveledBox", floor_tex="GenEarth.Rock8",
+            wall_tex="GenEarth.Rockfac1", ceil_tex="GenEarth.grasrok2",
+        )
+        castle_file = _write_brush_file(
+            system_dir, "ValleyReferenceCastleMass.t3d", (1280.0, 1280.0, 512.0),
+            shape="BeveledBox", floor_tex="NaliCast.CasFLOR",
+            wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
+        )
+        river_file = _write_brush_file(
+            system_dir, "ValleyReferenceRiverChannel.t3d", (768.0, 3072.0, 192.0),
+            shape="Box", floor_tex="GenEarth.Pebbles",
+            wall_tex="GenEarth.Rock8", ceil_tex="GenFluid.Water1",
+        )
+        wx, wy, wz = layout["west_cliff"]
+        cx, cy, cz = layout["castle"]
+        rx, ry, rz = layout["river"]
+        return [
+            f"BRUSH MOVETO X={wx} Y={wy} Z={wz}",
+            f'BRUSH IMPORT FILE="{macro_file}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X={cx} Y={cy} Z={cz}",
+            f'BRUSH IMPORT FILE="{castle_file}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X={rx} Y={ry} Z={rz}",
+            f'BRUSH IMPORT FILE="{river_file}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+        ]
+
+    @staticmethod
+    def _reference_camera_plan(scene_graph: Dict[str, Any]) -> Dict[str, Any]:
+        """Converts landmark regions into a reviewable camera validation plan."""
+        landmarks = {item.get("id"): item for item in scene_graph.get("landmarks", [])}
+        plan = []
+        for view in scene_graph.get("validation_views", ["perspective", "top", "front", "side"]):
+            focus = "east_fortress_mass" if view == "perspective" else "river_axis"
+            bounds = landmarks.get(focus, {}).get("bounds", {})
+            plan.append({
+                "view": view,
+                "focus": focus,
+                "normalized_focus": {
+                    "x": round((float(bounds.get("left", 0.5)) + float(bounds.get("right", 0.5))) / 2.0, 4),
+                    "y": round((float(bounds.get("top", 0.5)) + float(bounds.get("bottom", 0.5))) / 2.0, 4),
+                },
+            })
+        return {"schema": "uah.camera_validation_plan.v1", "views": plan}
 
     # -------------------------------------------------------------------------
     # 1. WORLD-CLASS UT99 GOTY TOURNAMENT DEATHMATCH ARENA
@@ -1675,6 +1821,7 @@ class FormulaEngine:
         length: int = 4608,
         height: int = 2048,
         detail_level: str = "ultra",
+        scene_graph: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         """
         Constructs a premier, world-class Valley Fortress matching Builderbutton_valley_01.jpg:
@@ -1694,6 +1841,10 @@ class FormulaEngine:
         tower_sides = preset["tower_sides"]
         use_semisolid = preset["semisolid_decoration"]
         use_story = preset["rich_story_elements"]
+        reference_layout = (
+            FormulaEngine.valley_layout_from_scene_graph(scene_graph, width, length, height)
+            if scene_graph else None
+        )
 
         floor_z = -1024              # -1024 (Canyon Valley Floor)
         gorge_z = -1152              # -1152 (Deep Carved River Gorge)
@@ -1716,15 +1867,25 @@ class FormulaEngine:
         # 1.1 Isolated Celestial Skybox Chamber (Unlit: Flags=4194304)
         f_skybox = _write_brush_file(
             system_dir, "ValleySkybox.t3d", (1024.0, 1024.0, 1024.0), shape="Box",
-            floor_tex="ShaneSky.pansky1", wall_tex="ShaneSky.pansky1", ceil_tex="ShaneSky.pansky1",
+            floor_tex="ShaneSky.DaySky1", wall_tex="ShaneSky.DaySky1", ceil_tex="ShaneSky.DaySky1",
             ceil_flags=4194304, floor_flags=4194304, wall_flags=4194304,
         )
 
         # 1.2 Main Valley Canyon (FakeBackdrop | Unlit on Ceiling: Flags=4194432)
         f_valley = _write_brush_file(
             system_dir, "ValleyMain.t3d", (float(width), float(length), float(height)), shape="Box",
-            floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", ceil_tex="ShaneSky.pansky1",
+            floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", ceil_tex="ShaneSky.DaySky1",
+            # The ceiling is flagged FakeBackdrop|Unlit so the skybox shows
+            # through. The sky opening brush below removes a large ceiling
+            # section to guarantee no opaque sky tiles remain in-game.
             ceil_flags=4194432,
+        )
+        # The sky opening must cover the FULL playable valley so that no
+        # opaque ceiling surface is ever visible from any camera angle.
+        f_sky_opening = _write_brush_file(
+            system_dir, "ValleySkyOpening.t3d", (float(width), float(length), 64.0), shape="Box",
+            floor_tex="ShaneSky.DaySky1", wall_tex="ShaneSky.DaySky1", ceil_tex="ShaneSky.DaySky1",
+            ceil_flags=4194432, floor_flags=4194432, wall_flags=4194432,
         )
 
         # 1.3 Deep Central River Gorge Chasm
@@ -1733,23 +1894,28 @@ class FormulaEngine:
             floor_tex="GenEarth.Pebbles", wall_tex="GenEarth.Rock8", ceil_tex="GenFluid.Water1",
         )
 
-        # 1.4 West Mountain Waterfall Cascade Recess
-        f_waterfall = _write_brush_file(
-            system_dir, "WaterfallChamber.t3d", (384.0, 768.0, 1280.0), shape="Box",
+        # 1.4 Dual Mountain Waterfall Cascade Recesses (Upper Ravine & Lower Foreground Cliff)
+        f_waterfall_upper = _write_brush_file(
+            system_dir, "WaterfallUpper.t3d", (384.0, 768.0, 1280.0), shape="Box",
+            floor_tex="GenFluid.Water1", wall_tex="GenFluid.water2", ceil_tex="GenFluid.water2",
+        )
+        f_waterfall_lower = _write_brush_file(
+            system_dir, "WaterfallLower.t3d", (384.0, 512.0, 768.0), shape="Box",
             floor_tex="GenFluid.Water1", wall_tex="GenFluid.water2", ceil_tex="GenFluid.water2",
         )
 
-        # 1.5 Solid Bedrock Castle Foundation Bluff (Grounded firmly at Z=-1024)
+        # 1.5 Solid Bedrock Castle Foundation Bluff (Grounded firmly at Z=-1024 as a sheer granite cliff)
         f_bluff = _write_brush_file(
             system_dir, "CastleBluffBase.t3d", (1792.0, 1792.0, 1024.0), shape="Box",
-            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
+            floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", dais_tex="GenEarth.grasrok2", trim_tex="GenEarth.Rock8",
         )
 
-        # 1.6 Castle Keep Bastion (On top of Bluff: Z=0 to +512)
+        # 1.6 Castle Keep Bastion (Perched atop the granite cliff bluff: Z=0 to +512)
         f_keep = _write_brush_file(
             system_dir, "CastleKeepBastion.t3d", (1408.0, 1408.0, 512.0), shape="Box",
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
         )
+
 
         # 1.7 Castle Great Hall / Armory Interior Sanctum
         f_hall = _write_brush_file(
@@ -1779,6 +1945,14 @@ class FormulaEngine:
         f_tower = _write_brush_file(
             system_dir, "CastleBattleTower.t3d", (384.0, 384.0, 1024.0), shape="Cylinder", sides=tower_sides,
             floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", dais_tex="NaliCast.CasFLOR", trim_tex="NaliCast.CasWAL",
+        )
+        f_tower_inner = _write_brush_file(
+            system_dir, "CastleBattleTowerInterior.t3d", (256.0, 256.0, 768.0), shape="Cylinder", sides=tower_sides,
+            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
+        )
+        f_tower_top = _write_semisolid_brush_file(
+            system_dir, "CastleTowerTopPlatform.t3d", (256.0, 256.0, 64.0), shape="Cylinder", sides=tower_sides,
+            floor_tex="NaliCast.CasFLOR", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
         )
 
         # 1.12 High Royal Citadel Spire (24-sided, rising to +1408)
@@ -1829,6 +2003,51 @@ class FormulaEngine:
             floor_tex="steps", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
         )
 
+        # 1.18 Reusable high-value detail primitives.  These remain semi-solid
+        # wherever possible: UE1 gets the silhouette from a small number of
+        # structural BSP brushes, while ledges, merlons, frames and stones add
+        # richness without multiplying BSP cuts.
+        f_terrace = _write_semisolid_brush_file(
+            system_dir, "ValleyRockTerrace.t3d", (768.0, 512.0, 192.0), shape="BeveledBox",
+            floor_tex="GenEarth.grasrok2", wall_tex="GenEarth.Rockfac1", ceil_tex="GenEarth.Rock8",
+        )
+        f_merlon = _write_semisolid_brush_file(
+            system_dir, "CastleMerlon.t3d", (96.0, 160.0, 192.0), shape="BeveledBox",
+            floor_tex="NaliCast.CasWAL", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
+        )
+        f_window = _write_semisolid_brush_file(
+            system_dir, "CastleWindowFrame.t3d", (160.0, 32.0, 192.0), shape="TrimStrip",
+            floor_tex="NaliCast.METWALL", wall_tex="NaliCast.METWALL", ceil_tex="NaliCast.METWALL",
+        )
+        f_window_y = _write_semisolid_brush_file(
+            system_dir, "CastleWindowFrameY.t3d", (32.0, 160.0, 192.0), shape="TrimStrip",
+            floor_tex="NaliCast.METWALL", wall_tex="NaliCast.METWALL", ceil_tex="NaliCast.METWALL",
+        )
+        f_pier = _write_semisolid_brush_file(
+            system_dir, "BridgeStonePier.t3d", (256.0, 384.0, 512.0), shape="BeveledBox",
+            floor_tex="NaliCast.CasWAL", wall_tex="NaliCast.CasWAL", ceil_tex="NaliCast.CasWAL",
+        )
+        f_step = _write_semisolid_brush_file(
+            system_dir, "RiverSteppingStone.t3d", (192.0, 256.0, 64.0), shape="BeveledBox",
+            floor_tex="GenEarth.Pebbles", wall_tex="GenEarth.Rock8", ceil_tex="GenEarth.Rock8",
+        )
+        # Waterfall sheets use PF_Translucent (flag 4) so they look like
+        # falling water instead of opaque blue platforms. The sheets are
+        # wider (384 UU) and overlap slightly so the cascade reads as one
+        # continuous curtain from any viewpoint.
+        f_water_sheet = _write_brush_file(
+            system_dir, "WaterfallSheet.t3d", (384.0, 64.0, 1024.0), shape="Box",
+            floor_tex="GenFluid.Water1", wall_tex="GenFluid.water2", ceil_tex="GenFluid.water2",
+            wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True,
+        )
+        # River surface: translucent flag makes the water see-through with
+        # proper depth cues instead of reading as a flat opaque sheet.
+        f_river_surface = _write_brush_file(
+            system_dir, "RiverSurface.t3d", (960.0, float(length - 256), 16.0), shape="Box",
+            floor_tex="GenFluid.Water1", wall_tex="GenFluid.Water1", ceil_tex="GenFluid.Water1",
+            wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True,
+        )
+
         # ---------------------------------------------------------------------
         # 2. ACTOR SYNTHESIS (SkyZone, Narrative Lore, Creatures, Foliage, Lights)
         # ---------------------------------------------------------------------
@@ -1852,14 +2071,17 @@ class FormulaEngine:
             "End Actor",
 
             # 8 Strategic PlayerStarts (+50 UU Floor Clearance)
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-600.0, -1200.0, float(floor_z + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (600.0, 1200.0, float(floor_z + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (1280.0, 0.0, float(hall_z - 192 + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (576.0, -576.0, float(battlements_z + 512 + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-1664.0, -896.0, float(west_lookout_z + 384 + 50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (0.0, -768.0, float(stone_bridge_z + 114))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-1408.0, 0.0, float(50))),
-            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (1984.0, 0.0, float(battlements_z + 512 + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-2000.0, -2000.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (2000.0, 2000.0, float(floor_z + 50))),
+            # Runtime-safe starts stay on broad, grounded valley floors. The
+            # previous version put starts on tower/lookout tops and the game
+            # rejected PlayerStart3 during UGameEngine::Init.
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-2000.0, 2000.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (2000.0, -2000.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (0.0, -2000.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (0.0, 2000.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-2000.0, 0.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (2000.0, 0.0, float(floor_z + 50))),
 
             # Authentic Unreal 1 RPG Story Lore Tablets
             _generate_actor_t3d("UnrealShare.TranslatorEvent", "Lore_ValleyGate", (400.0, 0.0, float(drawbridge_z + 32)), {
@@ -1901,6 +2123,10 @@ class FormulaEngine:
             _generate_actor_t3d("Botpack.HealthVial", "HealthVial1", (0.0, 0.0, float(gorge_z + 24))),
             _generate_actor_t3d("Botpack.HealthVial", "HealthVial2", (0.0, 250.0, float(gorge_z + 24))),
 
+            # WaterZone gives the river gorge proper water physics (swimming,
+            # buoyancy, underwater fog) instead of treating it as dry air.
+            _generate_actor_t3d("Engine.WaterZone", "WaterZone0", (0.0, 0.0, float(gorge_z + 100))),
+
             # 24+ Clustered 3D Pine Trees Across Slopes & Bluffs
             _generate_actor_t3d("UnrealShare.Tree1", "Tree0", (-800.0, -800.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree2", "Tree1", (-1400.0, -400.0, float(floor_z))),
@@ -1914,10 +2140,12 @@ class FormulaEngine:
             _generate_actor_t3d("UnrealShare.Tree2", "Tree9", (-1500.0, 600.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree3", "Tree10", (-1200.0, 1400.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Tree6", "Tree11", (1200.0, -1400.0, float(floor_z))),
-            _generate_actor_t3d("UnrealShare.Tree1", "Tree12", (-1408.0, -1200.0, float(0))),
-            _generate_actor_t3d("UnrealShare.Tree2", "Tree13", (-1408.0, 1200.0, float(0))),
-            _generate_actor_t3d("UnrealShare.Tree3", "Tree14", (-1408.0, 600.0, float(0))),
-            _generate_actor_t3d("UnrealShare.Tree6", "Tree15", (-1408.0, -600.0, float(0))),
+            # West mountain ridge trees — anchored to the ridge surface
+            # (bluff_z + 512 = approx 0) so they stand on visible terrain.
+            _generate_actor_t3d("UnrealShare.Tree1", "Tree12", (-1408.0, -1200.0, float(bluff_z + 512))),
+            _generate_actor_t3d("UnrealShare.Tree2", "Tree13", (-1408.0, 1200.0, float(bluff_z + 512))),
+            _generate_actor_t3d("UnrealShare.Tree3", "Tree14", (-1408.0, 600.0, float(bluff_z + 512))),
+            _generate_actor_t3d("UnrealShare.Tree6", "Tree15", (-1408.0, -600.0, float(bluff_z + 512))),
 
             # Mountain Shrubs & Ferns
             _generate_actor_t3d("UnrealShare.Plant1", "Plant0", (-500.0, -200.0, float(floor_z))),
@@ -1926,8 +2154,8 @@ class FormulaEngine:
             _generate_actor_t3d("UnrealShare.Plant1", "Plant3", (1000.0, -700.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Plant2", "Plant4", (-300.0, -1100.0, float(floor_z))),
             _generate_actor_t3d("UnrealShare.Plant3", "Plant5", (300.0, 1100.0, float(floor_z))),
-            _generate_actor_t3d("UnrealShare.Plant1", "Plant6", (-1408.0, -400.0, float(0))),
-            _generate_actor_t3d("UnrealShare.Plant2", "Plant7", (-1408.0, 400.0, float(0))),
+            _generate_actor_t3d("UnrealShare.Plant1", "Plant6", (-1408.0, -400.0, float(bluff_z + 512))),
+            _generate_actor_t3d("UnrealShare.Plant2", "Plant7", (-1408.0, 400.0, float(bluff_z + 512))),
 
             # Riverbed & Mountain Granite Boulders
             _generate_actor_t3d("UnrealI.BigRock", "Rock0", (-900.0, -300.0, float(floor_z))),
@@ -1950,7 +2178,7 @@ class FormulaEngine:
             _generate_actor_t3d("UnrealShare.TorchFlame", "TorchLookoutSW", (-1664.0, 896.0, float(west_lookout_z + 384 + 40))),
 
             # Full 52-Node Botpack AI Reachability Network
-            _generate_actor_t3d("Engine.PathNode", "PathNode0", (-600.0, -1200.0, float(floor_z + 50))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode0", (-1300.0, -1300.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode1", (-600.0, -600.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode2", (0.0, -600.0, float(floor_z + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode3", (600.0, -600.0, float(floor_z + 50))),
@@ -1980,6 +2208,75 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.PathNode", "PathNode27", (1984.0, -576.0, float(battlements_z + 512 + 50))),
             _generate_actor_t3d("Engine.PathNode", "PathNode28", (1984.0, 576.0, float(battlements_z + 512 + 50))),
 
+            # Additional navigation anchors are deliberately placed on the
+            # approach trails, bridge ends, courtyard, and lookout platforms.
+            # They are never coincident with the structural nodes above;
+            # PATHS BUILD can therefore solve a useful graph instead of
+            # spending time on zero-distance reachspec candidates.
+            *[
+                _generate_actor_t3d("Engine.PathNode", f"PathNode{29 + i}", loc)
+                for i, loc in enumerate([
+                    (-1200.0, -900.0, float(floor_z + 50)),
+                    (-900.0, -300.0, float(floor_z + 50)),
+                    (-900.0, 300.0, float(floor_z + 50)),
+                    (-1200.0, 900.0, float(floor_z + 50)),
+                    (-300.0, -1100.0, float(floor_z + 50)),
+                    (300.0, -1100.0, float(floor_z + 50)),
+                    (-300.0, 1100.0, float(floor_z + 50)),
+                    (300.0, 1100.0, float(floor_z + 50)),
+                    (0.0, -1024.0, float(stone_bridge_z + 114)),
+                    (0.0, -512.0, float(stone_bridge_z + 114)),
+                    (0.0, -1024.0, float(gorge_z + 50)),
+                    (0.0, 512.0, float(gorge_z + 50)),
+                    (960.0, -384.0, float(drawbridge_z + 50)),
+                    (960.0, 384.0, float(drawbridge_z + 50)),
+                    (1088.0, -576.0, float(hall_z - 192 + 50)),
+                    (1088.0, 576.0, float(hall_z - 192 + 50)),
+                    (1472.0, -384.0, float(hall_z - 192 + 50)),
+                    (1472.0, 384.0, float(hall_z - 192 + 50)),
+                    (-1664.0, -512.0, float(west_lookout_z + 384 + 50)),
+                    (-1664.0, 512.0, float(west_lookout_z + 384 + 50)),
+                    (1984.0, -960.0, float(battlements_z + 512 + 50)),
+                    (1984.0, 960.0, float(battlements_z + 512 + 50)),
+                    (1536.0, 0.0, float(spire_z + 50)),
+                ])
+            ],
+
+            # A restrained forest population: stock UE1 foliage is relatively
+            # expensive, so use authored clusters rather than a noisy grid.
+            *[
+                _generate_actor_t3d(
+                    "UnrealShare.Tree1" if i % 4 == 0 else
+                    "UnrealShare.Tree2" if i % 4 == 1 else
+                    "UnrealShare.Tree3" if i % 4 == 2 else "UnrealShare.Tree6",
+                    f"TreeDetail{i}", loc,
+                )
+                for i, loc in enumerate([
+                    (-2048.0, -1400.0, float(floor_z)), (-1856.0, -1088.0, float(floor_z + 128)),
+                    (-2112.0, -704.0, float(floor_z + 256)), (-1984.0, 704.0, float(floor_z + 256)),
+                    (-1856.0, 1088.0, float(floor_z + 128)), (-2048.0, 1400.0, float(floor_z)),
+                    (-1408.0, -1760.0, float(bluff_z + 512)), (-960.0, -1792.0, float(bluff_z + 512)),
+                    (-1408.0, 1760.0, float(bluff_z + 512)), (-960.0, 1792.0, float(bluff_z + 512)),
+                    (1600.0, -1600.0, float(floor_z + 256)), (1856.0, -1280.0, float(floor_z + 384)),
+                    (1600.0, 1600.0, float(floor_z + 256)), (1856.0, 1280.0, float(floor_z + 384)),
+                    (2240.0, -1280.0, float(bluff_z + 512)), (2240.0, 1280.0, float(bluff_z + 512)),
+                ])
+            ],
+
+            *[
+                _generate_actor_t3d(
+                    "UnrealShare.Plant1" if i % 3 == 0 else
+                    "UnrealShare.Plant2" if i % 3 == 1 else "UnrealShare.Plant3",
+                    f"FernDetail{i}", loc,
+                )
+                for i, loc in enumerate([
+                    (-1760.0, -960.0, float(floor_z + 32)), (-1600.0, -640.0, float(floor_z + 32)),
+                    (-1760.0, 640.0, float(floor_z + 32)), (-1600.0, 960.0, float(floor_z + 32)),
+                    (960.0, -1280.0, float(floor_z + 32)), (1280.0, -1120.0, float(floor_z + 32)),
+                    (960.0, 1120.0, float(floor_z + 32)), (1280.0, 1280.0, float(floor_z + 32)),
+                ])
+            ],
+
             # Natural Outdoor Sun & Sky Atmospheric Radiosity Lighting
             _generate_actor_t3d("Engine.Light", "SunKey", (600.0, -600.0, float(height // 3)), {
                 "LightBrightness": 250, "LightHue": 38, "LightSaturation": 100, "LightRadius": 160,
@@ -1990,14 +2287,33 @@ class FormulaEngine:
             _generate_actor_t3d("Engine.Light", "SkyFillEast", (1200.0, 1200.0, float(floor_z + 400)), {
                 "LightBrightness": 180, "LightHue": 155, "LightSaturation": 160, "LightRadius": 128,
             }),
-            _generate_actor_t3d("Engine.Light", "WaterfallGlow", (-1900.0, 0.0, float(floor_z + 300)), {
+            _generate_actor_t3d("Engine.Light", "WaterfallGlowUpper", (-1700.0, -896.0, float(floor_z + 400)), {
                 "LightBrightness": 200, "LightHue": 145, "LightSaturation": 180, "LightRadius": 96, "LightEffect": "LE_WateryShimmer",
             }),
+            _generate_actor_t3d("Engine.Light", "WaterfallGlowLower", (-1200.0, 768.0, float(floor_z + 200)), {
+                "LightBrightness": 200, "LightHue": 145, "LightSaturation": 180, "LightRadius": 96, "LightEffect": "LE_WateryShimmer",
+            }),
+
             _generate_actor_t3d("Engine.Light", "CastleHallGlow", (1280.0, 0.0, float(hall_z + 40)), {
                 "LightBrightness": 220, "LightHue": 25, "LightSaturation": 200, "LightRadius": 96,
             }),
             _generate_actor_t3d("Engine.Light", "SkyboxLight", (float(skybox_x), float(skybox_y), float(skybox_z + 200)), {
                 "LightBrightness": 255, "LightHue": 0, "LightSaturation": 0, "LightRadius": 128,
+            }),
+
+            # Warm fortress windows and cool water bounce establish the same
+            # warm/cool contrast as the supplied concept image.
+            _generate_actor_t3d("Engine.Light", "CastleWindowGlowL", (1280.0, -704.0, 384.0), {
+                "LightBrightness": 150, "LightHue": 22, "LightSaturation": 210, "LightRadius": 48,
+            }),
+            _generate_actor_t3d("Engine.Light", "CastleWindowGlowR", (1280.0, 704.0, 384.0), {
+                "LightBrightness": 150, "LightHue": 22, "LightSaturation": 210, "LightRadius": 48,
+            }),
+            _generate_actor_t3d("Engine.Light", "RiverBounceNorth", (0.0, 640.0, float(gorge_z + 128)), {
+                "LightBrightness": 120, "LightHue": 145, "LightSaturation": 190, "LightRadius": 72,
+            }),
+            _generate_actor_t3d("Engine.Light", "RiverBounceSouth", (0.0, -640.0, float(gorge_z + 128)), {
+                "LightBrightness": 120, "LightHue": 145, "LightSaturation": 190, "LightRadius": 72,
             }),
 
             "End Map",
@@ -2029,15 +2345,31 @@ class FormulaEngine:
             f'BRUSH IMPORT FILE="{f_valley}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
+            # A reviewed reference graph contributes only macro masses here.
+            # The normal authored preset remains unchanged when no graph is
+            # supplied, preserving backward compatibility for the palette.
+            *(FormulaEngine._reference_macro_commands(system_dir, reference_layout) if reference_layout else []),
+
+            # Remove the entire ceiling with a full-width sky opening.
+            # This guarantees no opaque ceiling tiles are ever visible in
+            # the playtest — the player sees only the blue SkyZone dome.
+            f"BRUSH MOVETO X=0 Y=0 Z={height // 2 - 16}",
+            f'BRUSH IMPORT FILE="{f_sky_opening}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
             # 3. Central River Gorge Chasm
             f"BRUSH MOVETO X=0 Y=0 Z={gorge_z}",
             f'BRUSH IMPORT FILE="{f_river}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
 
-            # 4. West Waterfall Cascade Recess
-            f"BRUSH MOVETO X=-2048 Y=0 Z={floor_z + 640}",
-            f'BRUSH IMPORT FILE="{f_waterfall}" MERGE=0 FLAGS=0',
+            # 4. Dual West Mountain Waterfall Cascade Recesses (Upper Ravine & Lower Foreground Cliff)
+            f"BRUSH MOVETO X=-1792 Y=-896 Z={floor_z + 640}",
+            f'BRUSH IMPORT FILE="{f_waterfall_upper}" MERGE=0 FLAGS=0',
             "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=-1280 Y=768 Z={floor_z + 384}",
+            f'BRUSH IMPORT FILE="{f_waterfall_lower}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
 
             # 5. Solid Bedrock Castle Foundation Bluff (Grounded at Z=-1024)
             f"BRUSH MOVETO X=1280 Y=0 Z={bluff_z}",
@@ -2079,6 +2411,34 @@ class FormulaEngine:
             "BRUSH ADD",
             f"BRUSH MOVETO X=1984 Y=576 Z={battlements_z}",
             f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # Hollow the four towers and place a supported top platform. The
+            # previous solid tower volumes created unusable/embedded starts
+            # and made the castle read as four cylinders rather than towers.
+            f"BRUSH MOVETO X=576 Y=-576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=576 Y=576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=1984 Y=-576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=1984 Y=576 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=576 Y=-576 Z={battlements_z + 512}",
+            f'BRUSH IMPORT FILE="{f_tower_top}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=576 Y=576 Z={battlements_z + 512}",
+            f'BRUSH IMPORT FILE="{f_tower_top}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1984 Y=-576 Z={battlements_z + 512}",
+            f'BRUSH IMPORT FILE="{f_tower_top}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1984 Y=576 Z={battlements_z + 512}",
+            f'BRUSH IMPORT FILE="{f_tower_top}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
 
             # 11. Royal Citadel Spire (24-sided, rising to +1408)
@@ -2132,13 +2492,96 @@ class FormulaEngine:
             f"BRUSH MOVETO X=1280 Y=896 Z={bluff_z + 256}",
             f'BRUSH IMPORT FILE="{f_buttress}" MERGE=0 FLAGS=0',
             "BRUSH ADD",
+        ]
 
-            # 19. Full Geometry & BSP Rebuild, Radiosity Lighting Trace, AI Reachability
+        if use_semisolid:
+            # West and east stepped geology. The terraces deliberately
+            # overlap the grounded ridge/bluff so every visible ledge has a
+            # believable mass behind it instead of reading as floating trim.
+            terrace_locations = [
+                (-1792, -1280, -384), (-1792, 0, -128), (-1792, 1280, 128),
+                (2176, -1280, -256), (2176, 0, 0), (2176, 1280, 256),
+            ]
+            for tx, ty, tz in terrace_locations:
+                cmds.extend([
+                    f"BRUSH MOVETO X={tx} Y={ty} Z={tz}",
+                    f'BRUSH IMPORT FILE="{f_terrace}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+            # Castle merlons: a readable crenellated skyline made from cheap
+            # semi-solids rather than a high-cut solid wall lattice.
+            merlon_locations = [
+                (896, -640, 544), (1152, -640, 544), (1408, -640, 544), (1664, -640, 544),
+                (896, 640, 544), (1152, 640, 544), (1408, 640, 544), (1664, 640, 544),
+                (768, -384, 544), (768, 384, 544), (1984, -384, 544), (1984, 384, 544),
+            ]
+            for mx, my, mz in merlon_locations:
+                cmds.extend([
+                    f"BRUSH MOVETO X={mx} Y={my} Z={mz}",
+                    f'BRUSH IMPORT FILE="{f_merlon}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+            # Narrow window surrounds face the playable valley and give the
+            # keep a strong visual scale cue without requiring custom meshes.
+            for i, (wx, wy, wz) in enumerate([
+                (704, -704, 288), (704, 704, 288), (1856, -704, 288),
+                (1856, 704, 288), (1280, -704, 480),
+            ]):
+                cmds.extend([
+                    f"BRUSH MOVETO X={wx} Y={wy} Z={wz}",
+                    f'BRUSH IMPORT FILE="{f_window_y if i in (1, 3) else f_window}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+            # Deep bridge abutments key the crossing into the gorge walls.
+            for px in (-384, 384):
+                cmds.extend([
+                    f"BRUSH MOVETO X={px} Y=-768 Z={gorge_z + 256}",
+                    f'BRUSH IMPORT FILE="{f_pier}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+            # River surface, waterfall sheets and a small stepping-stone line
+            # provide water readability from the editor's perspective view.
+            cmds.extend([
+                f"BRUSH MOVETO X=0 Y=0 Z={gorge_z + 144}",
+                f'BRUSH IMPORT FILE="{f_river_surface}" MERGE=0 FLAGS=0',
+                "BRUSH ADD",
+            ])
+            # Upper Waterfall cascade (deep mountain ravine):
+            for wy in (-1024, -896, -768):
+                cmds.extend([
+                    f"BRUSH MOVETO X=-1792 Y={wy} Z={floor_z + 512}",
+                    f'BRUSH IMPORT FILE="{f_water_sheet}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+            # Lower Waterfall cascade (foreground cliff beside lower stone bridge):
+            for wy in (640, 768, 896):
+                cmds.extend([
+                    f"BRUSH MOVETO X=-1280 Y={wy} Z={floor_z + 256}",
+                    f'BRUSH IMPORT FILE="{f_water_sheet}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+            for sx, sy in [(-320, -640), (-160, -320), (0, 0), (160, 320), (320, 640), (0, 960)]:
+                cmds.extend([
+                    f"BRUSH MOVETO X={sx} Y={sy} Z={gorge_z + 24}",
+                    f'BRUSH IMPORT FILE="{f_step}" MERGE=0 FLAGS=0',
+                    "BRUSH ADD",
+                ])
+
+        # Compile only after every optional detail brush has been imported.
+        # This ordering is essential: rebuilding before the final geometry
+        # leaves the editor with stale BSP, lighting, and reachability data.
+        cmds.extend([
             "MAP REBUILD",
             "LIGHT APPLY",
             "PATHS BUILD",
             "FLUSH",
-        ]
+        ])
+
         return cmds
 
     # -------------------------------------------------------------------------
@@ -3326,6 +3769,528 @@ class FormulaEngine:
         ]
 
     # -------------------------------------------------------------------------
+    # 11.2 VERDANT MOUNTAIN VALLEY FORTRESS (UT2004 — 75% ENGINE BUDGET)
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def generate_ut2004_verdant_mountain_valley(
+        system_dir: Optional[Path] = None,
+        width: int = 4608,
+        length: int = 4608,
+        height: int = 2048,
+        detail_level: str = "ultra",
+        scene_graph: Optional[Dict[str, Any]] = None,
+    ) -> List[str]:
+        """
+        Constructs a premier, world-class Valley Fortress for Unreal Tournament 2004 (UE2.5),
+        matching Builderbutton_valley_01.jpg and tuned to 75% engine budget limits:
+        - True isolated SkyBox chamber with SkyZoneInfo
+        - Multi-tier Mountain Cliffs & Deep River Gorge with Waterfalls
+        - Solid Bedrock Castle Foundation Bluff (grounded at Z=-1024)
+        - Grand Multi-Tower Castle Keep, Gatehouse, 4 Flanking 24-Sided Battle Towers, and Royal Spire
+        - Semi-Solid Flying Buttresses, Stepped Mountain Shelves, and Bridge Arch Understructure
+        - Dual Bridges: Lower Grand Arched Stone Bridge + Upper Wooden Drawbridge
+        - Mountain Peak Sniper Watchtowers & Overlooks (24-sided cylinders)
+        - Native UT2004 Weapons (Shock Rifle, Flak Cannon, Rocket Launcher, Sniper Rifle, Minigun)
+        - Native UT2004 Powerups (Super Shield Pack, Super Health Pack, UDamage Pack, xJumpPad)
+        - Full 40+ Node UT2004 PathNode navigation grid compiled with PATHS DEFINE
+        """
+        preset = DETAIL_PRESETS.get(detail_level, DETAIL_PRESETS["ultra"])
+        tower_sides = preset["tower_sides"]
+        use_semisolid = preset["semisolid_decoration"]
+
+        floor_z = -1024              # -1024 (Canyon Valley Floor)
+        gorge_z = -1152              # -1152 (Deep Carved River Gorge)
+        stone_bridge_z = -768        # -768 (Lower Stone Arch Bridge)
+        drawbridge_z = -96           # -96 (Upper Timber Drawbridge)
+        bluff_z = -512               # -512 (Solid Foundation Bluff Center: -1024 -> 0)
+        keep_z = 256                 # +256 (Castle Keep Bastion Center: 0 -> 512)
+        hall_z = 192                 # +192 (Castle Great Hall Armory Interior)
+        gate_z = 96                  # +96 (Castle Gatehouse Portal)
+        battlements_z = 512          # +512 (Tower Bases: 0 -> 1024)
+        spire_z = 768                # +768 (Royal Citadel Spire: 128 -> 1408)
+        west_lookout_z = 384         # +384 (West Mountain Peak Lookouts)
+        skybox_x = -8192             # -8192 (Extreme Skybox Isolation X)
+        skybox_y = -8192             # -8192 (Extreme Skybox Isolation Y)
+        skybox_z = 4096              # +4096 (Isolated Celestial Skybox Z)
+
+        # UT2004 Textures (strictly verified against standard UT2004 v3369 install)
+        t_floor = "AbaddonTerrain.ground.dirt01GO"
+        t_cliff = "AbaddonTerrain.ground.rock01go"
+        t_sky = "SkyBox.SkytstAX"
+        t_water = "AlleriaTerrain.ice01AL_Translucent"
+        t_castle_wall = "AbaddonArchitecture.Walls.wal01go"
+        t_castle_floor = "AbaddonArchitecture.Floors.flr04go"
+        t_wood = "ArboreaArchitecture.Floors.flr42ar"
+        t_trim = "AbaddonArchitecture.Walls.wal31go"
+        t_steps = "HumanoidArchitecture.Floors.flr01HA"
+        t_pebbles = "AbaddonTerrain.ground.dirt02GO"
+
+        # FakeBackdrop|Unlit flags for skybox projection through ceiling.
+        # PF_FakeBackdrop (4194304) | PF_Unlit (128) = 4194432.
+        # Without these, the ceiling renders as an opaque flat image.
+        SKY_FLAGS = 4194432
+
+        # ---------------------------------------------------------------------
+        # 1. PROCEDURAL CSG BRUSH COMPILATION (Watertight PolyLists)
+        # ---------------------------------------------------------------------
+        river_length = float(length - 512)
+        wf_upper_y = max(-896, -(length // 2) + 384)
+        wf_lower_y = min(768, (length // 2) - 384)
+
+        # 1.1 Isolated Skybox Chamber (CSG Subtract)
+        f_skybox = _write_brush_file(
+            system_dir, "UT2k4_ValleySkybox.t3d", (1024.0, 1024.0, 1024.0), shape="Box",
+            floor_tex=t_sky, wall_tex=t_sky, ceil_tex=t_sky,
+            ceil_flags=SKY_FLAGS, floor_flags=SKY_FLAGS, wall_flags=SKY_FLAGS,
+        )
+
+        # 1.2 Main Canyon Valley (FakeBackdrop|Unlit on ceiling: Flags=4194432)
+        f_valley = _write_brush_file(
+            system_dir, "UT2k4_ValleyMain.t3d", (float(width), float(length), float(height)), shape="Box",
+            floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_sky,
+            ceil_flags=SKY_FLAGS,
+        )
+
+        # 1.2b Sky Opening Slab (Guarantees horizon projection)
+        f_sky_opening = _write_brush_file(
+            system_dir, "UT2k4_ValleySkyOpening.t3d", (float(width), float(length), 64.0), shape="Box",
+            floor_tex=t_sky, wall_tex=t_sky, ceil_tex=t_sky,
+            ceil_flags=SKY_FLAGS, floor_flags=SKY_FLAGS, wall_flags=SKY_FLAGS,
+        )
+
+        # 1.3 Deep Central River Gorge
+        f_river = _write_brush_file(
+            system_dir, "UT2k4_RiverGorge.t3d", (1024.0, river_length, 256.0), shape="Box",
+            floor_tex=t_pebbles, wall_tex=t_cliff, ceil_tex=t_water,
+        )
+
+        # 1.3b River Gorge End-Caps (Solid Rock Sealing)
+        f_gorge_endcap = _write_brush_file(
+            system_dir, "UT2k4_GorgeEndCap.t3d", (1024.0, 128.0, 256.0), shape="Box",
+            floor_tex=t_cliff, wall_tex=t_cliff, dais_tex=t_cliff, trim_tex=t_cliff,
+        )
+
+        # 1.4 Dual Waterfalls
+        f_wf_upper = _write_brush_file(
+            system_dir, "UT2k4_WaterfallUpper.t3d", (384.0, 768.0, 1280.0), shape="Box",
+            floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water,
+        )
+        f_wf_lower = _write_brush_file(
+            system_dir, "UT2k4_WaterfallLower.t3d", (384.0, 512.0, 768.0), shape="Box",
+            floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water,
+        )
+
+        # 1.5 Solid Bedrock Castle Foundation Bluff
+        f_bluff = _write_brush_file(
+            system_dir, "UT2k4_CastleBluffBase.t3d", (1792.0, 1792.0, 1024.0), shape="Box",
+            floor_tex=t_floor, wall_tex=t_cliff, dais_tex=t_floor, trim_tex=t_cliff,
+        )
+
+        # 1.6 Castle Grounding: Cliff Skirt & Terrain Ramps
+        f_skirt = _write_brush_file(
+            system_dir, "UT2k4_CliffSkirt.t3d", (2048.0, 2048.0, 512.0), shape="Box",
+            floor_tex=t_cliff, wall_tex=t_cliff, dais_tex=t_cliff, trim_tex=t_cliff,
+        )
+        f_ramp = _write_brush_file(
+            system_dir, "UT2k4_TerrainRamp.t3d", (512.0, 512.0, 512.0), shape="Ramp",
+            floor_tex=t_floor, wall_tex=t_cliff,
+        )
+        f_ridge = _write_brush_file(
+            system_dir, "UT2k4_WestMountainRidge.t3d", (1024.0, float(length - 1024), 1024.0), shape="Box",
+            floor_tex=t_floor, wall_tex=t_cliff, dais_tex=t_floor, trim_tex=t_cliff,
+        )
+
+        # 1.7 Castle Keep Bastion & Interior
+        f_keep = _write_brush_file(
+            system_dir, "UT2k4_CastleKeepBastion.t3d", (1536.0, 1536.0, 512.0), shape="Box",
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim,
+        )
+        f_hall = _write_brush_file(
+            system_dir, "UT2k4_CastleGreatHall.t3d", (1280.0, 1280.0, 384.0), shape="Box",
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor,
+        )
+        f_corridor = _write_brush_file(
+            system_dir, "UT2k4_CastleCorridor.t3d", (512.0, 384.0, 192.0), shape="Box",
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor,
+        )
+
+        # 1.8 4 Flanking Battle Towers & Spire
+        f_tower = _write_brush_file(
+            system_dir, "UT2k4_Tower.t3d", (512.0, 512.0, 1024.0), shape="Cylinder", sides=tower_sides,
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim,
+        )
+        f_tower_inner = _write_brush_file(
+            system_dir, "UT2k4_Tower_Inner.t3d", (384.0, 384.0, 960.0), shape="Cylinder", sides=tower_sides,
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor,
+        )
+        f_spire = _write_brush_file(
+            system_dir, "UT2k4_CitadelSpire.t3d", (512.0, 512.0, 1280.0), shape="Cylinder", sides=tower_sides,
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim,
+        )
+
+        # 1.9 Dual Bridges & Lookout
+        f_stone_bridge = _write_brush_file(
+            system_dir, "UT2k4_LowerStoneBridge.t3d", (512.0, 1280.0, 128.0), shape="Box",
+            floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim,
+        )
+        f_drawbridge = _write_brush_file(
+            system_dir, "UT2k4_UpperDrawbridge.t3d", (512.0, 384.0, 48.0), shape="Box",
+            floor_tex=t_wood, wall_tex=t_wood, dais_tex=t_wood, trim_tex=t_wood,
+        )
+        f_lookout = _write_brush_file(
+            system_dir, "UT2k4_MountainLookout.t3d", (384.0, 384.0, 768.0), shape="Cylinder", sides=tower_sides,
+            floor_tex=t_wood, wall_tex=t_wood, dais_tex=t_wood, trim_tex=t_wood,
+        )
+
+        # 1.10 Semi-Solids & Details (PF_Semisolid = 32)
+        f_rock_terrace = _write_semisolid_brush_file(system_dir, "UT2k4_RockTerrace.t3d", (768.0, 512.0, 192.0), shape="BeveledBox", floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_cliff)
+        f_buttress = _write_semisolid_brush_file(system_dir, "UT2k4_CastleButtress.t3d", (96.0, 256.0, 512.0), shape="Buttress", floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall)
+        f_merlon = _write_semisolid_brush_file(system_dir, "UT2k4_CastleMerlon.t3d", (96.0, 160.0, 192.0), shape="BeveledBox", floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall)
+        f_bridge_pier = _write_semisolid_brush_file(system_dir, "UT2k4_BridgeStonePier.t3d", (256.0, 384.0, 512.0), shape="BeveledBox", floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall)
+        f_bridge_arch = _write_semisolid_brush_file(system_dir, "UT2k4_BridgeArchRib.t3d", (384.0, 1024.0, 192.0), shape="Arch", sides=16, floor_tex=t_steps, wall_tex=t_castle_wall, ceil_tex=t_castle_wall)
+        f_wf_sheet_u = _write_brush_file(system_dir, "UT2k4_WaterfallSheet_U.t3d", (384.0, 64.0, 1024.0), shape="Box", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True)
+        f_wf_sheet_l = _write_brush_file(system_dir, "UT2k4_WaterfallSheet_L.t3d", (384.0, 64.0, 768.0), shape="Box", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True)
+        f_river_surf = _write_brush_file(system_dir, "UT2k4_RiverSurface.t3d", (960.0, river_length - 256, 16.0), shape="Box", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True)
+
+        # ---------------------------------------------------------------------
+        # 2. ACTORS, LIGHTS, WEAPONS, POWERUPS & NAVIGATION LATTICE
+        # ---------------------------------------------------------------------
+        actor_elements = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'XGame.xDeathMatch'",
+            "    Title=\"The Fortress of the Verdant Valley\"",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Zone Information & SkyZoneInfo
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0\n    AmbientBrightness=55\n    Location=(X=0.000000,Y=0.000000,Z=0.000000)\nEnd Actor",
+            _generate_actor_t3d("Engine.SkyZoneInfo", "SkyZoneInfo0", (float(skybox_x), float(skybox_y), float(skybox_z))),
+
+            # Sunlight & Ambient Sky Lighting
+            _generate_actor_t3d("Engine.Sunlight", "Valley_Sun", (0.0, 0.0, 800.0), {
+                "LightBrightness": "240", "LightHue": "35", "LightSaturation": "160",
+            }),
+
+            # 8 PlayerStarts safely grounded
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_Canyon1", (-1000.0, -1200.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_Canyon2", (-1000.0, 1200.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_StoneBridge", (0.0, 1000.0, float(stone_bridge_z + 140))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_Courtyard", (800.0, 0.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_GreatHall", (1400.0, 0.0, float(hall_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_TowerNW", (600.0, -600.0, float(battlements_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_TowerSW", (600.0, 600.0, float(battlements_z + 45))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart_WestLookout", (-1600.0, -800.0, float(west_lookout_z + 45))),
+
+            # Native UT2004 Weapons
+            _generate_actor_t3d("XWeapons.ShockRiflePickup", "Shock_Courtyard", (800.0, 0.0, float(drawbridge_z + 36))),
+            _generate_actor_t3d("XWeapons.FlakCannonPickup", "Flak_GreatHall", (1400.0, 0.0, float(hall_z + 36))),
+            _generate_actor_t3d("XWeapons.RocketLauncherPickup", "Rocket_StoneBridge", (0.0, 1000.0, float(stone_bridge_z + 130))),
+            _generate_actor_t3d("XWeapons.SniperRiflePickup", "Sniper_Spire", (1400.0, 0.0, float(spire_z + 650))),
+            _generate_actor_t3d("XWeapons.SniperRiflePickup", "Sniper_WestPeak", (-1600.0, -800.0, float(west_lookout_z + 36))),
+            _generate_actor_t3d("XWeapons.MinigunPickup", "Minigun_WestRidge", (-1600.0, 400.0, float(floor_z + 1050))),
+            _generate_actor_t3d("XWeapons.LinkGunPickup", "LinkGun_Canyon", (-1000.0, 0.0, float(floor_z + 36))),
+            _generate_actor_t3d("XWeapons.BioRiflePickup", "Bio_WaterfallBasin", (-1280.0, 768.0, float(floor_z + 36))),
+
+            # Native UT2004 Powerups
+            _generate_actor_t3d("XPickups.SuperShieldPack", "SuperShield_TowerNW", (600.0, -600.0, float(battlements_z + 36))),
+            _generate_actor_t3d("XPickups.SuperHealthPack", "SuperHealth_TowerSW", (600.0, 600.0, float(battlements_z + 36))),
+            _generate_actor_t3d("XPickups.UDamagePack", "UDamage_SpireApex", (1400.0, 0.0, float(spire_z + 660))),
+            _generate_actor_t3d("XPickups.HealthPack", "Health_Gate", (400.0, 0.0, float(drawbridge_z + 36))),
+            _generate_actor_t3d("XPickups.ShieldPack", "Shield_StoneBridge", (0.0, -1000.0, float(stone_bridge_z + 130))),
+
+            # JumpPad: River canyon up to Drawbridge
+            _generate_actor_t3d("XPickups.xJumpPad", "JumpPad_RiverToBridge", (-1000.0, 0.0, float(floor_z + 36)), {
+                "JumpZModifier": "1.4",
+            }),
+
+            # 40+ Node Navigation Lattice
+            _generate_actor_t3d("Engine.PathNode", "Path_Canyon_N", (-1000.0, -1200.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Canyon_MidN", (-1000.0, -600.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Canyon_Center", (-1000.0, 0.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Canyon_MidS", (-1000.0, 600.0, float(floor_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Canyon_S", (-1000.0, 1200.0, float(floor_z + 45))),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge_WestN", (-256.0, 1000.0, float(stone_bridge_z + 130))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge_Center", (0.0, 1000.0, float(stone_bridge_z + 130))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge_EastN", (256.0, 1000.0, float(stone_bridge_z + 130))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Bridge_South", (0.0, -1000.0, float(stone_bridge_z + 130))),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_Drawbridge_West", (0.0, 0.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Drawbridge_Mid", (200.0, 0.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Gatehouse", (400.0, 0.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Courtyard_Center", (800.0, 0.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Courtyard_N", (800.0, -400.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_Courtyard_S", (800.0, 400.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_GreatHall_Entry", (1100.0, 0.0, float(hall_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_GreatHall_Center", (1400.0, 0.0, float(hall_z + 45))),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerNW_Base", (600.0, -600.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerNW_Top", (600.0, -600.0, float(battlements_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerSW_Base", (600.0, 600.0, float(drawbridge_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerSW_Top", (600.0, 600.0, float(battlements_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerNE_Top", (1800.0, -600.0, float(battlements_z + 45))),
+            _generate_actor_t3d("Engine.PathNode", "Path_TowerSE_Top", (1800.0, 600.0, float(battlements_z + 45))),
+
+            _generate_actor_t3d("Engine.PathNode", "Path_WestRidge1", (-1600.0, -1200.0, float(floor_z + 1050))),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestRidge2", (-1600.0, -800.0, float(floor_z + 1050))),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestRidge3", (-1600.0, 0.0, float(floor_z + 1050))),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestRidge4", (-1600.0, 800.0, float(floor_z + 1050))),
+            _generate_actor_t3d("Engine.PathNode", "Path_WestLookout", (-1600.0, -800.0, float(west_lookout_z + 45))),
+
+            # Atmospheric Lighting
+            _generate_actor_t3d("Engine.Light", "Light_HallKey", (1400.0, 0.0, float(hall_z + 180)), {
+                "LightBrightness": "200", "LightHue": "25", "LightSaturation": "180", "LightRadius": "64",
+            }),
+            _generate_actor_t3d("Engine.Light", "Light_GateTorch", (400.0, 0.0, float(drawbridge_z + 120)), {
+                "LightBrightness": "180", "LightHue": "25", "LightSaturation": "200", "LightRadius": "48",
+            }),
+            _generate_actor_t3d("Engine.Light", "Light_BridgeFill", (0.0, 1000.0, float(stone_bridge_z + 200)), {
+                "LightBrightness": "160", "LightHue": "35", "LightSaturation": "160", "LightRadius": "60",
+            }),
+            _generate_actor_t3d("Engine.Light", "Light_WaterfallGlow", (-1280.0, 768.0, float(floor_z + 200)), {
+                "LightBrightness": "180", "LightHue": "140", "LightSaturation": "180", "LightRadius": "56",
+            }),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "UT2k4_ValleyActors.t3d", "\n".join(actor_elements))
+
+        # Build monolithic complete T3D file for standalone file distribution
+        monolithic_elements = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0\n    TimeDilation=1.000000\n    DefaultGameType=Class'XGame.xDeathMatch'\n    Title=\"The Fortress of the Verdant Valley\"\n    Location=(X=0.000000,Y=0.000000,Z=0.000000)\nEnd Actor",
+            _generate_brush_actor_t3d("Brush0", (0.0, 0.0, 0.0), (256.0, 256.0, 256.0), csg_oper="CSG_Active", floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_floor),
+            _generate_brush_actor_t3d("ValleySkybox", (float(skybox_x), float(skybox_y), float(skybox_z)), (1024.0, 1024.0, 1024.0), csg_oper="CSG_Subtract", floor_tex=t_sky, wall_tex=t_sky, ceil_tex=t_sky),
+            _generate_brush_actor_t3d("ValleyMain", (0.0, 0.0, 0.0), (float(width), float(length), float(height)), csg_oper="CSG_Subtract", floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_sky, ceil_flags=SKY_FLAGS),
+            _generate_brush_actor_t3d("ValleySkyOpening", (0.0, 0.0, float(height // 2 - 32)), (float(width), float(length), 64.0), csg_oper="CSG_Subtract", floor_tex=t_sky, wall_tex=t_sky, ceil_tex=t_sky, ceil_flags=SKY_FLAGS, floor_flags=SKY_FLAGS, wall_flags=SKY_FLAGS),
+            _generate_brush_actor_t3d("RiverGorge", (0.0, 0.0, float(gorge_z + 128)), (1024.0, river_length, 256.0), csg_oper="CSG_Subtract", floor_tex=t_pebbles, wall_tex=t_cliff, ceil_tex=t_water),
+            _generate_brush_actor_t3d("GorgeEndCap_N", (0.0, float(river_length // 2 + 64), float(gorge_z + 128)), (1024.0, 128.0, 256.0), csg_oper="CSG_Add", floor_tex=t_cliff, wall_tex=t_cliff, dais_tex=t_cliff, trim_tex=t_cliff),
+            _generate_brush_actor_t3d("GorgeEndCap_S", (0.0, float(-(river_length // 2 + 64)), float(gorge_z + 128)), (1024.0, 128.0, 256.0), csg_oper="CSG_Add", floor_tex=t_cliff, wall_tex=t_cliff, dais_tex=t_cliff, trim_tex=t_cliff),
+            _generate_brush_actor_t3d("WaterfallUpper", (-1792.0, float(wf_upper_y), float(floor_z + 640)), (384.0, 768.0, 1280.0), csg_oper="CSG_Subtract", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water),
+            _generate_brush_actor_t3d("WaterfallLower", (-1280.0, float(wf_lower_y), float(floor_z + 384)), (384.0, 512.0, 768.0), csg_oper="CSG_Subtract", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water),
+            _generate_brush_actor_t3d("CastleBluffBase", (1280.0, 0.0, float(bluff_z)), (1792.0, 1792.0, 1024.0), csg_oper="CSG_Add", floor_tex=t_floor, wall_tex=t_cliff, dais_tex=t_floor, trim_tex=t_cliff),
+            _generate_brush_actor_t3d("CliffSkirt", (1280.0, 0.0, float(floor_z + 256)), (2048.0, 2048.0, 512.0), csg_oper="CSG_Add", floor_tex=t_cliff, wall_tex=t_cliff, dais_tex=t_cliff, trim_tex=t_cliff),
+            _generate_brush_actor_t3d("TerrainRamp_W", (256.0, 0.0, float(floor_z + 256)), (512.0, 512.0, 512.0), csg_oper="CSG_Add", shape="Ramp", floor_tex=t_floor, wall_tex=t_cliff),
+            _generate_brush_actor_t3d("TerrainRamp_E", (2304.0, 0.0, float(floor_z + 256)), (512.0, 512.0, 512.0), csg_oper="CSG_Add", shape="Ramp", floor_tex=t_floor, wall_tex=t_cliff),
+            _generate_brush_actor_t3d("WestMountainRidge", (-1792.0, 0.0, float(bluff_z)), (1024.0, float(length - 1024), 1024.0), csg_oper="CSG_Add", floor_tex=t_floor, wall_tex=t_cliff, dais_tex=t_floor, trim_tex=t_cliff),
+            _generate_brush_actor_t3d("CastleKeepBastion", (1280.0, 0.0, float(keep_z)), (1536.0, 1536.0, 512.0), csg_oper="CSG_Add", floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("CastleGreatHall", (1280.0, 0.0, float(hall_z)), (1280.0, 1280.0, 384.0), csg_oper="CSG_Subtract", floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("CastleCorridor", (576.0, 0.0, float(gate_z)), (512.0, 384.0, 192.0), csg_oper="CSG_Subtract", floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("TowerNW", (600.0, -600.0, float(battlements_z)), (512.0, 512.0, 1024.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("TowerNW_Inner", (600.0, -600.0, float(battlements_z)), (384.0, 384.0, 960.0), csg_oper="CSG_Subtract", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("TowerSW", (600.0, 600.0, float(battlements_z)), (512.0, 512.0, 1024.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("TowerSW_Inner", (600.0, 600.0, float(battlements_z)), (384.0, 384.0, 960.0), csg_oper="CSG_Subtract", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("TowerNE", (1800.0, -600.0, float(battlements_z)), (512.0, 512.0, 1024.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("TowerNE_Inner", (1800.0, -600.0, float(battlements_z)), (384.0, 384.0, 960.0), csg_oper="CSG_Subtract", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("TowerSE", (1800.0, 600.0, float(battlements_z)), (512.0, 512.0, 1024.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("TowerSE_Inner", (1800.0, 600.0, float(battlements_z)), (384.0, 384.0, 960.0), csg_oper="CSG_Subtract", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, ceil_tex=t_castle_floor),
+            _generate_brush_actor_t3d("CitadelSpire", (1400.0, 0.0, float(spire_z)), (512.0, 512.0, 1280.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("LowerStoneBridge", (0.0, 1000.0, float(stone_bridge_z)), (512.0, 1280.0, 128.0), csg_oper="CSG_Add", floor_tex=t_castle_floor, wall_tex=t_castle_wall, dais_tex=t_castle_floor, trim_tex=t_trim),
+            _generate_brush_actor_t3d("UpperDrawbridge", (200.0, 0.0, float(drawbridge_z)), (512.0, 384.0, 48.0), csg_oper="CSG_Add", floor_tex=t_wood, wall_tex=t_wood, dais_tex=t_wood, trim_tex=t_wood),
+            _generate_brush_actor_t3d("MountainLookout", (-1600.0, -800.0, float(west_lookout_z)), (384.0, 384.0, 768.0), csg_oper="CSG_Add", shape="Cylinder", sides=tower_sides, floor_tex=t_wood, wall_tex=t_wood, dais_tex=t_wood, trim_tex=t_wood),
+            _generate_brush_actor_t3d("RockTerrace_N", (400.0, -800.0, float(floor_z + 96)), (768.0, 512.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_cliff),
+            _generate_brush_actor_t3d("RockTerrace_S", (400.0, 800.0, float(floor_z + 96)), (768.0, 512.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_floor, wall_tex=t_cliff, ceil_tex=t_cliff),
+            _generate_brush_actor_t3d("CastleButtress_N", (1280.0, -704.0, float(keep_z)), (96.0, 256.0, 512.0), csg_oper="CSG_Add", shape="Buttress", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("CastleButtress_S", (1280.0, 704.0, float(keep_z)), (96.0, 256.0, 512.0), csg_oper="CSG_Add", shape="Buttress", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("CastleMerlon_NW", (600.0, -600.0, float(battlements_z + 1024)), (96.0, 160.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("CastleMerlon_SW", (600.0, 600.0, float(battlements_z + 1024)), (96.0, 160.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("CastleMerlon_NE", (1800.0, -600.0, float(battlements_z + 1024)), (96.0, 160.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("CastleMerlon_SE", (1800.0, 600.0, float(battlements_z + 1024)), (96.0, 160.0, 192.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("BridgeStonePier", (0.0, 1000.0, float(stone_bridge_z - 256)), (256.0, 384.0, 512.0), csg_oper="CSG_Add", shape="BeveledBox", is_semisolid=True, floor_tex=t_castle_wall, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("BridgeArchRib", (0.0, 1000.0, float(stone_bridge_z - 128)), (384.0, 1024.0, 192.0), csg_oper="CSG_Add", shape="Arch", sides=16, is_semisolid=True, floor_tex=t_steps, wall_tex=t_castle_wall, ceil_tex=t_castle_wall),
+            _generate_brush_actor_t3d("WaterfallSheet_Upper", (-1792.0, float(wf_upper_y), float(floor_z + 640)), (384.0, 64.0, 1024.0), csg_oper="CSG_Add", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True),
+            _generate_brush_actor_t3d("WaterfallSheet_Lower", (-1280.0, float(wf_lower_y), float(floor_z + 384)), (384.0, 64.0, 768.0), csg_oper="CSG_Add", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True),
+            _generate_brush_actor_t3d("RiverSurface", (0.0, 0.0, float(gorge_z + 220)), (960.0, river_length - 256, 16.0), csg_oper="CSG_Add", floor_tex=t_water, wall_tex=t_water, ceil_tex=t_water, wall_flags=4, floor_flags=4, ceil_flags=4, is_semisolid=True),
+            *actor_elements[1:-1],
+            "End Map",
+        ]
+        f_complete_map = _write_file(system_dir, "UT2k4_ValleyFortress_Complete.t3d", "\n".join(monolithic_elements))
+
+        pkg_cmds = _get_ut2004_obj_load_commands([
+            "AbaddonTerrain.utx",
+            "AbaddonArchitecture.utx",
+            "ArboreaArchitecture.utx",
+            "AlleriaTerrain.utx",
+            "HumanoidArchitecture.utx",
+            "SkyBox.utx",
+            "2K4Chargers.utx",
+        ])
+
+        cmds = [
+            "MAP NEW",
+            *pkg_cmds,
+            f'MAP IMPORT FILE="{f_actors}"',
+
+            # 1. Skybox Chamber (CSG Subtract)
+            f"BRUSH MOVETO X={skybox_x} Y={skybox_y} Z={skybox_z}",
+            f'BRUSH IMPORT FILE="{f_skybox}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 2. Main Canyon Valley (CSG Subtract)
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_valley}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 3. Full-width Sky Opening (CSG Subtract)
+            f"BRUSH MOVETO X=0 Y=0 Z={height // 2 - 32}",
+            f'BRUSH IMPORT FILE="{f_sky_opening}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 4. Deep Central River Gorge (CSG Subtract)
+            f"BRUSH MOVETO X=0 Y=0 Z={gorge_z + 128}",
+            f'BRUSH IMPORT FILE="{f_river}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 5. River Gorge End-Caps (CSG Add)
+            f"BRUSH MOVETO X=0 Y={river_length // 2 + 64} Z={gorge_z + 128}",
+            f'BRUSH IMPORT FILE="{f_gorge_endcap}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=0 Y={-(river_length // 2 + 64)} Z={gorge_z + 128}",
+            f'BRUSH IMPORT FILE="{f_gorge_endcap}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 6. Dual Waterfall Cascade Recesses (CSG Subtract)
+            f"BRUSH MOVETO X=-1792 Y={wf_upper_y} Z={floor_z + 640}",
+            f'BRUSH IMPORT FILE="{f_wf_upper}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=-1280 Y={wf_lower_y} Z={floor_z + 384}",
+            f'BRUSH IMPORT FILE="{f_wf_lower}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 7. Bedrock Foundation Bluff, Skirt & Ramps (CSG Add)
+            f"BRUSH MOVETO X=1280 Y=0 Z={bluff_z}",
+            f'BRUSH IMPORT FILE="{f_bluff}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1280 Y=0 Z={floor_z + 256}",
+            f'BRUSH IMPORT FILE="{f_skirt}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=256 Y=0 Z={floor_z + 256}",
+            f'BRUSH IMPORT FILE="{f_ramp}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=2304 Y=0 Z={floor_z + 256}",
+            f'BRUSH IMPORT FILE="{f_ramp}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-1792 Y=0 Z={bluff_z}",
+            f'BRUSH IMPORT FILE="{f_ridge}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 8. Castle Keep, Great Hall & Entry Portal
+            f"BRUSH MOVETO X=1280 Y=0 Z={keep_z}",
+            f'BRUSH IMPORT FILE="{f_keep}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1280 Y=0 Z={hall_z}",
+            f'BRUSH IMPORT FILE="{f_hall}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+            f"BRUSH MOVETO X=576 Y=0 Z={gate_z}",
+            f'BRUSH IMPORT FILE="{f_corridor}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # 9. 4 Flanking Battle Towers & Royal Spire
+            f"BRUSH MOVETO X=600 Y=-600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=600 Y=-600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=600 Y=600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=600 Y=600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=1800 Y=-600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1800 Y=-600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=1800 Y=600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1800 Y=600 Z={battlements_z}",
+            f'BRUSH IMPORT FILE="{f_tower_inner}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=1400 Y=0 Z={spire_z}",
+            f'BRUSH IMPORT FILE="{f_spire}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 10. Dual Bridges & Mountain Lookout
+            f"BRUSH MOVETO X=0 Y=1000 Z={stone_bridge_z}",
+            f'BRUSH IMPORT FILE="{f_stone_bridge}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=200 Y=0 Z={drawbridge_z}",
+            f'BRUSH IMPORT FILE="{f_drawbridge}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-1600 Y=-800 Z={west_lookout_z}",
+            f'BRUSH IMPORT FILE="{f_lookout}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 11. Semi-Solid Structural & Fluid Embellishments (Flags=32 and Flags=36)
+            f"BRUSH MOVETO X=400 Y=-800 Z={floor_z + 96}",
+            f'BRUSH IMPORT FILE="{f_rock_terrace}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=400 Y=800 Z={floor_z + 96}",
+            f'BRUSH IMPORT FILE="{f_rock_terrace}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1280 Y=-704 Z={keep_z}",
+            f'BRUSH IMPORT FILE="{f_buttress}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1280 Y=704 Z={keep_z}",
+            f'BRUSH IMPORT FILE="{f_buttress}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            f"BRUSH MOVETO X=600 Y=-600 Z={battlements_z + 1024}",
+            f'BRUSH IMPORT FILE="{f_merlon}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=600 Y=600 Z={battlements_z + 1024}",
+            f'BRUSH IMPORT FILE="{f_merlon}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1800 Y=-600 Z={battlements_z + 1024}",
+            f'BRUSH IMPORT FILE="{f_merlon}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=1800 Y=600 Z={battlements_z + 1024}",
+            f'BRUSH IMPORT FILE="{f_merlon}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            f"BRUSH MOVETO X=0 Y=1000 Z={stone_bridge_z - 256}",
+            f'BRUSH IMPORT FILE="{f_bridge_pier}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=0 Y=1000 Z={stone_bridge_z - 128}",
+            f'BRUSH IMPORT FILE="{f_bridge_arch}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            f"BRUSH MOVETO X=-1792 Y={wf_upper_y} Z={floor_z + 640}",
+            f'BRUSH IMPORT FILE="{f_wf_sheet_u}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=-1280 Y={wf_lower_y} Z={floor_z + 384}",
+            f'BRUSH IMPORT FILE="{f_wf_sheet_l}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+            f"BRUSH MOVETO X=0 Y=0 Z={gorge_z + 220}",
+            f'BRUSH IMPORT FILE="{f_river_surf}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            # 12. Full Map Rebuild & Lighting Baking & Navigation Compilation
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS DEFINE",
+            "CAMERA MOVETO X=-600 Y=1400 Z=400 PITCH=-3000 YAW=-16000 ROLL=0",
+            "MODE DYNAMICLIGHT",
+            "CAMERA ALIGN",
+            "VIEWPORT REDRAW",
+            "FLUSH",
+        ]
+
+        return cmds
+
+
+    # -------------------------------------------------------------------------
     # 12. UE5 MODULAR ARENA EXPORT
     # -------------------------------------------------------------------------
     @staticmethod
@@ -3336,3 +4301,4 @@ class FormulaEngine:
             {"type": "PointLight", "intensity": 5000, "location": [0, 0, 300], "color": [0.2, 0.8, 1.0]},
             {"type": "PlayerStart", "location": [0, -500, 50]},
         ]
+

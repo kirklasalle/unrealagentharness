@@ -19,14 +19,17 @@ def get_ut2004_palette(
     from core.mind_synthesizer import MindSynthesizer
 
     return [
+        # ---------------------------------------------------------------------
+        # 1. PREMIER FULL WORLD ENVIRONMENTS
+        # ---------------------------------------------------------------------
         {
-            "category": "🧠 SOTA MIND-TO-WORLD NEURO SYNTHESIZERS",
+            "category": "🏆 PREMIER FULL WORLD ENVIRONMENTS",
             "items": [
                 {
-                    "title": "🔮 Neuro-Symbolic UT2004 Arena Synthesizer",
-                    "desc": "Mind-to-World generative compiler: Synthesizes a watertight, illuminated, and fully pathed level from dynamic thematic reasoning with PATHS DEFINE safety.",
-                    "commands_factory": lambda: MindSynthesizer.synthesize_level_from_mind("UT2004 Cybernetic Arena with super shield dais and shock rifles", system_dir=system_dir, engine_id="ut2004"),
-                    "prompt": "Synthesize an authentic UT2004 arena with 75% engine budget detail, dynamic radiosity lighting, and full bot navigation network.",
+                    "title": "🏔️ Valley Fortress — Image Fidelity 75%",
+                    "desc": "One-click high-fidelity forest valley fortress: isolated skybox, stepped cliffs, waterfall cascades, grounded keep, 24-sided battle towers, dual bridges, native UT2004 weapons, jump pads, and navigation.",
+                    "commands_factory": lambda: FormulaEngine.generate_ut2004_verdant_mountain_valley(system_dir=system_dir, detail_level="ultra"),
+                    "prompt": "Construct the supplied Valley Fortress reference image in UT2004 at the safe 75% engine detail budget: establish the skybox and world silhouette first, then stepped forest cliffs, waterfall and river, grounded multi-tower fortress, crenellated walls, dual bridges, lookout towers, lighting, native UT2004 weapons, jump pads, and pathing.",
                 },
                 {
                     "title": "🏰 Interconnected Multi-Chamber Compound",
@@ -34,14 +37,6 @@ def get_ut2004_palette(
                     "commands_factory": lambda: MindSynthesizer.generate_procedural_compound(room_count=3, system_dir=system_dir, engine_id="ut2004"),
                     "prompt": "Carve a multi-room interconnected facility with central hub, connecting corridors, and defense perches.",
                 },
-            ],
-        },
-        # ---------------------------------------------------------------------
-        # 1. PREMIER FULL WORLD ENVIRONMENTS
-        # ---------------------------------------------------------------------
-        {
-            "category": "🏆 PREMIER FULL WORLD ENVIRONMENTS",
-            "items": [
                 {
                     "title": "🏜️ Onslaught Canyon Outpost (Torlan)",
                     "desc": "8192x8192 outdoor canyon expanse with Red & Blue PowerCores, Neutral PowerNodes, Manta/Scorpion/Raptor/Goliath vehicle bays, AVRiL armory, and full road/air path lattice.",
