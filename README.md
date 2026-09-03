@@ -1,7 +1,9 @@
 # Unreal Agent Harness (UAH)
 ### Autonomous Level Designer, In-Editor Copilot & Multi-Engine Automation Suite
 **Author & Lead Architect:** Kirk LaSalle  
-**Official Repository:** [https://github.com/kirklasalle/unrealagentharness](https://github.com/kirklasalle/unrealagentharness)
+**Official Repository:** [https://github.com/kirklasalle/unrealagentharness](https://github.com/kirklasalle/unrealagentharness)  
+**Category:** Autonomous Game Development & Level Design Suite  
+**Tags / Topics:** `#unreal-engine` `#unreal-tournament` `#ut99` `#ut2004` `#ue5` `#unrealed` `#level-design` `#procedural-generation` `#autonomous-agents` `#ai-copilot` `#csg-geometry` `#bsp-compiler` `#botpack-ai` `#game-development` `#win32` `#multimodal-ai`
 
 <p align="center">
   <img src="assets/uah_titlebar_crest.jpg" alt="Unreal Agent Harness Official Standard Crest & Titlebar" width="100%">
@@ -17,9 +19,20 @@
   <img src="https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge" alt="License">
 </p>
 
+<p align="center">
+  <a href="https://github.com/topics/unreal-engine"><img src="https://img.shields.io/badge/topic-unreal--engine-f39c12?style=flat-square&logo=unrealengine&logoColor=white" alt="unreal-engine"></a>
+  <a href="https://github.com/topics/unreal-tournament"><img src="https://img.shields.io/badge/topic-unreal--tournament-c0392b?style=flat-square" alt="unreal-tournament"></a>
+  <a href="https://github.com/topics/autonomous-agents"><img src="https://img.shields.io/badge/topic-autonomous--agents-8e44ad?style=flat-square" alt="autonomous-agents"></a>
+  <a href="https://github.com/topics/ai-copilot"><img src="https://img.shields.io/badge/topic-ai--copilot-2980b9?style=flat-square" alt="ai-copilot"></a>
+  <a href="https://github.com/topics/level-design"><img src="https://img.shields.io/badge/topic-level--design-27ae60?style=flat-square" alt="level-design"></a>
+  <a href="https://github.com/topics/procedural-generation"><img src="https://img.shields.io/badge/topic-procedural--generation-16a085?style=flat-square" alt="procedural-generation"></a>
+  <a href="https://github.com/topics/csg"><img src="https://img.shields.io/badge/topic-csg-d35400?style=flat-square" alt="csg"></a>
+  <a href="https://github.com/topics/game-development"><img src="https://img.shields.io/badge/topic-game--development-2c3e50?style=flat-square" alt="game-development"></a>
+</p>
+
 ---
 
-## 🌟 Executive Summary
+## 📖 About Unreal Agent Harness (UAH)
 
 <p align="center">
   <img src="assets/uah_seal_circular.jpg" alt="UAH Official Certified Standard Seal" width="220px">
@@ -27,9 +40,22 @@
 
 The **Unreal Agent Harness (UAH)** is the official reference implementation of the **[UAH Open Standard (v1.0.0)](docs/UAH_UNREAL_AGENTIC_HARNESS_STANDARD_SPECIFICATION.md)** — a portable, zero-dependency autonomous level design, CSG geometry compilation, bot pathing, multi-modal perception, and multi-agent coordination standard for the Unreal Engine ecosystem spanning **28 years of gaming history (1998 namesake through modern UE5.x)**.
 
-UAH is officially certified with a **97.7 / 100 World-Class Health Score** in our **[Deep Architecture, Design & Engineering Audit](docs/08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)** with **123 / 123 automated tests passing (100%)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o) and 100% private, air-gapped offline runtimes (Ollama Qwen 2.5 Coder 32B).
+### 🎯 Mission & Problem Statement
+Level design in classic and modern Unreal engines has historically demanded steep, manual mastery over Constructive Solid Geometry (CSG), intricate BSP brush math, texture coordinate alignment, radiosity light tracing, and complex reachability path networks. A single misplaced brush or bad subtractive sequence can corrupt BSP node trees, trigger catastrophic 65k node General Protection Fault (GPF) crashes, or produce untextured void sheets.
 
-The project is strictly governed by the **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](AGENTIC_SACRED_COVENANT.md)**, ensuring that AI autonomy and human creative authority remain in unbreakable harmony.
+At the same time, modern generative AI tools and coding assistants typically run in heavyweight Chromium/Electron wrappers (CEF) or web browsers that consume gigabytes of RAM. Running these side-by-side with UnrealEd starves the Windows message loop and CPU rendering threads of cycles, causing viewport freezing and editor crashes.
+
+### 💡 The UAH Solution
+UAH bridges this 28-year gap by providing:
+1. **⚡ Ultra-Lightweight Native Cockpit (< 35MB RAM):** Pure Python and native Win32/Tkinter primitives with **zero Chromium / CEF / WebView2 overhead**, ensuring editor viewports maintain solid framerates and uninterrupted BSP compilation.
+2. **🏗️ 2-Stage Synchronized CSG Synthesis:** Guarantees texture packages (`OBJ LOAD`) and navigation entities (`MAP IMPORT`) are staged in exact mathematical order before brush subtraction or addition, preventing geometry corruption.
+3. **📐 75% Engine Budget Law:** Formally bounds procedural room volume, brush counts, and actor densities so maps never overflow engine memory limits or trigger BSP cuts.
+4. **🤖 Autonomous Navigation Lattices:** Synthesizes 50+ node Botpack AI reachability graphs with automatic floor-clearance offsets (+50 UU), jump pads, sniper perches, and inventory routes.
+5. **🧠 Lifelong SQLite Memory & Skill Genesis:** Dynamically extracts novel architectural formulas and records them as persistent `.uah_skill` entries in SQLite memory for RAG-augmented prompt synthesis.
+6. **🎮 Universal Multi-Engine Architecture:** Full out-of-the-box support across Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e), Unreal Tournament 2003 (UE2.0), Unreal Tournament 2004 (UE2.5), community total conversions (*ChaosUT*, *Tactical Ops*, *UTron*), and modern Unreal Engine 5.x via Python Remote Execution.
+7. **🛡️ Governed Autonomy:** Strictly governed by the **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](AGENTIC_SACRED_COVENANT.md)**, guaranteeing that AI autonomy and human creative authority operate in transparent, auditable harmony.
+
+UAH is officially certified with a **97.7 / 100 World-Class Health Score** in our **[Deep Architecture, Design & Engineering Audit](docs/08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)** with **123 / 123 automated tests passing (100%)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o) and 100% private, air-gapped offline runtimes (Ollama Qwen 2.5 Coder 32B).
 
 For future milestones, review the **[Official Engineering & Product Roadmap (2026–2027)](ROADMAP.md)**. Explore our standalone interactive web suite in [`public_html/`](public_html/index.html).
 
@@ -275,7 +301,7 @@ For in-depth technical documentation, refer to the **[Master Documentation Index
 
 ## 🧪 Testing & Verification
 
-The repository includes a comprehensive 106-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, Unreal Academy research engines, and multi-engine automation bridges.
+The repository includes a comprehensive 123-test unit testing suite validating configuration profiles, formula generators, tool-calling schemas, IPC controllers, pathing lattice algorithms, Mind-to-World synthesis, Skill Genesis memory persistence, Unreal Architect Wizard building, Unreal Academy research engines, and multi-engine automation bridges.
 
 To run the full test suite:
 
@@ -285,10 +311,24 @@ python test_harness.py
 
 ```
 ----------------------------------------------------------------------
-Ran 106 tests in 5.405s
+Ran 123 tests in 11.554s
 
 OK (100% Pass Rate)
 ```
+
+---
+
+## 🏷️ Repository Topics & Tags
+
+This repository is indexed and categorized under the following primary topics:
+
+| Category | Tags & Keywords |
+| :--- | :--- |
+| **Game Engines & Tools** | `unreal-engine`, `unreal-tournament`, `ut99`, `ut2004`, `ue1`, `ue2`, `ue5`, `unrealed`, `unrealscript` |
+| **Autonomous Systems & AI** | `autonomous-agents`, `ai-copilot`, `multi-agent`, `llm-agents`, `gemini`, `claude`, `gpt-4o`, `ollama`, `local-llm`, `in-editor-ai` |
+| **Level Design & Procedural Tech** | `level-design`, `procedural-generation`, `csg`, `csg-geometry`, `bsp`, `bsp-compiler`, `botpack-ai`, `reachability-graph`, `dynamic-lighting` |
+| **System Architecture & Platform** | `win32`, `tkinter`, `zero-overhead`, `ipc`, `desktop-automation`, `python3` |
+| **Ethics & Governance** | `ai-governance`, `agentic-prime-directive`, `sacred-covenant`, `ten-laws-of-ai-supremacy` |
 
 ---
 
