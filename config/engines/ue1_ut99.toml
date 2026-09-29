@@ -1,0 +1,38 @@
+# Unreal Agent Harness (UAH) — UE1 Engine Profile
+# Unreal Tournament 99 / OldUnreal 469e
+
+[engine]
+id = "ut99_goty"
+name = "Unreal Tournament 99 GOTY [UE1 / OldUnreal 469e]"
+generation = "UE1"
+category = "Base Game Engine"
+icon = "🏆"
+
+[paths]
+default_root = "C:\\UnrealTournament"
+system_subpath = "System"
+editor_exe = "UnrealEd.exe"
+game_exe = "UnrealTournament.exe"
+game_args = "INI=UnrealTournament.ini USERINI=User.ini"
+
+[process]
+window_classes = ["WUnrealEd", "WWindow", "UnrealEd"]
+process_names = ["unrealed.exe", "unrealtournament.exe"]
+log_files = ["Editor.log", "UnrealEd.log", "UnrealTournament.log"]
+
+[signatures]
+PlayerStart = "Engine.PlayerStart"
+Light = "Engine.Light"
+ZoneInfo = "Engine.ZoneInfo"
+PathNode = "Engine.PathNode"
+ShockRifle = "Botpack.ShockRifle"
+RocketLauncher = "Botpack.UT_Eightball"
+FlakCannon = "Botpack.UT_FlakCannon"
+GameType = "Botpack.DeathMatchPlus"
+
+[geometry]
+csg_units_per_meter = 64.0
+default_room_width = 512
+default_room_height = 256
+default_room_depth = 512
+snap_grid = 16

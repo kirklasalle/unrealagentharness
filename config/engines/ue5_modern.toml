@@ -1,0 +1,33 @@
+# Unreal Agent Harness (UAH) — UE5 Engine Profile
+# Unreal Engine 5.4 / 5.5 Modern Automation
+
+[engine]
+id = "ue5_editor"
+name = "Unreal Engine 5 [UE5.4 / UE5.5]"
+generation = "UE5"
+category = "Next-Gen Game Engine"
+icon = "🔮"
+
+[paths]
+default_root = "C:\\Program Files\\Epic Games\\UE_5.4"
+system_subpath = "Engine\\Binaries\\Win64"
+editor_exe = "UnrealEditor.exe"
+game_exe = "UnrealEditor.exe"
+game_args = "-game -log"
+
+[process]
+window_classes = ["UnrealWindow"]
+process_names = ["unrealeditor.exe"]
+log_files = ["UnrealEditor.log"]
+
+[signatures]
+PlayerStart = "/Script/Engine.PlayerStart"
+Light = "/Script/Engine.PointLight"
+Volume = "/Script/Engine.PostProcessVolume"
+
+[geometry]
+csg_units_per_meter = 100.0
+default_room_width = 2000
+default_room_height = 600
+default_room_depth = 2000
+snap_grid = 50

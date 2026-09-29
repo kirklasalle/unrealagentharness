@@ -1,0 +1,38 @@
+# Unreal Agent Harness (UAH) — UE2 Engine Profile
+# Unreal Tournament 2004 (UE2 / UE2.5)
+
+[engine]
+id = "ut2004"
+name = "Unreal Tournament 2004 [UE2.5]"
+generation = "UE2.5"
+category = "Base Game Engine"
+icon = "⚡"
+
+[paths]
+default_root = "C:\\UT2004"
+system_subpath = "System"
+editor_exe = "UnrealEd.exe"
+game_exe = "UT2004.exe"
+game_args = "INI=UT2004.ini USERINI=User.ini"
+
+[process]
+window_classes = ["WUnrealEd", "WWindow"]
+process_names = ["unrealed.exe", "ut2004.exe"]
+log_files = ["UT2004.log"]
+
+[signatures]
+PlayerStart = "Engine.PlayerStart"
+Light = "Engine.Light"
+ZoneInfo = "Engine.ZoneInfo"
+PathNode = "Engine.PathNode"
+ShockRifle = "XWeapons.ShockRifle"
+RocketLauncher = "XWeapons.RocketLauncher"
+FlakCannon = "XWeapons.FlakCannon"
+GameType = "XGame.xDeathMatch"
+
+[geometry]
+csg_units_per_meter = 50.0
+default_room_width = 1024
+default_room_height = 512
+default_room_depth = 1024
+snap_grid = 32
