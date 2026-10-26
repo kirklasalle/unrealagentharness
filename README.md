@@ -11,7 +11,8 @@
 
 <p align="center">
   <a href="https://github.com/kirklasalle/unrealagentharness"><img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repo"></a>
-  <img src="https://img.shields.io/badge/Audit%20Score-96.25%20%2F%20100%20(World--Class)-brightgreen?style=for-the-badge&logo=checkmarx" alt="Audit Score">
+  <img src="https://img.shields.io/badge/Audit%20Score-98.8%20%2F%20100%20(World--Class)-brightgreen?style=for-the-badge&logo=checkmarx" alt="Audit Score">
+  <img src="https://img.shields.io/badge/Tests-129%20%2F%20129%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=pytest" alt="Test Status">
   <img src="https://img.shields.io/badge/Standard-UAH%20v1.0.0-gold?style=for-the-badge&logo=openaccess" alt="UAH Standard">
   <img src="https://img.shields.io/badge/Engines-UE1%20%7C%20UE2.0%20%7C%20UE2.5%20%7C%20UE5.x-blue?style=for-the-badge&logo=unrealengine" alt="Supported Engines">
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.14-green?style=for-the-badge&logo=python" alt="Python Support">
@@ -24,6 +25,7 @@
   <a href="https://github.com/topics/unreal-tournament"><img src="https://img.shields.io/badge/topic-unreal--tournament-c0392b?style=flat-square" alt="unreal-tournament"></a>
   <a href="https://github.com/topics/autonomous-agents"><img src="https://img.shields.io/badge/topic-autonomous--agents-8e44ad?style=flat-square" alt="autonomous-agents"></a>
   <a href="https://github.com/topics/ai-copilot"><img src="https://img.shields.io/badge/topic-ai--copilot-2980b9?style=flat-square" alt="ai-copilot"></a>
+  <a href="https://github.com/topics/knowledge-graph"><img src="https://img.shields.io/badge/topic-knowledge--graph-3498db?style=flat-square" alt="knowledge-graph"></a>
   <a href="https://github.com/topics/level-design"><img src="https://img.shields.io/badge/topic-level--design-27ae60?style=flat-square" alt="level-design"></a>
   <a href="https://github.com/topics/procedural-generation"><img src="https://img.shields.io/badge/topic-procedural--generation-16a085?style=flat-square" alt="procedural-generation"></a>
   <a href="https://github.com/topics/csg"><img src="https://img.shields.io/badge/topic-csg-d35400?style=flat-square" alt="csg"></a>
@@ -51,11 +53,11 @@ UAH bridges this 28-year gap by providing:
 2. **🏗️ 2-Stage Synchronized CSG Synthesis:** Guarantees texture packages (`OBJ LOAD`) and navigation entities (`MAP IMPORT`) are staged in exact mathematical order before brush subtraction or addition, preventing geometry corruption.
 3. **📐 75% Engine Budget Law:** Formally bounds procedural room volume, brush counts, and actor densities so maps never overflow engine memory limits or trigger BSP cuts.
 4. **🤖 Autonomous Navigation Lattices:** Synthesizes 50+ node Botpack AI reachability graphs with automatic floor-clearance offsets (+50 UU), jump pads, sniper perches, and inventory routes.
-5. **🧠 Lifelong SQLite Memory & Skill Genesis:** Dynamically extracts novel architectural formulas and records them as persistent `.uah_skill` entries in SQLite memory for RAG-augmented prompt synthesis.
+5. **🧠 Universal Knowledge System (UKS) & Cognitive Graph Memory:** Dynamic semantic graph memory modeling atomic concepts and typed ontological links across architecture, 3D math, and textures with multi-hop BFS retrieval, attribute inheritance, and constraint validation.
 6. **🎮 Universal Multi-Engine Architecture:** Full out-of-the-box support across Unreal Tournament 99 GOTY (UE1 / OldUnreal 469e), Unreal Tournament 2003 (UE2.0), Unreal Tournament 2004 (UE2.5), community total conversions (*ChaosUT*, *Tactical Ops*, *UTron*), and modern Unreal Engine 5.x via Python Remote Execution.
 7. **🛡️ Governed Autonomy:** Strictly governed by the **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](AGENTIC_SACRED_COVENANT.md)**, guaranteeing that AI autonomy and human creative authority operate in transparent, auditable harmony.
 
-UAH is officially certified with a **97.7 / 100 World-Class Health Score** in our **[Deep Architecture, Design & Engineering Audit](docs/08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)** with **123 / 123 automated tests passing (100%)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o) and 100% private, air-gapped offline runtimes (Ollama Qwen 2.5 Coder 32B).
+UAH is officially certified with a **98.8 / 100 World-Class Health Score** in our **[World-Class Documentation & Code Audit, UKS Cognitive Graph Memory & Jev Model Specification](docs/09_WORLD_CLASS_DOCUMENTATION_AND_CODE_AUDIT_UKS_SPECIFICATION.md)** with **129 / 129 automated tests passing (100%)**, uniting low-level Win32 automation with cutting-edge frontier reasoning models (Google Gemini 2.5 Flash, Anthropic Claude 3.7 Sonnet, OpenAI GPT-4o), private air-gapped runtimes (Ollama Qwen 2.5 Coder 32B), and the **TypeSafe AI Jev model** System 1 decision architecture.
 
 For future milestones, review the **[Official Engineering & Product Roadmap (2026–2027)](ROADMAP.md)**. Explore our standalone interactive web suite in [`public_html/`](public_html/index.html).
 

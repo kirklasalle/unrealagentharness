@@ -12,6 +12,7 @@ import core.bootstrap
 from core.config_manager import ConfigManager
 from core.engine_controller import EngineController
 from core.formula_engine import FormulaEngine
+from core.memory_engine import MemoryEngine
 from core.nexus_bridge import NexusBridge
 from core.tools_schema import UNREALED_TOOLS
 from core.logger import (
@@ -643,7 +644,10 @@ class TestVisionInspector(unittest.TestCase):
         self.assertTrue(vi.screenshots_dir.exists())
 
     def test_viewport_quality_detects_red_upper_surface(self):
-        from PIL import Image
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest("Pillow (PIL) not installed in active environment")
         vi = VisionInspector()
         image = Image.new("RGB", (20, 20), (20, 20, 20))
         for y in range(8):
@@ -654,8 +658,11 @@ class TestVisionInspector(unittest.TestCase):
         self.assertIn("opaque_or_red_upper_surface", report["findings"])
 
     def test_reference_graph_contains_edge_profile(self):
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest("Pillow (PIL) not installed in active environment")
         import tempfile
-        from PIL import Image
         with tempfile.TemporaryDirectory() as tmp:
             image_path = Path(tmp) / "valley.png"
             Image.new("RGB", (24, 16), (80, 100, 120)).save(image_path)
@@ -1505,6 +1512,122 @@ class TestLearningEngine(unittest.TestCase):
         self.assertGreaterEqual(len(maps), 2)
         titles = [m["title"] for m in maps]
         self.assertTrue(any("Face" in t or "Deck" in t for t in titles))
+
+
+class TestUKSUniversalKnowledgeSystem(unittest.TestCase):
+    """Verifies the Universal Knowledge System (UKS) cognitive graph memory, ontologies, and reasoning."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        db_path = Path(self.tmp_dir.name) / "test_uks.db"
+        self.memory = MemoryEngine(db_path=str(db_path))
+
+    def tearDown(self):
+        import gc
+        gc.collect()
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
+
+    def test_uks_seeding_completeness(self):
+        """Verifies that the foundational UKS ontology is fully seeded across all 4 core pillars."""
+        doric = self.memory.uks_get_concept("uks:arch:doric_order")
+        self.assertIsNotNone(doric)
+        self.assertEqual(doric["node_type"], "architecture")
+        self.assertIn("uks:arch:classical_order", doric["parents"])
+
+        gothic = self.memory.uks_get_concept("uks:arch:pointed_arch")
+        self.assertIsNotNone(gothic)
+        self.assertIn("uks:arch:gothic_grammar", gothic["parents"])
+
+        bsp_math = self.memory.uks_get_concept("uks:3d:csg_bsp_math")
+        self.assertIsNotNone(bsp_math)
+        self.assertIn("Ax + By + Cz + D = 0", bsp_math["attributes"].get("plane_equation", ""))
+
+        utx_pkg = self.memory.uks_get_concept("uks:mat:utx_package_architecture")
+        self.assertIsNotNone(utx_pkg)
+        self.assertIn("GenEarth.utx", utx_pkg["attributes"].get("canonical_packages", []))
+
+        semisolid = self.memory.uks_get_concept("uks:ued:semisolid_brush")
+        self.assertIsNotNone(semisolid)
+        self.assertEqual(semisolid["attributes"].get("flags"), 32)
+
+    def test_uks_register_and_get_concept(self):
+        """Tests registering a new concept with attributes and relations."""
+        ok = self.memory.uks_register_concept(
+            concept_id="test:fortress:keep_sanctuary",
+            category="architecture",
+            label="Sanctuary Inner Keep",
+            attributes={"clearance_uu": 512, "lighting": "LE_TorchWaver"},
+            parents=["uks:arch:medieval_fortress"],
+            relations=[("illuminated_by", "procedural:atmospheric_radiosity_lighting", {"intensity": "high"})],
+        )
+        self.assertTrue(ok)
+
+        concept = self.memory.uks_get_concept("test:fortress:keep_sanctuary")
+        self.assertIsNotNone(concept)
+        self.assertEqual(concept["label"], "Sanctuary Inner Keep")
+        self.assertEqual(concept["attributes"]["clearance_uu"], 512)
+        self.assertIn("uks:arch:medieval_fortress", concept["parents"])
+
+    def test_uks_property_inheritance(self):
+        """Tests hierarchical attribute inheritance via subclass_of links."""
+        self.memory.uks_register_concept(
+            concept_id="test:pillar:corinthian_fluted",
+            category="architecture",
+            label="Fluted Corinthian Pillar",
+            attributes={"flute_segments": 16, "custom_color": "gold"},
+            parents=["uks:arch:corinthian_order"],
+        )
+
+        inherited = self.memory.uks_infer_properties("test:pillar:corinthian_fluted")
+        self.assertIn("flute_segments", inherited)
+        self.assertIn("column_ratio", inherited)
+        self.assertEqual(inherited["column_ratio"], "1:10")
+
+    def test_uks_graph_traversal(self):
+        """Tests breadth-first multi-hop graph traversal around a concept."""
+        subgraph = self.memory.uks_traverse_graph("uks:arch:gothic_grammar", max_depth=2)
+        self.assertGreaterEqual(subgraph["node_count"], 3)
+        self.assertGreaterEqual(subgraph["edge_count"], 2)
+        node_ids = [n["id"] for n in subgraph["nodes"]]
+        self.assertIn("uks:arch:pointed_arch", node_ids)
+
+    def test_uks_constraint_validation(self):
+        """Tests architectural constraint validation against 75% budget, coplanarity, and skybox flags."""
+        bad_props = {
+            "brush_count": 450,
+            "actor_count": 600,
+            "coplanar": False,
+            "floor_offset_uu": 10,
+            "is_outdoor": True,
+            "fake_backdrop": False,
+        }
+        report = self.memory.uks_validate_constraints("room_generation", bad_props)
+        self.assertFalse(report["valid"])
+        self.assertGreaterEqual(len(report["violations"]), 4)
+        self.assertGreaterEqual(len(report["recommendations"]), 4)
+
+        good_props = {
+            "brush_count": 80,
+            "actor_count": 120,
+            "coplanar": True,
+            "floor_offset_uu": 30,
+            "is_outdoor": True,
+            "fake_backdrop": True,
+        }
+        good_report = self.memory.uks_validate_constraints("room_generation", good_props)
+        self.assertTrue(good_report["valid"])
+        self.assertEqual(len(good_report["violations"]), 0)
+
+    def test_uks_jsonld_export(self):
+        """Tests JSON-LD semantic export of the UKS knowledge graph."""
+        jsonld = self.memory.uks_export_jsonld(category_filter="architecture")
+        self.assertIn("@context", jsonld)
+        self.assertIn("@graph", jsonld)
+        self.assertGreater(len(jsonld["@graph"]), 5)
 
 
 if __name__ == "__main__":

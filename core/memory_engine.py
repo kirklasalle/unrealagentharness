@@ -32,6 +32,7 @@ class MemoryEngine:
         self._init_db()
         self._seed_foundational_wisdom()
         self.seed_procedural_technology_graph()
+        self.seed_universal_knowledge_system()
         logger.info(f"MemoryEngine initialized with database at: '{self.db_path}'")
 
 
@@ -562,6 +563,760 @@ class MemoryEngine:
             self.record_graph_edge(source_id, relation, target_id)
 
         logger.info(f"Graph Memory seeded with {len(nodes)} procedural technology nodes and {len(edges)} semantic edges.")
+
+    # -------------------------------------------------------------------------
+    # UNIVERSAL KNOWLEDGE SYSTEM (UKS) COGNITIVE GRAPH ENGINE
+    # -------------------------------------------------------------------------
+    def uks_register_concept(
+        self,
+        concept_id: str,
+        category: str,
+        label: str,
+        attributes: Optional[Dict[str, Any]] = None,
+        parents: Optional[List[str]] = None,
+        relations: Optional[List[Tuple[str, str, Dict[str, Any]]]] = None,
+        confidence: float = 1.0,
+    ) -> bool:
+        """Registers a concept node into UKS memory with taxonomy and relational links."""
+        payload = dict(attributes or {})
+        payload["confidence"] = confidence
+        payload["uks_category"] = category
+        if parents:
+            payload["parents"] = parents
+
+        ok = self.record_graph_node(concept_id, category, label, payload)
+
+        if parents:
+            for p_id in parents:
+                ok = self.record_graph_edge(concept_id, "subclass_of", p_id) and ok
+
+        if relations:
+            for rel, target_id, edge_payload in relations:
+                ok = self.record_graph_edge(concept_id, rel, target_id, edge_payload) and ok
+
+        return ok
+
+    def uks_link_concepts(
+        self,
+        source_id: str,
+        relation: str,
+        target_id: str,
+        weight: float = 1.0,
+        payload: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Links two concepts with a typed semantic relation and weight."""
+        edge_data = dict(payload or {})
+        edge_data["weight"] = weight
+        return self.record_graph_edge(source_id, relation, target_id, edge_data)
+
+    def uks_get_concept(self, concept_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves a single concept node with its attributes, parents, children, and edges."""
+        try:
+            with self._connection() as conn:
+                node_row = conn.execute(
+                    "SELECT id, node_type, label, payload_json, created_at, updated_at FROM graph_nodes WHERE id = ?",
+                    (concept_id,),
+                ).fetchone()
+                if not node_row:
+                    return None
+
+                node = dict(node_row)
+                node["attributes"] = json.loads(node.get("payload_json", "{}"))
+
+                # Outgoing edges
+                out_rows = conn.execute(
+                    "SELECT relation, target_id, payload_json FROM graph_edges WHERE source_id = ?",
+                    (concept_id,),
+                ).fetchall()
+                node["out_edges"] = [
+                    {"relation": r["relation"], "target_id": r["target_id"], "payload": json.loads(r["payload_json"] or "{}")}
+                    for r in out_rows
+                ]
+
+                # Incoming edges
+                in_rows = conn.execute(
+                    "SELECT source_id, relation, payload_json FROM graph_edges WHERE target_id = ?",
+                    (concept_id,),
+                ).fetchall()
+                node["in_edges"] = [
+                    {"source_id": r["source_id"], "relation": r["relation"], "payload": json.loads(r["payload_json"] or "{}")}
+                    for r in in_rows
+                ]
+
+                # Taxonomy
+                node["parents"] = [e["target_id"] for e in node["out_edges"] if e["relation"] in ("subclass_of", "is_a")]
+                node["children"] = [e["source_id"] for e in node["in_edges"] if e["relation"] in ("subclass_of", "is_a")]
+
+                return node
+        except Exception as e:
+            logger.error(f"Error retrieving UKS concept '{concept_id}': {e}")
+            return None
+
+    def uks_traverse_graph(
+        self,
+        start_id: str,
+        max_depth: int = 2,
+        relation_filter: Optional[List[str]] = None,
+        direction: str = "both",
+    ) -> Dict[str, Any]:
+        """Breadth-first graph traversal returning a connected subgraph around a concept."""
+        visited_nodes: set = set()
+        collected_nodes: Dict[str, Dict[str, Any]] = {}
+        collected_edges: List[Dict[str, Any]] = []
+
+        queue = [(start_id, 0)]
+        visited_nodes.add(start_id)
+
+        try:
+            with self._connection() as conn:
+                while queue:
+                    curr_id, depth = queue.pop(0)
+
+                    nrow = conn.execute(
+                        "SELECT id, node_type, label, payload_json FROM graph_nodes WHERE id = ?",
+                        (curr_id,),
+                    ).fetchone()
+                    if nrow:
+                        collected_nodes[curr_id] = {
+                            "id": nrow["id"],
+                            "node_type": nrow["node_type"],
+                            "label": nrow["label"],
+                            "attributes": json.loads(nrow["payload_json"] or "{}"),
+                            "depth": depth,
+                        }
+
+                    if depth >= max_depth:
+                        continue
+
+                    # Outgoing edges
+                    if direction in ("out", "both"):
+                        out_edges = conn.execute(
+                            "SELECT relation, target_id, payload_json FROM graph_edges WHERE source_id = ?",
+                            (curr_id,),
+                        ).fetchall()
+                        for edge in out_edges:
+                            rel = edge["relation"]
+                            tgt = edge["target_id"]
+                            if relation_filter and rel not in relation_filter:
+                                continue
+                            collected_edges.append({
+                                "source_id": curr_id,
+                                "relation": rel,
+                                "target_id": tgt,
+                                "payload": json.loads(edge["payload_json"] or "{}"),
+                            })
+                            if tgt not in visited_nodes:
+                                visited_nodes.add(tgt)
+                                queue.append((tgt, depth + 1))
+
+                    # Incoming edges
+                    if direction in ("in", "both"):
+                        in_edges = conn.execute(
+                            "SELECT source_id, relation, payload_json FROM graph_edges WHERE target_id = ?",
+                            (curr_id,),
+                        ).fetchall()
+                        for edge in in_edges:
+                            rel = edge["relation"]
+                            src = edge["source_id"]
+                            if relation_filter and rel not in relation_filter:
+                                continue
+                            collected_edges.append({
+                                "source_id": src,
+                                "relation": rel,
+                                "target_id": curr_id,
+                                "payload": json.loads(edge["payload_json"] or "{}"),
+                            })
+                            if src not in visited_nodes:
+                                visited_nodes.add(src)
+                                queue.append((src, depth + 1))
+
+            return {
+                "root_id": start_id,
+                "node_count": len(collected_nodes),
+                "edge_count": len(collected_edges),
+                "nodes": list(collected_nodes.values()),
+                "edges": collected_edges,
+            }
+        except Exception as e:
+            logger.error(f"Error traversing UKS graph from '{start_id}': {e}")
+            return {"root_id": start_id, "node_count": 0, "edge_count": 0, "nodes": [], "edges": []}
+
+    def uks_query_neighborhood(self, concept_id: str, hops: int = 1) -> Dict[str, Any]:
+        """Returns the immediate semantic neighborhood around a UKS concept."""
+        return self.uks_traverse_graph(concept_id, max_depth=hops, direction="both")
+
+    def uks_infer_properties(self, concept_id: str) -> Dict[str, Any]:
+        """Infers effective attributes by climbing the taxonomy tree (subclass_of / is_a)."""
+        visited: set = set()
+        aggregated_props: Dict[str, Any] = {}
+        queue = [concept_id]
+
+        try:
+            with self._connection() as conn:
+                while queue:
+                    curr = queue.pop(0)
+                    if curr in visited:
+                        continue
+                    visited.add(curr)
+
+                    nrow = conn.execute("SELECT payload_json FROM graph_nodes WHERE id = ?", (curr,)).fetchone()
+                    if nrow:
+                        attrs = json.loads(nrow["payload_json"] or "{}")
+                        for k, v in attrs.items():
+                            if k not in aggregated_props:
+                                aggregated_props[k] = v
+
+                    parents = conn.execute(
+                        "SELECT target_id FROM graph_edges WHERE source_id = ? AND relation IN ('subclass_of', 'is_a')",
+                        (curr,),
+                    ).fetchall()
+                    for p in parents:
+                        if p["target_id"] not in visited:
+                            queue.append(p["target_id"])
+
+            return aggregated_props
+        except Exception as e:
+            logger.error(f"Error inferring UKS properties for '{concept_id}': {e}")
+            return {}
+
+    def uks_validate_constraints(self, action_type: str, entity_props: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates procedural actions against the UKS cognitive constraint graph."""
+        violations = []
+        recommendations = []
+
+        # 1. 75% Engine Budget Law Validation
+        brush_count = entity_props.get("brush_count", 0)
+        actor_count = entity_props.get("actor_count", 0)
+        if brush_count > 300:
+            violations.append(f"Brush count {brush_count} exceeds recommended per-wing budget (300 brushes).")
+            recommendations.append("Convert decorative trim and pillars to semi-solid (PF_Semisolid=32) to avoid BSP cuts.")
+
+        if actor_count > 500:
+            violations.append(f"Actor count {actor_count} exceeds 75% engine budget threshold.")
+            recommendations.append("Consolidate pathing lattice to 500-700 UU spacing and prune excess inventory spot markers.")
+
+        # 2. Coplanar geometry & winding validation
+        if entity_props.get("coplanar") is False:
+            violations.append("Non-coplanar polygon detected. Violates watertight CSG plane equation Ax + By + Cz + D = 0.")
+            recommendations.append("Split quad polygon into two coplanar triangles along diagonal to prevent HOM.")
+
+        # 3. PathNode floor clearance
+        elevation_offset = entity_props.get("floor_offset_uu", 30)
+        if elevation_offset < 20 or elevation_offset > 50:
+            violations.append(f"PathNode floor clearance ({elevation_offset} UU) outside golden range [20, 50] UU.")
+            recommendations.append("Set PathNode Z offset strictly to +30 UU above walkable terrain.")
+
+        # 4. Outdoor ceiling FakeBackdrop
+        if entity_props.get("is_outdoor") and not entity_props.get("fake_backdrop"):
+            violations.append("Outdoor environment missing PF_FakeBackdrop flag on celestial sky portal.")
+            recommendations.append("Apply PF_FakeBackdrop (Flags=4194432) to ceiling polygons and spawn SkyZoneInfo in isolated 1024^3 skybox.")
+
+        return {
+            "valid": len(violations) == 0,
+            "action_type": action_type,
+            "violations": violations,
+            "recommendations": recommendations,
+        }
+
+    def uks_export_jsonld(self, category_filter: Optional[str] = None) -> Dict[str, Any]:
+        """Exports the UKS graph memory as a standard JSON-LD semantic knowledge graph."""
+        try:
+            with self._connection() as conn:
+                where_clause = "WHERE node_type = ?" if category_filter else ""
+                params = (category_filter,) if category_filter else ()
+                nodes = conn.execute(f"SELECT id, node_type, label, payload_json FROM graph_nodes {where_clause}", params).fetchall()
+
+                graph_entries = []
+                for n in nodes:
+                    attrs = json.loads(n["payload_json"] or "{}")
+                    entry = {
+                        "@id": n["id"],
+                        "@type": n["node_type"],
+                        "label": n["label"],
+                        **attrs,
+                    }
+                    edges = conn.execute(
+                        "SELECT relation, target_id, payload_json FROM graph_edges WHERE source_id = ?",
+                        (n["id"],),
+                    ).fetchall()
+                    for edge in edges:
+                        rel = edge["relation"]
+                        tgt = edge["target_id"]
+                        if rel not in entry:
+                            entry[rel] = tgt
+                        elif isinstance(entry[rel], list):
+                            entry[rel].append(tgt)
+                        else:
+                            entry[rel] = [entry[rel], tgt]
+                    graph_entries.append(entry)
+
+                return {
+                    "@context": {
+                        "uks": "https://unrealagentharness.com/schema/uks#",
+                        "subclass_of": {"@id": "http://www.w3.org/2000/01/rdf-schema#subClassOf", "@type": "@id"},
+                        "is_a": {"@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "@type": "@id"},
+                        "part_of": {"@id": "http://purl.obolibrary.org/obo/BFO_0000050", "@type": "@id"},
+                    },
+                    "@graph": graph_entries,
+                }
+        except Exception as e:
+            logger.error(f"Error exporting UKS JSON-LD: {e}")
+            return {"@context": {}, "@graph": []}
+
+    def seed_universal_knowledge_system(self) -> None:
+        """Seeds the Universal Knowledge System (UKS) ontology across Architecture, 3D/Animation, Textures, and UnrealEd."""
+        concepts = [
+            # -----------------------------------------------------------------
+            # 1. Architectural Engineering Ontologies
+            # -----------------------------------------------------------------
+            (
+                "uks:arch:classical_order",
+                "architecture",
+                "Classical Architectural Order (Antiquity Foundation)",
+                {
+                    "canon": "Vitruvian / Vignola",
+                    "principles": ["symmetry", "entablature_proportions", "fluted_shafts", "stylobate_elevation"],
+                    "structural_role": "compression_load_bearing",
+                },
+                None,
+            ),
+            (
+                "uks:arch:doric_order",
+                "architecture",
+                "Doric Architectural Order",
+                {
+                    "column_ratio": "1:8",
+                    "capital": "plain_circular_echinus",
+                    "entablature": "triglyphs_and_metopes",
+                    "spatial_use": "monumental_fortress_temples",
+                },
+                ["uks:arch:classical_order"],
+            ),
+            (
+                "uks:arch:ionic_order",
+                "architecture",
+                "Ionic Architectural Order",
+                {
+                    "column_ratio": "1:9",
+                    "capital": "scroll_like_volutes",
+                    "entablature": "dentil_cornice_frieze",
+                    "spatial_use": "civic_libraries_and_sanctuaries",
+                },
+                ["uks:arch:classical_order"],
+            ),
+            (
+                "uks:arch:corinthian_order",
+                "architecture",
+                "Corinthian Architectural Order",
+                {
+                    "column_ratio": "1:10",
+                    "capital": "ornate_carved_acanthus_leaves",
+                    "entablature": "decorative_modillion_cornice",
+                    "spatial_use": "grand_imperial_throne_rooms",
+                },
+                ["uks:arch:classical_order"],
+            ),
+            (
+                "uks:arch:gothic_grammar",
+                "architecture",
+                "Gothic Structural Engineering Grammar",
+                {
+                    "core_invention": "skeletal_framework_with_concentrated_thrust",
+                    "structural_trio": ["pointed_arch", "ribbed_vault", "flying_buttress"],
+                    "spatial_effect": "verticality_and_weightless_illumination",
+                },
+                None,
+            ),
+            (
+                "uks:arch:pointed_arch",
+                "architecture",
+                "Gothic Pointed Arch (Equilateral & Lancet)",
+                {
+                    "thrust_vector": "reduced_lateral_shear_increased_vertical",
+                    "csg_profile": "two_intersecting_arc_quadrants",
+                    "height_to_width": "2:1",
+                },
+                ["uks:arch:gothic_grammar"],
+            ),
+            (
+                "uks:arch:ribbed_vault",
+                "architecture",
+                "Gothic Ribbed Groin Vault",
+                {
+                    "components": ["transverse_ribs", "diagonal_ogive_ribs", "web_infill"],
+                    "csg_construction": "subtracted_diagonals_with_semisolid_rib_moldings",
+                },
+                ["uks:arch:gothic_grammar"],
+            ),
+            (
+                "uks:arch:flying_buttress",
+                "architecture",
+                "Exterior Flying Buttress & Flyer Arch",
+                {
+                    "function": "transmits_outward_roof_thrust_across_aisle_to_heavy_pier",
+                    "pinnacle_weight": "downward_compression_anchors_pier",
+                },
+                ["uks:arch:gothic_grammar"],
+            ),
+            (
+                "uks:arch:medieval_fortress",
+                "architecture",
+                "Medieval Military Fortification Topology",
+                {
+                    "defensive_layers": ["moat", "outer_curtain_wall", "barbican", "inner_keep", "bastions"],
+                    "doctrine": "defense_in_depth_and_enfilade_crossfire",
+                },
+                None,
+            ),
+            (
+                "uks:arch:curtain_wall",
+                "architecture",
+                "Defensive Stone Curtain Wall",
+                {
+                    "thickness_uu": 128.0,
+                    "height_uu": 512.0,
+                    "foundation": "anchored_into_granite_bedrock",
+                    "allure_walkway_uu": 64.0,
+                },
+                ["uks:arch:medieval_fortress"],
+            ),
+            (
+                "uks:arch:bastion_tower",
+                "architecture",
+                "Octagonal Flanking Bastion Tower",
+                {
+                    "geometry": "8_sided_extrusion",
+                    "overlook_angle_deg": 360,
+                    "eliminates_dead_ground": True,
+                },
+                ["uks:arch:medieval_fortress"],
+            ),
+            (
+                "uks:arch:gatehouse_barbican",
+                "architecture",
+                "Fortified Gatehouse & Barbican Chokepoint",
+                {
+                    "features": ["portcullis_slot", "murder_holes", "double_drawbridge", "arrow_slits"],
+                    "ai_pathing": "chokepoint_triad_with_high_priority_combat_spawns",
+                },
+                ["uks:arch:medieval_fortress"],
+            ),
+            (
+                "uks:arch:scifi_brutalism",
+                "architecture",
+                "Sci-Fi Industrial Brutalism",
+                {
+                    "aesthetic": "exposed_reinforced_concrete_heavy_steel_bulkheads",
+                    "motifs": ["cantilever_hangars", "conduit_galleries", "hexagonal_blast_doors"],
+                    "lighting": "recessed_strip_lighting_and_pulsing_status_strobe",
+                },
+                None,
+            ),
+            (
+                "uks:arch:spatial_sightlines",
+                "architecture",
+                "Multi-Tier Spatial Sightlines & Chokepoint Triad",
+                {
+                    "triad_stages": ["approach_zone", "threshold_bottleneck", "exit_distribution"],
+                    "perch_elevation_uu": 256.0,
+                    "dais_height_uu": 32.0,
+                },
+                None,
+            ),
+
+            # -----------------------------------------------------------------
+            # 2. 3D Development & Animation Ontologies
+            # -----------------------------------------------------------------
+            (
+                "uks:3d:csg_bsp_math",
+                "3d_animation",
+                "Watertight CSG & Binary Space Partitioning Math",
+                {
+                    "plane_equation": "Ax + By + Cz + D = 0",
+                    "normal_computation": "(v1 - v0) cross (v2 - v0)",
+                    "winding_rule": "clockwise_viewed_from_exterior",
+                    "triangulation": "split_nonplanar_quads_at_diagonal",
+                },
+                None,
+            ),
+            (
+                "uks:3d:skeletal_mesh",
+                "3d_animation",
+                "Skeletal Mesh & Hierarchical Bone Rigging",
+                {
+                    "engine_evolution": "UE2.0_through_UE5",
+                    "features": ["hierarchical_bone_transforms", "dual_quaternion_blending", "vertex_skin_weights"],
+                    "formats": [".psk", ".psa", ".fbx"],
+                },
+                None,
+            ),
+            (
+                "uks:3d:vertex_animation",
+                "3d_animation",
+                "Vertex Animation Morphing (Unreal 1 Classic)",
+                {
+                    "engine": "UE1_namesake_and_UT99",
+                    "method": "per_frame_vertex_coordinate_interpolation",
+                    "formats": ["_d.3d", "_a.3d"],
+                    "zero_matrix_overhead": True,
+                },
+                None,
+            ),
+            (
+                "uks:3d:lod_cascade",
+                "3d_animation",
+                "Continuous Level of Detail (LOD) Simplification",
+                {
+                    "hysteresis": "screen_space_percentage_thresholds",
+                    "transition": "dithered_crossfade_or_discrete_pop",
+                    "budget_preservation": "keeps_viewport_framerate_pinned_at_solid_fps",
+                },
+                None,
+            ),
+            (
+                "uks:3d:collision_hull",
+                "3d_animation",
+                "Collision Hull Primitives & Geometry Probes",
+                {
+                    "player_scout_cylinder": {"radius": 42.0, "height": 80.0},
+                    "types": ["cylinder", "axis_aligned_box", "oriented_bounding_box", "discrete_oriented_polytope"],
+                    "zero_complex_poly_in_ue1": True,
+                },
+                None,
+            ),
+            (
+                "uks:3d:karma_physics",
+                "3d_animation",
+                "Karma Physics Engine & Ragdoll Dynamics (UE2.5)",
+                {
+                    "engine": "Unreal Tournament 2004",
+                    "actors": ["KarmaActor", "KConstraint", "KHinge", "KCarWheelJoint"],
+                    "ragdoll": "KMakeRagdoll_on_player_death",
+                },
+                None,
+            ),
+            (
+                "uks:3d:matinee_cinematic",
+                "3d_animation",
+                "Matinee & Cinematic Sequence Interpolation",
+                {
+                    "features": ["spline_camera_paths", "fov_keyframing", "actor_director_tracks"],
+                    "actors": ["InterpolationPoint", "InterpolatingActor"],
+                },
+                None,
+            ),
+
+            # -----------------------------------------------------------------
+            # 3. Texture Development & Materials Ontologies
+            # -----------------------------------------------------------------
+            (
+                "uks:mat:pbr_workflow",
+                "texture_material",
+                "Physically Based Rendering (PBR) Metallic-Roughness",
+                {
+                    "channels": ["Albedo", "Normal", "Roughness", "Metallic", "AmbientOcclusion", "Height"],
+                    "energy_conservation": True,
+                    "dielectric_f0": 0.04,
+                },
+                None,
+            ),
+            (
+                "uks:mat:utx_package_architecture",
+                "texture_material",
+                "Unreal Stock UTX Texture Package Container",
+                {
+                    "file_extension": ".utx",
+                    "loading_command": "OBJ LOAD FILE=..\\Textures\\<pkg>.utx PACKAGE=<pkg>",
+                    "canonical_packages": [
+                        "GenEarth.utx", "NaliCast.utx", "Ancient.utx", "ShaneSky.utx",
+                        "UTtech1.utx", "UTtech2.utx", "Coret_FX.utx", "SpaceFX.utx", "Starship.utx"
+                    ],
+                },
+                None,
+            ),
+            (
+                "uks:mat:procedural_noise_shaders",
+                "texture_material",
+                "In-Engine Procedural Noise & Animated Textures",
+                {
+                    "classes": ["FireTexture", "WaterTexture", "WaveTexture", "WetTexture", "IceTexture"],
+                    "realtime_generation": "cpu_perlin_and_cellular_cellular_automata",
+                    "fx": ["flowing_waterfalls", "flickering_hearth_flames", "dynamic_plasma"],
+                },
+                None,
+            ),
+            (
+                "uks:mat:uv_unwrapping",
+                "texture_material",
+                "Texel Density & Mathematical UV Coordinate Mapping",
+                {
+                    "standard_density": "1_texel_per_uu_or_256x256_per_256uu",
+                    "alignment_commands": ["POLY TILING", "POLY ALIGN PLANAR", "POLY ALIGN WALLDIRECTION"],
+                    "lightmap_density_ratio": "16:1",
+                },
+                None,
+            ),
+            (
+                "uks:mat:compression_algorithms",
+                "texture_material",
+                "S3TC Texture Block Compression (DXT1 - DXT5 & BCn)",
+                {
+                    "dxt1": "4x4_block_color_1bit_punchthrough_alpha_8to1_compression",
+                    "dxt3": "4x4_block_explicit_4bit_alpha_for_sharp_edges",
+                    "dxt5": "4x4_block_interpolated_alpha_for_smooth_gradients",
+                    "bcn": "modern_bc1_through_bc7_for_ue5_hdr",
+                },
+                None,
+            ),
+
+            # -----------------------------------------------------------------
+            # 4. Advanced Unreal Editing Techniques & Skills
+            # -----------------------------------------------------------------
+            (
+                "uks:ued:semisolid_brush",
+                "unrealed_technique",
+                "Semi-Solid Detail Brush (PF_Semisolid = 32)",
+                {
+                    "flags": 32,
+                    "rule": "never_cuts_bsp_node_tree",
+                    "usage": ["pillars", "merlons", "buttresses", "cornice_moldings", "stairs"],
+                    "budget_benefit": "zero_bsp_splits_prevents_65k_node_gpf",
+                },
+                None,
+            ),
+            (
+                "uks:ued:poly_flags_catalog",
+                "unrealed_technique",
+                "Unreal Poly Flags Mathematical Bitmask Catalog",
+                {
+                    "PF_Invisible": 1,
+                    "PF_Masked": 2,
+                    "PF_Translucent": 4,
+                    "PF_NotSolid": 8,
+                    "PF_Semisolid": 32,
+                    "PF_Modulated": 64,
+                    "PF_FakeBackdrop": 4194304,
+                    "PF_TwoSided": 256,
+                    "PF_Portal": 67108864,
+                    "PF_Antiportal": 134217728,
+                    "PF_Unlit": 4194432,
+                },
+                None,
+            ),
+            (
+                "uks:ued:zone_portals",
+                "unrealed_technique",
+                "Zone Portals & Room BSP Occlusion Partitioning",
+                {
+                    "flag": 67108864,  # PF_Portal
+                    "geometry": "2d_sheet_covering_doorways_and_hallway_apertures",
+                    "actors": ["ZoneInfo", "WaterZone", "LavaZone", "VacuumZone"],
+                    "occlusion_gain": "drastically_reduces_drawn_polys",
+                },
+                None,
+            ),
+            (
+                "uks:ued:warp_zones",
+                "unrealed_technique",
+                "WarpZones (Seamless Non-Euclidean Spatial Teleporters)",
+                {
+                    "actors": ["WarpZoneInfo", "WarpZoneMarker"],
+                    "perspective": "continuous_matrix_raytrace_through_portal",
+                    "uses": ["infinite_hallways", "impossible_geometry", "orbital_elevator_links"],
+                },
+                None,
+            ),
+            (
+                "uks:ued:skybox_parallax",
+                "unrealed_technique",
+                "Isolated Parallax Skybox Chamber & 1:16 Scale Horizon",
+                {
+                    "chamber_size_uu": [1024, 1024, 1024],
+                    "anchor_actor": "Engine.SkyZoneInfo",
+                    "portal_flag": 4194432,  # PF_FakeBackdrop | PF_Unlit
+                    "projection": "infinite_depth_perspective_without_bsp_seam",
+                },
+                None,
+            ),
+            (
+                "uks:ued:2d_shape_editor",
+                "unrealed_technique",
+                "2D Shape Editor Architectural Contours",
+                {
+                    "operations": ["Sheet_Sweep", "Linear_Extrude", "Revolve_360", "Bezier_Segment_Subdivision"],
+                    "shapes": ["fluted_columns", "vault_arches", "curved_cornices", "pipe_elbows"],
+                },
+                None,
+            ),
+            (
+                "uks:ued:brush_clipping",
+                "unrealed_technique",
+                "Brush 2D Planar Clipping & Splitting",
+                {
+                    "method": "define_2_or_3_points_on_viewport_then_clip",
+                    "modes": ["CLIP_SPLIT", "CLIP_DELETE", "CLIP_FLIP"],
+                    "preserves_topology": True,
+                },
+                None,
+            ),
+            (
+                "uks:ued:intersect_deintersect",
+                "unrealed_technique",
+                "Intersect & De-intersect Boolean Geometry Carving",
+                {
+                    "intersect": "trims_builder_brush_to_contents_of_existing_world",
+                    "deintersect": "trims_builder_brush_to_void_of_existing_world",
+                    "workflow": "carve_complex_composite_sculptures_and_spiral_stairwells",
+                },
+                None,
+            ),
+        ]
+
+        edges = [
+            # Architectural dependencies
+            ("uks:arch:doric_order", "uses_material", "uks:mat:utx_package_architecture"),
+            ("uks:arch:gothic_grammar", "implemented_via", "uks:ued:semisolid_brush"),
+            ("uks:arch:pointed_arch", "sculpted_with", "uks:ued:2d_shape_editor"),
+            ("uks:arch:curtain_wall", "anchors_to", "procedural:stepped_terrain_heightfield"),
+            ("uks:arch:bastion_tower", "anchors_to", "procedural:stepped_terrain_heightfield"),
+            ("uks:arch:gatehouse_barbican", "pathfinds_via", "procedural:ai_reachability_lattice"),
+            ("uks:arch:scifi_brutalism", "textures_with", "uks:mat:utx_package_architecture"),
+            ("uks:arch:spatial_sightlines", "governs_pathing", "procedural:ai_reachability_lattice"),
+
+            # 3D math & engine dependencies
+            ("uks:3d:csg_bsp_math", "enforces_watertightness", "procedural:watertight_bsp_math"),
+            ("uks:3d:collision_hull", "bounds_pathing", "procedural:ai_reachability_lattice"),
+            ("uks:3d:matinee_cinematic", "animates_in", "uks:ued:skybox_parallax"),
+
+            # Texture dependencies
+            ("uks:mat:procedural_noise_shaders", "renders_with_flags", "uks:ued:poly_flags_catalog"),
+            ("uks:mat:uv_unwrapping", "aligns_on", "uks:3d:csg_bsp_math"),
+
+            # Advanced UnrealEd technique relationships
+            ("uks:ued:semisolid_brush", "satisfies_rule", "procedural:pcg_csg_stack"),
+            ("uks:ued:zone_portals", "optimizes_bsp", "procedural:pcg_csg_stack"),
+            ("uks:ued:warp_zones", "connects_sectors", "uks:arch:spatial_sightlines"),
+            ("uks:ued:skybox_parallax", "implements_rule", "procedural:celestial_skybox_parallax"),
+            ("uks:ued:2d_shape_editor", "generates_geometry_for", "uks:arch:gothic_grammar"),
+        ]
+
+        for concept_id, category, label, attrs, parents in concepts:
+            self.uks_register_concept(
+                concept_id=concept_id,
+                category=category,
+                label=label,
+                attributes=attrs,
+                parents=parents,
+            )
+
+        for src, rel, tgt in edges:
+            self.uks_link_concepts(src, rel, tgt)
+
+        logger.info(
+            f"Universal Knowledge System (UKS) seeded successfully with {len(concepts)} master concepts and {len(edges)} ontology links."
+        )
+
+
 
 
 

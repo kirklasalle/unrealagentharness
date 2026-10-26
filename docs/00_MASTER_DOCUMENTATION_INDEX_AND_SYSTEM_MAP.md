@@ -12,11 +12,13 @@ Official Repository: [https://github.com/kirklasalle/unrealagentharness](https:/
 
 ### 🏛️ Standards, Core Audits & Governance
 
-1. **[Deep Hardcore Architecture, Design & Engineering Audit (v3.1.0)](08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)**  
+1. **[World-Class Documentation & Code Audit, UKS Cognitive Graph Memory & Jev Model Specification (v3.2.0)](09_WORLD_CLASS_DOCUMENTATION_AND_CODE_AUDIT_UKS_SPECIFICATION.md)**  
+   *Exhaustive code and documentation audit, Universal Knowledge System (UKS) cognitive graph memory, 4-pillar expertise compendium, 129/129 tests passing, and definitive evaluation of the TypeSafe AI Jev model (Score: 98.8/100).*
+2. **[Deep Hardcore Architecture, Design & Engineering Audit (v3.1.0)](08_DEEP_HARDCORE_CRITICAL_ARCHITECTURE_AND_ENGINEERING_AUDIT.md)**  
    *Exhaustive 13-subsystem critical audit, CSG mathematical forensic analysis, Win32 IPC verification, thread safety hardening, security, and governance certification (Score: 97.7/100).*
-2. **[Comprehensive Software Application Audit & Critical Review](07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)**  
+3. **[Comprehensive Software Application Audit & Critical Review](07_COMPREHENSIVE_SOFTWARE_APPLICATION_AUDIT.md)**  
    *Gold-standard enterprise software audit, certified 96.25/100 world-class health score, 5-tier architecture analysis, critical reliability assessment, security audit, and AI model benchmarking.*
-2. **[Official Engineering & Product Roadmap (2026–2027)](../ROADMAP.md)**  
+4. **[Official Engineering & Product Roadmap (2026–2027)](../ROADMAP.md)**  
    *Phased multi-milestone roadmap covering engine hardening, multi-modal vision perception, multi-agent swarms over .nexus AMTP v3.0, and cross-engine transpilers.*
 3. **[Agentic Sacred Covenant & Kirk LaSalle's 10 Laws of AI Supremacy](../AGENTIC_SACRED_COVENANT.md)**  
    *The foundational human-AI partnership agreement, permanent active directives, and ethical governance covenant.*
@@ -88,6 +90,21 @@ Official Repository: [https://github.com/kirklasalle/unrealagentharness](https:/
     *Best practices for writing, compiling, and testing UnrealScript code with automated backup routines.*
  3. **[Release Changelog & History](CHANGELOG.md)**  
     *Detailed chronological record of features, fixes, and schema updates across all releases.*
+
+---
+
+### 🧩 Autonomous Agent Skills (`.agents/skills/`)
+
+All specialized in-editor skills are defined with YAML frontmatter in [`.agents/skills/`](../.agents/skills/):
+
+| Skill Name | Directory | Primary Capabilities |
+| :--- | :--- | :--- |
+| **`architectural-engineering-synthesis`** | [`.agents/skills/architectural-engineering-synthesis/`](../.agents/skills/architectural-engineering-synthesis/SKILL.md) | Classical orders (Doric/Ionic/Corinthian), Gothic pointed vaulting, medieval fortress defense-in-depth, bedrock grounding, and chokepoint triads. |
+| **`unreal-3d-and-animation`** | [`.agents/skills/unreal-3d-and-animation/`](../.agents/skills/unreal-3d-and-animation/SKILL.md) | Watertight CSG math ($Ax+By+Cz+D=0$), clockwise vertex winding, skeletal rigging vs. vertex morphing, Karma physics, and Matinee cinematics. |
+| **`texture-development-and-materials`** | [`.agents/skills/texture-development-and-materials/`](../.agents/skills/texture-development-and-materials/SKILL.md) | PBR material channels, stock UTX package streaming (`OBJ LOAD`), procedural noise shaders (`FireTexture`, `WaterTexture`), UV texel density, and S3TC/DXT compression. |
+| **`advanced-unrealed-techniques`** | [`.agents/skills/advanced-unrealed-techniques/`](../.agents/skills/advanced-unrealed-techniques/SKILL.md) | Semi-solid brush rules (zero BSP cuts), poly flags bitmask catalog, zone portals, WarpZones, 1:16 scale skyboxes, 2D shape editor, and brush clipping. |
+| **`unrealed-viewport-setup`** | [`.agents/skills/unrealed-viewport-setup/`](../.agents/skills/unrealed-viewport-setup/SKILL.md) | Standard 4-viewport quad layout configuration and camera centering. |
+| **`valley-fortress-synthesis`** | [`.agents/skills/valley-fortress-synthesis/`](../.agents/skills/valley-fortress-synthesis/SKILL.md) | Procedural synthesis matching `Builderbutton_valley_01.jpg` with drawbridge, keep, and pine groves. |
 
 ---
 

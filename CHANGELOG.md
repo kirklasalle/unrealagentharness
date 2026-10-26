@@ -2,6 +2,29 @@
 
 All notable changes, architectural enhancements, and procedural world-building procedures are documented in this file.
 
+## [v3.3.0] — Universal Knowledge System (UKS) Cognitive Graph Memory, 4-Pillar Expertise & Jev Model Integration (2026-10-25)
+
+- **Universal Knowledge System (UKS) Cognitive Graph Memory**:
+  - Transformed flat SQLite memory into a full cognitive graph memory engine with concept nodes ("Thoughts") and typed semantic links ("Links").
+  - Implemented `uks_register_concept`, `uks_link_concepts`, `uks_get_concept`, `uks_traverse_graph` (breadth-first traversal), and `uks_query_neighborhood`.
+  - Added recursive property & constraint inheritance climbing the `subclass_of` taxonomy tree via `uks_infer_properties`.
+  - Added `uks_validate_constraints` checking procedural level actions against the 75% budget law, polygon coplanarity, pathnode clearances (+30 UU), and skybox FakeBackdrop flags.
+  - Added W3C-compliant JSON-LD semantic knowledge graph export via `uks_export_jsonld`.
+  - Seeded comprehensive foundational ontologies with 34 master concepts and 18 ontological relations across Architecture, 3D/Animation, Textures, and UnrealEd.
+- **World-Class 4-Pillar Expertise Skills**:
+  - Created 4 specialized in-editor skills in `.agents/skills/`:
+    1. [`architectural-engineering-synthesis`](file:///d:/Projects/unrealagentharness/.agents/skills/architectural-engineering-synthesis/SKILL.md): Classical orders (Doric 1:8, Ionic 1:9, Corinthian 1:10), Gothic pointed arch & ribbed vault mechanics, medieval fortress defense-in-depth, bedrock grounding, and chokepoint triads.
+    2. [`unreal-3d-and-animation`](file:///d:/Projects/unrealagentharness/.agents/skills/unreal-3d-and-animation/SKILL.md): Watertight CSG math ($Ax+By+Cz+D=0$), outward normal cross product, clockwise winding, skeletal mesh hierarchies vs. vertex animation morphing, Scout collision cylinders (42x80 UU), Karma physics, and Matinee cinematics.
+    3. [`texture-development-and-materials`](file:///d:/Projects/unrealagentharness/.agents/skills/texture-development-and-materials/SKILL.md): PBR energy conservation, stock UTX package streaming (`OBJ LOAD`), procedural animated noise shaders (`FireTexture`, `WaterTexture`), 1 texel/UU golden density, and S3TC/DXT compression.
+    4. [`advanced-unrealed-techniques`](file:///d:/Projects/unrealagentharness/.agents/skills/advanced-unrealed-techniques/SKILL.md): Semi-solid brush rules (zero BSP cuts), poly flags bitmask catalog, zone portals, WarpZones, 1:16 scale skybox parallax, 2D shape editor, and brush clipping.
+- **Definitive Architectural Evaluation of the TypeSafe AI Jev Model**:
+  - Authored comprehensive architectural analysis of the September 2026 Jev model (TypeSafe AI) in [`docs/09_WORLD_CLASS_DOCUMENTATION_AND_CODE_AUDIT_UKS_SPECIFICATION.md`](file:///d:/Projects/unrealagentharness/docs/09_WORLD_CLASS_DOCUMENTATION_AND_CODE_AUDIT_UKS_SPECIFICATION.md).
+  - Established that a small Jev model excels as a fast (70–150ms) calibrated System 1 decision and guardrail layer (evaluating budget overflow probability, coplanarity checks, package selection, and Kirk LaSalle 10 Laws compliance), combined with System 2 generative LLMs and System 0 symbolic UKS graph memory in a Neuro-Symbolic Triad.
+- **Test Suite & Reliability**:
+  - 129 of 129 automated unit and integration tests passing with 100% success rate (`Ran 129 tests in 25.5s, OK`).
+  - Added full test suite `TestUKSUniversalKnowledgeSystem` validating all UKS operations.
+  - Made PIL import in test harness resilient to bare environment execution.
+
 ## [v3.2.0] — SOTA UnrealEd 2-Stage CSG Synthesis, Texture Verification, Cockpit Modernization & Legacy Web Dashboard Integration (2026-09-01)
 
 - **UnrealEd 3 / UT2004 CSG Synthesis Overhaul**:
