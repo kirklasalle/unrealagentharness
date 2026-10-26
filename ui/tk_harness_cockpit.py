@@ -287,12 +287,31 @@ class StandaloneHarnessCockpit(tk.Tk):
 
         def _worker():
             try:
+                if not self.controller.is_connected():
+                    logger.info("UnrealEd not currently connected; attempting window discovery or auto-launch...")
+                    hwnd_main, _, _ = self.controller.find_unrealed_window()
+                    if not hwnd_main:
+                        self._append_chat("AI Architect", "⚠️ UnrealEd is not open. Auto-launching editor for active engine profile...")
+                        launched = self.controller.launch_editor()
+                        if launched:
+                            for _ in range(12):
+                                time.sleep(1.0)
+                                if self.controller.is_connected():
+                                    self._append_chat("AI Architect", "🔗 UnrealEd connected!")
+                                    break
+
                 report = self.controller.execute_batch_staged(commands, stage_callback=_stage)
                 success_count = sum(1 for r in report.get("results", []) if r.get("success", True))
                 if report.get("ok"):
                     self._append_chat("AI Architect", f"✅ **{title} Built Successfully!**\nExecuted {success_count}/{len(commands)} commands in UnrealEd.")
                 else:
-                    self._append_chat("AI Architect", f"⚠️ **{title} stopped during {report.get('stage', 'build')}.**\nExecuted {success_count}/{len(commands)} commands.")
+                    last_err = ""
+                    for r in reversed(report.get("results", [])):
+                        if not r.get("success"):
+                            last_err = r.get("error", "")
+                            break
+                    err_hint = f"\n*Details: {last_err}*" if last_err else ""
+                    self._append_chat("AI Architect", f"⚠️ **{title} stopped during {report.get('stage', 'build')}.**\nExecuted {success_count}/{len(commands)} commands.{err_hint}")
                 self._set_status("Ready.")
             except Exception as e:
                 logger.error(f"Direct blueprint build error: {e}")
@@ -382,6 +401,13 @@ class StandaloneHarnessCockpit(tk.Tk):
             "AI Architect",
             f"⚡ **Universal Standalone Agent Harness Online.**\nActive Target: **{active_engine.get('name')}**.\nAsk me to construct rooms, arenas, spawn UTron diffusers/wirenodes, or click any blueprint from the palette!",
         )
+        if not HAS_PYWIN32:
+            self._append_chat(
+                "System Warning",
+                "⚠️ **WARNING: pywin32 is NOT available in this Python runtime.**\n"
+                "UnrealEd window detection and command injection are disabled.\n"
+                "Please run using the project virtualenv: `.venv\\Scripts\\python.exe` or install pywin32.",
+            )
 
     def _register_artifact(self, path: str, kind: str):
         artifact_path = Path(path)
@@ -564,15 +590,6 @@ class StandaloneHarnessCockpit(tk.Tk):
         selected_id = self.engine_var.get()
         self._switch_and_initialize_engine(selected_id, force_recheck=True, is_startup=False)
 
-    def _quick_rebuild(self):
-        active_engine = self.config_mgr.get_active_engine_id()
-        path_cmd = "PATHS DEFINE" if active_engine in ["ut2003", "ut2004"] else "PATHS BUILD"
-        res = self.controller.execute_batch(["MAP REBUILD", "LIGHT APPLY", path_cmd, "FLUSH"])
-        gate = self.controller.validate_editor_log()
-        if gate["ok"]:
-            self._append_chat("System", f"🔄 Executed complete level rebuild (`MAP REBUILD` + `LIGHT APPLY` + `{path_cmd}` + `FLUSH`).")
-        else:
-            self._append_chat("System", f"⚠️ Rebuild completed with blocking validation findings ({gate['error_count']}). See engine log.")
 
     def _toggle_dock(self):
         if not HAS_PYWIN32:
@@ -613,12 +630,16 @@ class StandaloneHarnessCockpit(tk.Tk):
 
         def _worker():
             try:
-                cmds = ["MAP REBUILD", "LIGHT APPLY", "PATHS DEFINE", "VIEWPORT REDRAW", "FLUSH"]
-                report = self.controller.execute_batch(cmds)
-                if report.get("ok"):
-                    self._append_chat("AI Architect", "✅ **Full Map Rebuild Complete!** Geometry, lighting, and path network updated.")
+                active_engine = self.config_mgr.get_active_engine_id()
+                path_cmd = "PATHS DEFINE" if active_engine in ["ut2003", "ut2004"] else "PATHS BUILD"
+                cmds = ["MAP REBUILD", "LIGHT APPLY", path_cmd, "VIEWPORT REDRAW", "FLUSH"]
+                results = self.controller.execute_batch(cmds)
+                success_count = sum(1 for r in results if r.get("success", True))
+                gate = self.controller.validate_editor_log()
+                if success_count == len(cmds) and gate.get("ok", True):
+                    self._append_chat("AI Architect", f"✅ **Full Map Rebuild Complete!** Geometry, lighting, and path network updated (`{path_cmd}`).")
                 else:
-                    self._append_chat("AI Architect", "⚠️ Rebuild executed with warnings.")
+                    self._append_chat("AI Architect", f"⚠️ Rebuild executed ({success_count}/{len(cmds)} commands succeeded, {gate.get('error_count', 0)} log warnings).")
                 self._set_status("Ready.")
             except Exception as e:
                 logger.error(f"Quick rebuild error: {e}")

@@ -19,19 +19,24 @@ echo   Supports: UT99 GOTY / Unreal TC & Mods / UT2003 / UT2004 / UE2.5+
 echo ======================================================================
 echo.
 
-:: 1. Locate Python Interpreter
+:: 1. Locate Python Interpreter (Prioritize local virtual environment with pywin32)
 set PYTHON_EXE=
-python --version >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    set PYTHON_EXE=python
+if exist "%~dp0.venv\Scripts\python.exe" (
+    set PYTHON_EXE="%~dp0.venv\Scripts\python.exe"
+    echo [*] Using project virtual environment: .venv\Scripts\python.exe
 ) else (
-    py -3 --version >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        set PYTHON_EXE=py -3
+    python --version >nul 2>&1
+    if !ERRORLEVEL! EQU 0 (
+        set PYTHON_EXE=python
     ) else (
-        python3 --version >nul 2>&1
-        if %ERRORLEVEL% EQU 0 (
-            set PYTHON_EXE=python3
+        py -3 --version >nul 2>&1
+        if !ERRORLEVEL! EQU 0 (
+            set PYTHON_EXE=py -3
+        ) else (
+            python3 --version >nul 2>&1
+            if !ERRORLEVEL! EQU 0 (
+                set PYTHON_EXE=python3
+            )
         )
     )
 )
