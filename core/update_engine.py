@@ -119,12 +119,17 @@ class UpdateEngine:
                         result["release_notes"] = f"Found {commits_behind} new commit(s) on remote:\n{notes}"
                         logger.info(f"Git check: {commits_behind} commits behind remote origin/main.")
                         return result
+                    else:
+                        result["update_available"] = False
+                        result["release_notes"] = "System is up to date with origin/main."
+                        logger.info("Git check: Local repository is up to date with remote origin/main.")
+                        return result
             except Exception as e:
                 logger.warning(f"Git update check encountered error: {e}")
 
         # 2. HTTP Fallback Check (Fetch version.py from GitHub raw content)
         try:
-            raw_url = f"https://raw.githubusercontent.com/{cls.GITHUB_API_REPO}/main/AgentHarness/version.py"
+            raw_url = f"https://raw.githubusercontent.com/{cls.GITHUB_API_REPO}/main/version.py"
             req = urllib.request.Request(raw_url, headers={"User-Agent": "UnrealAgentHarness-Updater"})
             with urllib.request.urlopen(req, timeout=timeout) as response:
                 content = response.read().decode("utf-8")
@@ -145,10 +150,10 @@ class UpdateEngine:
             # HTTPError is itself an open HTTP response — must be explicitly
             # closed to prevent ResourceWarning from unclosed socket (v2.15.0 fix)
             http_err.close()
-            logger.warning(f"HTTP version check error: {http_err}")
+            logger.debug(f"HTTP version check status {http_err.code}: {http_err}")
             result["error"] = str(http_err)
         except Exception as e:
-            logger.warning(f"HTTP version check error: {e}")
+            logger.debug(f"HTTP version check error: {e}")
             result["error"] = str(e)
 
         return result

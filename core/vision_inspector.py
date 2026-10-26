@@ -112,7 +112,14 @@ class VisionInspector:
             logger.warning("PIL or pywin32 not available for viewport capture.")
             return None
 
+        if not hwnd or hwnd <= 0:
+            logger.debug(f"Invalid or null window handle ({hwnd}); skipping window capture.")
+            return None
+
         try:
+            if not win32gui.IsWindow(hwnd):
+                logger.debug(f"Window handle ({hwnd}) is not an active window; skipping capture.")
+                return None
             rect = win32gui.GetWindowRect(hwnd)
             # GetWindowRect returns physical pixels when DPI awareness is
             # active (set in bootstrap.py).  ImageGrab.grab() also expects
@@ -126,7 +133,7 @@ class VisionInspector:
             )
             return img
         except Exception as e:
-            logger.error(f"Full window capture failed: {e}")
+            logger.debug(f"Full window capture failed for hwnd {hwnd}: {e}")
             return None
 
     def capture_viewport(
