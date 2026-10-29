@@ -1185,6 +1185,160 @@ class FormulaEngine:
         ]
         return cmds
 
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 2. UTron DISCS OF TRON CYBER-VOID ARENA
     # -------------------------------------------------------------------------
@@ -1271,6 +1425,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
     # -------------------------------------------------------------------------
     # 3. UT99 DUAL-BASE CTF OUTPOST
@@ -1367,6 +1675,160 @@ class FormulaEngine:
         ]
         return cmds
 
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 4. UTron LIGHT CYCLE GRID
     # -------------------------------------------------------------------------
@@ -1434,6 +1896,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
     # -------------------------------------------------------------------------
     # 4.1 UTron MASTER CONTROL PROGRAM (MCP) CORE SANCTUM
@@ -1557,6 +2173,160 @@ class FormulaEngine:
         ]
         return cmds
 
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 4.2 UTron TANK MAZE & COMBAT GRID
     # -------------------------------------------------------------------------
@@ -1646,6 +2416,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
     # -------------------------------------------------------------------------
     # 4.3 UTron SARK'S FLAGSHIP CARRIER HANGAR
@@ -1739,6 +2663,160 @@ class FormulaEngine:
         ]
         return cmds
 
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 5. UT2004 ARENA
     # -------------------------------------------------------------------------
@@ -1810,6 +2888,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
     # -------------------------------------------------------------------------
     # 7. PREMIER OUTDOOR WORLD BLUEPRINTS
@@ -2757,6 +3989,160 @@ class FormulaEngine:
         ]
         return cmds
 
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 9. ORBITAL ASTEROID OUTPOST (MOONBASE)
     # -------------------------------------------------------------------------
@@ -2915,6 +4301,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
     # -------------------------------------------------------------------------
     # 10. PROCEDURAL UTron COMPONENT BUILDERS
@@ -3236,6 +4776,160 @@ class FormulaEngine:
             "FLUSH",
         ]
         return cmds
+
+    @staticmethod
+    def generate_utron_hub_city(
+        system_dir: Optional[Path] = None,
+        city_size: int = 6144,
+        tower_height: int = 1024,
+    ) -> List[str]:
+        """
+        Constructs a massive interactive Digital City Hub server sector (Phase 4).
+        Features central I/O Tower plaza, Central Custom I/O Port, Quantum Random Port,
+        two Operator-Designated Gateway Ports, social chatting perches, AIML conversation bridge,
+        and full bot pathing network.
+        """
+        f_city = _write_brush_file(
+            system_dir,
+            "HubCitySector.t3d",
+            (float(city_size), float(city_size), 1200.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_tower_base = _write_brush_file(
+            system_dir,
+            "HubTowerBase.t3d",
+            (1024.0, 1024.0, 256.0),
+            shape="Cylinder",
+            sides=16,
+            floor_tex="solidDKgray128",
+            wall_tex="plaingrey64",
+            ceil_tex="solidDKgray128",
+        )
+
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    DefaultGameType=Class'UTron.UTronHubGame'",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=65",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            # Central I/O Tower & Custom Console Port
+            _generate_actor_t3d(
+                "UTron.UTronCustomIOPort",
+                "CentralCustomPort",
+                (0.0, 0.0, -450.0),
+                {
+                    "PortTitle": "Central Custom I/O Console",
+                    "DestinationDescription": "Interactive Player Destination Portal",
+                    "DefaultUserAddress": "unreal://127.0.0.1:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Quantum Random I/O Port (West Plaza)
+            _generate_actor_t3d(
+                "UTron.UTronRandomIOPort",
+                "QuantumRandomPort",
+                (-1500.0, 0.0, -550.0),
+                {
+                    "PortTitle": "Quantum Random I/O Port",
+                    "DestinationDescription": "Connects to Live Community Game Server",
+                },
+            ),
+
+            # Operator Designated Port 1 (North Gateway - DDA Arena)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort1",
+                (0.0, 1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 1: Deadly DiscArena",
+                    "DestinationDescription": "Official Gladiatorial Arena Server",
+                    "URL": "unreal://utron.gamegrid.net:7777/UTron-DDA-Disctutor.unr",
+                },
+            ),
+
+            # Operator Designated Port 2 (South Gateway - Cycle Grid)
+            _generate_actor_t3d(
+                "UTron.UTronIOPort",
+                "OperatorPort2",
+                (0.0, -1500.0, -550.0),
+                {
+                    "PortTitle": "Operator Gateway 2: Light Cycle Grand Prix",
+                    "DestinationDescription": "Official 90-Degree Vehicular Combat Server",
+                    "URL": "unreal://utron.gamegrid.net:7778/Cycle-MapBeta3.unr",
+                },
+            ),
+
+            # In-Game Conversational AIML Bridge
+            _generate_actor_t3d(
+                "UTron.UTronAIMLBridge",
+                "CityAIMLBridge",
+                (0.0, 0.0, -400.0),
+                {
+                    "AIServerHost": "127.0.0.1",
+                    "AIServerPort": 8080,
+                    "bAIMLEnabled": True,
+                    "BotPersonaName": "Central Scrutiniser AI",
+                },
+            ),
+
+            # PlayerStarts (Across four social gathering quadrants)
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (1200.0, -1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (1200.0, 1200.0, -540.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart4", (-300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart5", (300.0, -300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart6", (-300.0, 300.0, -440.0)),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart7", (300.0, 300.0, -440.0)),
+
+            # Navigation Network (Connecting all plazas and I/O Ports)
+            _generate_actor_t3d("Engine.PathNode", "Node_Center", (0.0, 0.0, -440.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_NorthGate", (0.0, 1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_SouthGate", (0.0, -1300.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_WestGate", (-1300.0, 0.0, -540.0)),
+            _generate_actor_t3d("Engine.PathNode", "Node_EastPlaza", (1300.0, 0.0, -540.0)),
+
+            # Neon Lighting: Luminous Cyan, Cyber Amber, and Magenta Tower Beacon
+            _generate_actor_t3d("Engine.Light", "TowerBeacon", (0.0, 0.0, 100.0), {"LightBrightness": 255, "LightHue": 145, "LightSaturation": 255, "LightRadius": 128}),
+            _generate_actor_t3d("Engine.Light", "NorthLight", (0.0, 1500.0, -400.0), {"LightBrightness": 220, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "SouthLight", (0.0, -1500.0, -400.0), {"LightBrightness": 220, "LightHue": 28, "LightSaturation": 240, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "WestLight", (-1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 190, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "EastLight", (1500.0, 0.0, -400.0), {"LightBrightness": 220, "LightHue": 85, "LightSaturation": 220, "LightRadius": 96}),
+
+            "End Map",
+        ]
+
+        f_actors = _write_file(system_dir, "HubCityActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_city}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            # Central Tower Dais
+            "BRUSH MOVETO X=0 Y=0 Z=-472",
+            f'BRUSH IMPORT FILE="{f_tower_base}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
 
 
     # -------------------------------------------------------------------------

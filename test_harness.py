@@ -263,6 +263,23 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("Engine.PlayerStart", content)
             self.assertIn("Engine.PathNode", content)
 
+    def test_utron_hub_city_generates_social_metropolis_and_io_ports(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_hub_city(system_dir=Path(tmp))
+            self.assertIn("MAP NEW", cmds[0])
+            self.assertTrue(any("BRUSH SUBTRACT" in c for c in cmds))
+            t3d_file = Path(tmp) / "HubCityActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.UTronCustomIOPort", content)
+            self.assertIn("UTron.UTronRandomIOPort", content)
+            self.assertIn("UTron.UTronIOPort", content)
+            self.assertIn("UTron.UTronAIMLBridge", content)
+            self.assertIn("UTron.UTronHubGame", content)
+            self.assertIn("Engine.PlayerStart", content)
+            self.assertIn("Engine.PathNode", content)
+
     def test_ut99_verdant_mountain_valley_generates_world_elements(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:

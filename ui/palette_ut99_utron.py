@@ -79,6 +79,12 @@ def get_ut99_utron_palette(
                     "commands_factory": lambda: FormulaEngine.generate_utron_living_grid_arena(system_dir=system_dir, rows=10, cols=10, pattern="glider"),
                     "prompt": "Construct a complete Deadly DiscArena colosseum with sunken 10x10 Robin's Living Grid floor, perimeter battle perches, Deadly Discs, and bot pathing.",
                 },
+                {
+                    "title": "🏙️ Digital City Hub & I/O Port Metropolis",
+                    "desc": "Massive 6144x6144 persistent social hangout server with Central Custom I/O Port, Quantum Random Port, Operator Gateways, and AIML bridge.",
+                    "commands_factory": lambda: FormulaEngine.generate_utron_hub_city(system_dir=system_dir),
+                    "prompt": "Construct the massive UTron Digital City Hub server with Central Custom I/O Port, Quantum Random Port, Operator Gateways, chatting plazas, and AIML bridge.",
+                },
             ],
         },
         {
