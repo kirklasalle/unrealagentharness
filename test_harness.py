@@ -233,6 +233,36 @@ class TestFormulaEngine(unittest.TestCase):
             self.assertIn("UTron.RecoDrivable", content)
             self.assertIn("UTron.DeadlyDisc", content)
 
+    def test_utron_living_grid_generates_automata_matrix(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_living_grid(center_pos=(0, 0, -200), rows=8, cols=8, pattern="glider", system_dir=Path(tmp))
+            self.assertTrue(any("MAP IMPORT" in c for c in cmds))
+            t3d_file = Path(tmp) / "LivingGridActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.LifeTileClock", content)
+            self.assertIn("UTron.lifetile", content)
+            self.assertIn("InitialState=Alive", content)
+            self.assertIn("InitialState=Dead", content)
+
+    def test_utron_living_grid_arena_generates_playable_colosseum(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cmds = self.fe.generate_utron_living_grid_arena(system_dir=Path(tmp), rows=10, cols=10, pattern="glider")
+            self.assertIn("MAP NEW", cmds[0])
+            self.assertTrue(any("BRUSH SUBTRACT" in c for c in cmds))
+            self.assertTrue(any("PATHS BUILD" in c for c in cmds))
+            t3d_file = Path(tmp) / "LivingGridArenaActors.t3d"
+            self.assertTrue(t3d_file.exists())
+            content = t3d_file.read_text(encoding="utf-8")
+            self.assertIn("UTron.LifeTileClock", content)
+            self.assertIn("UTron.DeadlyDisc", content)
+            self.assertIn("UTron.DiscAmmo", content)
+            self.assertIn("UTron.lifetile", content)
+            self.assertIn("Engine.PlayerStart", content)
+            self.assertIn("Engine.PathNode", content)
+
     def test_ut99_verdant_mountain_valley_generates_world_elements(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:

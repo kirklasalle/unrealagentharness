@@ -67,6 +67,18 @@ def get_ut99_utron_palette(
                     "commands_factory": lambda: FormulaEngine.generate_utron_wirenode_circuit([(0, 0, -200), (400, 0, -200)]),
                     "prompt": "Spawn two connected UTron.wirenode actors linked via Tag and Event to route dynamic diffuser spawning between (-400,0,0) and (400,0,0).",
                 },
+                {
+                    "title": "🧬 Robin's Living Grid (Conway Automata 8x8)",
+                    "desc": "Synthesizes an 8x8 matrix of Robin Bussell's LifeTiles wired to a central LifeTileClock.",
+                    "commands_factory": lambda: FormulaEngine.generate_utron_living_grid(center_pos=(0, 0, -200), rows=8, cols=8, pattern="glider", system_dir=system_dir),
+                    "prompt": "Deploy Robin Bussell's Living Grid 8x8 cellular automata floor driven by Conway's Game of Life rules and LifeTileClock.",
+                },
+                {
+                    "title": "🏟️ Deadly DiscArena: Living Grid Colosseum",
+                    "desc": "Complete DDA gladiatorial colosseum featuring a sunken 10x10 living automata floor and full bot pathing.",
+                    "commands_factory": lambda: FormulaEngine.generate_utron_living_grid_arena(system_dir=system_dir, rows=10, cols=10, pattern="glider"),
+                    "prompt": "Construct a complete Deadly DiscArena colosseum with sunken 10x10 Robin's Living Grid floor, perimeter battle perches, Deadly Discs, and bot pathing.",
+                },
             ],
         },
         {

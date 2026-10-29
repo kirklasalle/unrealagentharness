@@ -2961,6 +2961,283 @@ class FormulaEngine:
         cmds.append("FLUSH")
         return cmds
 
+    @staticmethod
+    def generate_utron_living_grid(
+        center_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+        rows: int = 8,
+        cols: int = 8,
+        tile_spacing: int = 80,
+        tile_class: str = "UTron.lifetile",
+        clock_tag: str = "LifeGrid1",
+        pattern: str = "glider",
+        system_dir: Optional[Path] = None,
+    ) -> List[str]:
+        """
+        Synthesizes Robin Bussell's Living Grid cellular automata floor.
+        Arranges an N x M array of UTron.lifetile or UTron.votetile actors wired to a central LifeTileClock.
+        Supports automata patterns: 'glider', 'blinker', 'pulsar', 'checkerboard', 'all_alive', 'random'.
+        """
+        cx, cy, cz = center_pos
+        cmds: List[str] = []
+
+        alive_set = set()
+        mid_r, mid_c = rows // 2, cols // 2
+        p_lower = pattern.lower()
+
+        if p_lower == "glider":
+            glider_coords = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+            for dr, dc in glider_coords:
+                r, c = mid_r - 1 + dr, mid_c - 1 + dc
+                if 0 <= r < rows and 0 <= c < cols:
+                    alive_set.add((r, c))
+        elif p_lower == "blinker":
+            for dc in [-1, 0, 1]:
+                c = mid_c + dc
+                if 0 <= c < cols:
+                    alive_set.add((mid_r, c))
+        elif p_lower == "pulsar":
+            offsets = [-4, -3, -2, 2, 3, 4]
+            for dr in offsets:
+                for dc in offsets:
+                    r, c = mid_r + dr, mid_c + dc
+                    if 0 <= r < rows and 0 <= c < cols:
+                        if abs(dr) in (2, 4) or abs(dc) in (2, 4):
+                            alive_set.add((r, c))
+        elif p_lower == "checkerboard":
+            for r in range(rows):
+                for c in range(cols):
+                    if (r + c) % 2 == 0:
+                        alive_set.add((r, c))
+        elif p_lower == "all_alive":
+            for r in range(rows):
+                for c in range(cols):
+                    alive_set.add((r, c))
+        elif p_lower == "random":
+            rng = random.Random(42)
+            for r in range(rows):
+                for c in range(cols):
+                    if rng.random() > 0.5:
+                        alive_set.add((r, c))
+
+        if system_dir is not None:
+            t3d_actors = [
+                "Begin Map",
+                _generate_actor_t3d(
+                    "UTron.LifeTileClock",
+                    f"{clock_tag}_Clock",
+                    (float(cx), float(cy), float(cz + 96.0)),
+                    {"Tag": clock_tag, "Event": clock_tag, "sleeptime": 500},
+                ),
+            ]
+            for r in range(rows):
+                for c in range(cols):
+                    x = cx + (c - cols / 2.0 + 0.5) * tile_spacing
+                    y = cy + (r - rows / 2.0 + 0.5) * tile_spacing
+                    z = cz
+                    state = "Alive" if (r, c) in alive_set else "Dead"
+                    t3d_actors.append(
+                        _generate_actor_t3d(
+                            tile_class,
+                            f"LifeTile_{r}_{c}",
+                            (float(x), float(y), float(z)),
+                            {
+                                "Tag": clock_tag,
+                                "Event": f"{clock_tag}_Tile_{r}_{c}",
+                                "InitialState": state,
+                                "searchrad": 120.0,
+                            },
+                        )
+                    )
+            t3d_actors.append("End Map")
+            f_actors = _write_file(system_dir, "LivingGridActors.t3d", "\n".join(t3d_actors))
+            cmds.extend([
+                f'MAP IMPORT FILE="{f_actors}" ADDITIVE=1',
+                "FLUSH",
+            ])
+        else:
+            for r in range(rows):
+                for c in range(cols):
+                    x = cx + (c - cols / 2.0 + 0.5) * tile_spacing
+                    y = cy + (r - rows / 2.0 + 0.5) * tile_spacing
+                    z = cz
+                    cmds.extend([
+                        f"BRUSH MOVETO X={x:.1f} Y={y:.1f} Z={z:.1f}",
+                        f"ACTOR ADD CLASS={tile_class}",
+                    ])
+            cmds.extend([
+                f"BRUSH MOVETO X={cx:.1f} Y={cy:.1f} Z={cz + 96.0:.1f}",
+                "ACTOR ADD CLASS=UTron.LifeTileClock",
+                "FLUSH",
+            ])
+
+        return cmds
+
+    @staticmethod
+    def generate_utron_living_grid_arena(
+        system_dir: Optional[Path] = None,
+        rows: int = 10,
+        cols: int = 10,
+        tile_spacing: int = 80,
+        tile_class: str = "UTron.lifetile",
+        pattern: str = "glider",
+    ) -> List[str]:
+        """
+        Constructs a complete Deadly DiscArena featuring Robin Bussell's interactive Living Grid floor.
+        Includes subtractive arena chamber, sunken living grid automata floor, perimeter mezzanine,
+        UTron.DeadlyDisc spawners, UTron.DiscAmmo pickups, LifeTileClock, and bot navigation network.
+        """
+        arena_width = max(2400.0, float(cols * tile_spacing + 1200))
+        arena_length = max(2400.0, float(rows * tile_spacing + 1200))
+        arena_height = 800.0
+        floor_z = -arena_height / 2.0
+        grid_z = floor_z + 32.0
+        walkway_z = floor_z + 128.0
+
+        f_void = _write_brush_file(
+            system_dir,
+            "LivingGridChamber.t3d",
+            (arena_width, arena_length, arena_height),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="AquaM",
+            ceil_tex="AquaM",
+        )
+
+        f_dais = _write_brush_file(
+            system_dir,
+            "LivingGridMezzanine.t3d",
+            (arena_width - 256.0, arena_length - 256.0, 128.0),
+            shape="Box",
+            floor_tex="AquaM",
+            wall_tex="plaingrey64",
+            ceil_tex="plaingrey64",
+        )
+
+        grid_basin_w = float(cols * tile_spacing + 128)
+        grid_basin_l = float(rows * tile_spacing + 128)
+        f_pit = _write_brush_file(
+            system_dir,
+            "LivingGridPit.t3d",
+            (grid_basin_w, grid_basin_l, 130.0),
+            shape="Box",
+            floor_tex="solidDKgray128",
+            wall_tex="AquaM",
+            ceil_tex="solidDKgray128",
+        )
+
+        mid_r, mid_c = rows // 2, cols // 2
+        alive_set = set()
+        p_lower = pattern.lower()
+        if p_lower == "glider":
+            glider_coords = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+            for dr, dc in glider_coords:
+                r, c = mid_r - 1 + dr, mid_c - 1 + dc
+                if 0 <= r < rows and 0 <= c < cols:
+                    alive_set.add((r, c))
+        elif p_lower == "checkerboard":
+            for r in range(rows):
+                for c in range(cols):
+                    if (r + c) % 2 == 0:
+                        alive_set.add((r, c))
+        else:
+            for r in range(rows):
+                for c in range(cols):
+                    if (r + c) % 3 == 0:
+                        alive_set.add((r, c))
+
+        clock_tag = "LifeGridArenaClock"
+        t3d_actors = [
+            "Begin Map",
+            "Begin Actor Class=Engine.LevelInfo Name=LevelInfo0",
+            "    TimeDilation=1.000000",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+            "Begin Actor Class=Engine.ZoneInfo Name=ZoneInfo0",
+            "    AmbientBrightness=55",
+            "    Location=(X=0.000000,Y=0.000000,Z=0.000000)",
+            "End Actor",
+
+            _generate_actor_t3d(
+                "UTron.LifeTileClock",
+                "MasterLifeClock",
+                (0.0, 0.0, float(grid_z + 160.0)),
+                {"Tag": clock_tag, "Event": clock_tag, "sleeptime": 400},
+            ),
+
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart0", (-750.0, -750.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart1", (750.0, -750.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart2", (-750.0, 750.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PlayerStart", "PlayerStart3", (750.0, 750.0, float(walkway_z + 50.0))),
+
+            _generate_actor_t3d("UTron.DeadlyDisc", "Disc0", (0.0, -700.0, float(walkway_z + 24.0))),
+            _generate_actor_t3d("UTron.DeadlyDisc", "Disc1", (0.0, 700.0, float(walkway_z + 24.0))),
+            _generate_actor_t3d("UTron.DiscAmmo", "Ammo0", (-700.0, 0.0, float(walkway_z + 24.0))),
+            _generate_actor_t3d("UTron.DiscAmmo", "Ammo1", (700.0, 0.0, float(walkway_z + 24.0))),
+
+            _generate_actor_t3d("Engine.Light", "CyanLight0", (-800.0, -800.0, 100.0), {"LightBrightness": 240, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "CyanLight1", (800.0, -800.0, 100.0), {"LightBrightness": 240, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "CyanLight2", (-800.0, 800.0, 100.0), {"LightBrightness": 240, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "CyanLight3", (800.0, 800.0, 100.0), {"LightBrightness": 240, "LightHue": 145, "LightSaturation": 255, "LightRadius": 96}),
+            _generate_actor_t3d("Engine.Light", "CenterAmberLight", (0.0, 0.0, 200.0), {"LightBrightness": 200, "LightHue": 32, "LightSaturation": 180, "LightRadius": 112}),
+
+            _generate_actor_t3d("Engine.PathNode", "PathNode0", (-650.0, -650.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode1", (650.0, -650.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode2", (-650.0, 650.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode3", (650.0, 650.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode4", (0.0, -500.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode5", (0.0, 500.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode6", (-500.0, 0.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PathNode7", (500.0, 0.0, float(walkway_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PitNode0", (-200.0, -200.0, float(grid_z + 50.0))),
+            _generate_actor_t3d("Engine.PathNode", "PitNode1", (200.0, 200.0, float(grid_z + 50.0))),
+        ]
+
+        for r in range(rows):
+            for c in range(cols):
+                tx = (c - cols / 2.0 + 0.5) * tile_spacing
+                ty = (r - rows / 2.0 + 0.5) * tile_spacing
+                tz = grid_z
+                st = "Alive" if (r, c) in alive_set else "Dead"
+                t3d_actors.append(
+                    _generate_actor_t3d(
+                        tile_class,
+                        f"ArenaTile_{r}_{c}",
+                        (float(tx), float(ty), float(tz)),
+                        {
+                            "Tag": clock_tag,
+                            "Event": f"{clock_tag}_Tile_{r}_{c}",
+                            "InitialState": st,
+                            "searchrad": 120.0,
+                        },
+                    )
+                )
+
+        t3d_actors.append("End Map")
+        f_actors = _write_file(system_dir, "LivingGridArenaActors.t3d", "\n".join(t3d_actors))
+
+        cmds = [
+            "MAP NEW",
+            f'MAP IMPORT FILE="{f_actors}"',
+            "BRUSH MOVETO X=0 Y=0 Z=0",
+            f'BRUSH IMPORT FILE="{f_void}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            f"BRUSH MOVETO X=0 Y=0 Z={floor_z + 64.0:.1f}",
+            f'BRUSH IMPORT FILE="{f_dais}" MERGE=0 FLAGS=0',
+            "BRUSH ADD",
+
+            f"BRUSH MOVETO X=0 Y=0 Z={floor_z + 64.0:.1f}",
+            f'BRUSH IMPORT FILE="{f_pit}" MERGE=0 FLAGS=0',
+            "BRUSH SUBTRACT",
+
+            "MAP REBUILD",
+            "LIGHT APPLY",
+            "PATHS BUILD",
+            "FLUSH",
+        ]
+        return cmds
+
+
     # -------------------------------------------------------------------------
     # 11. UT2004 / UE2.5 PROCEDURAL WORLD & COMPONENT GENERATORS
     # -------------------------------------------------------------------------
